@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Тренировки</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Oswald:wght@400;600&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -334,7 +334,7 @@ body {
 .bg-symbols { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
 .bg-sym {
   position: absolute;
-  font-family: 'Bebas Neue', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+  font-family: 'Oswald', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
   user-select: none;
   line-height: 1;
   animation: symFloat ease-in-out infinite;
@@ -376,7 +376,7 @@ body {
 }
 .brand-block { display: flex; align-items: baseline; gap: 12px; }
 .brand-block h1 {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: var(--h1-size); letter-spacing: var(--h1-spacing); line-height: 1;
   background: var(--title-grad);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
@@ -406,7 +406,7 @@ body {
 .streak-mini .icon { font-size: 18px; animation: pulse 1.5s ease infinite; }
 @keyframes pulse { 0%,100%{opacity:0.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.15)} }
 .streak-mini .num {
-  font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+  font-family: 'Oswald', sans-serif; font-size: 22px;
   background: var(--streak-num-grad);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   line-height: 1;
@@ -511,7 +511,7 @@ body {
 }
 .side-panel-close:hover { border-color: var(--accent); color: var(--accent2); }
 .side-ex-name {
-  font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px;
+  font-family: 'Oswald', sans-serif; font-size: 28px; letter-spacing: 2px;
   background: var(--day-name-grad);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
@@ -554,7 +554,7 @@ body {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
 .side-timer-digits {
-  font-family: 'Bebas Neue', sans-serif; font-size: 38px; letter-spacing: 2px; line-height: 1;
+  font-family: 'Oswald', sans-serif; font-size: 38px; letter-spacing: 2px; line-height: 1;
   background: var(--timer-digits-grad);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
@@ -593,7 +593,7 @@ body {
   border: 1px solid var(--border);
 }
 .sw-time {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: 'Oswald', sans-serif;
   font-size: 52px; letter-spacing: 3px; line-height: 1;
   background: var(--timer-digits-grad);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
@@ -649,7 +649,7 @@ body {
 .side-rest-cancel:hover { background: rgba(255,255,255,0.05); color: #ef4444; }
 .side-rest-active-label { font-size: 10px; color: var(--muted); text-transform: uppercase; }
 .side-rest-active-timer {
-  font-family: 'Bebas Neue', sans-serif; font-size: 36px;
+  font-family: 'Oswald', sans-serif; font-size: 36px;
   color: var(--accent2);
 }
 
@@ -677,7 +677,7 @@ body {
 .prog-center {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px;
+  font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 1px;
   background: var(--pct-grad);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
@@ -737,7 +737,7 @@ body {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
 .timer-digits {
-  font-family: 'Bebas Neue', sans-serif; font-size: var(--timer-digits-size); letter-spacing: 2px; line-height: 1;
+  font-family: 'Oswald', sans-serif; font-size: var(--timer-digits-size); letter-spacing: 2px; line-height: 1;
   background: var(--timer-digits-grad);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   transition: filter 0.3s;
@@ -801,7 +801,7 @@ body {
 }
 .day-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .day-name {
-  font-family: 'Bebas Neue', sans-serif; font-size: var(--day-name-size); letter-spacing: 2px;
+  font-family: 'Oswald', sans-serif; font-size: var(--day-name-size); letter-spacing: 2px;
   background: var(--day-name-grad);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
@@ -915,7 +915,7 @@ body {
   max-height: 85vh; overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0,0,0,0.15);
 }
-.modal h3 { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; color: var(--accent2); margin-bottom: 16px; }
+.modal h3 { font-family: 'Oswald', sans-serif; font-size: 24px; letter-spacing: 2px; color: var(--accent2); margin-bottom: 16px; }
 .modal-field { margin-bottom: 12px; }
 .modal-field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; }
 .modal-field input, .modal-field select {
