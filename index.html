@@ -1672,11 +1672,27 @@ function saveRestTime(sec) { localStorage.setItem('restTime', sec); }
 // ── DAYS ──
 function addDay() {
   if (PLAN.length >= 7) { showToast('Максимум 7 дней'); return; }
-  const name = prompt('Название дня:');
-  if (!name || !name.trim()) return;
-  const short = prompt('Короткое имя:');
-  if (!short || !short.trim()) return;
-  PLAN.push({ name: name.trim().toUpperCase(), short: short.trim(), exercises: [{ name: "Новое упражнение", sets: 3, target: "10" }] });
+  document.getElementById('modalContainer').innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal" style="max-width:380px">
+        <h3>Добавить день</h3>
+        <div class="modal-field"><label>Название</label><input type="text" id="modalAddName" placeholder="ГРУДЬ / ТРИЦЕПС" autofocus></div>
+        <div class="modal-field"><label>Короткое имя</label><input type="text" id="modalAddShort" placeholder="Грудь"></div>
+        <div class="modal-actions">
+          <button class="btn" onclick="closeModal()">Отмена</button>
+          <button class="btn accent" onclick="confirmAddDay()">Добавить</button>
+        </div>
+      </div>
+    </div>`;
+  setTimeout(() => document.getElementById('modalAddName').focus(), 100);
+}
+
+function confirmAddDay() {
+  const name = document.getElementById('modalAddName').value.trim();
+  const short = document.getElementById('modalAddShort').value.trim();
+  if (!name || !short) { showToast('Заполни оба поля!'); return; }
+  closeModal();
+  PLAN.push({ name: name.toUpperCase(), short, exercises: [{ name: "Новое упражнение", sets: 3, target: "10" }] });
   savePlan(PLAN);
   renderAll();
   switchDay(PLAN.length - 1);
@@ -1846,13 +1862,28 @@ function closeModal() { document.getElementById('modalContainer').innerHTML = ''
 function getPresets() { try { const r = localStorage.getItem(STORAGE_PRESETS); return r ? JSON.parse(r) : {}; } catch { return {}; } }
 function savePresets(p) { localStorage.setItem(STORAGE_PRESETS, JSON.stringify(p)); }
 function savePreset() {
-  const name = prompt('Название пресета:');
-  if (!name || !name.trim()) return;
+  document.getElementById('modalContainer').innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal" style="max-width:380px">
+        <h3>💾 Сохранить пресет</h3>
+        <div class="modal-field"><label>Название пресета</label><input type="text" id="modalPresetName" placeholder="Моя программа" autofocus></div>
+        <div class="modal-actions">
+          <button class="btn" onclick="closeModal()">Отмена</button>
+          <button class="btn accent" onclick="confirmSavePreset()">Сохранить</button>
+        </div>
+      </div>
+    </div>`;
+  setTimeout(() => document.getElementById('modalPresetName').focus(), 100);
+}
+function confirmSavePreset() {
+  const name = document.getElementById('modalPresetName').value.trim();
+  if (!name) { showToast('Введи название!'); return; }
+  closeModal();
   const presets = getPresets();
-  presets[name.trim()] = JSON.parse(JSON.stringify(PLAN));
+  presets[name] = JSON.parse(JSON.stringify(PLAN));
   savePresets(presets);
   renderPresetSelect();
-  showToast(`Пресет «${name.trim()}» сохранён!`);
+  showToast(`Пресет «${name}» сохранён!`);
 }
 function loadPreset(name) {
   if (!name) return;
