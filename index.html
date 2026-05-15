@@ -1071,9 +1071,47 @@ body {
   .bottom-left > * { width: 100%; }
   .preset-select { max-width: 100%; }
   .reset-pill { width: 100%; text-align: center; }
+  .ex-card { padding: 10px; }
+  .ex-name { font-size: 12px; }
+  .kg-input { width: 42px; height: 28px; font-size: 12px; }
+  .day-pill { padding: 6px 10px; font-size: 11px; }
+  .ex-target { font-size: 9px; }
+  .save-preset-btn, .complete-day-btn, .reset-pill { padding: 10px 16px; font-size: 12px; text-align: center; justify-content: center; }
+  .settings-btn { top: 10px; right: 10px; width: 36px; height: 36px; font-size: 17px; }
+  .side-ex-name { font-size: 22px; }
+  .sw-time { font-size: 40px; }
 }
 @media (max-width: 480px) {
   :root { --page-padding: 10px; --gap: 6px; --h1-size: 30px; --h1-spacing: 1px; --day-name-size: 18px; --timer-ring-size: 90px; --timer-digits-size: 26px; --prog-gap: 10px; --prog-padding: 12px 14px; --timer-padding: 12px 10px; --ex-padding: 12px 14px 10px; --streak-block-padding: 4px 4px 4px 10px; --r-xl: 18px; --r-lg: 14px; --side-panel-width: 100vw; }
+  .brand-block h1 { font-size: 30px !important; letter-spacing: 3px !important; }
+  .brand-block h1 { font-size: 30px !important; letter-spacing: 3px !important; }
+  .brand-block { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .brand-badge { font-size: 9px; padding: 3px 10px; }
+  .day-pill { padding: 5px 8px; font-size: 10px; }
+  .ex-card { padding: 8px; }
+  .ex-sets-mini { gap: 2px; }
+  .set-dot-mini { width: 16px; height: 16px; border-radius: 4px; }
+  .kg-input { width: 36px; height: 24px; font-size: 10px; }
+  .timer-preset-btn { padding: 3px 8px; font-size: 9px; }
+  .settings-btn { top: 8px; right: 8px; width: 32px; height: 32px; font-size: 15px; }
+  .side-ex-name { font-size: 20px; }
+  .sw-time { font-size: 34px; }
+  .side-set-dot { width: 28px; height: 28px; font-size: 11px; }
+  .timer-mode-btn { font-size: 10px; padding: 4px 6px; }
+  .ex-prog-pct { font-size: 9px; min-width: 22px; }
+  .modal { padding: 16px; }
+  .modal h3 { font-size: 20px; }
+  .modal-field input, .modal-field select { font-size: 13px; padding: 8px 10px; }
+  .toast { font-size: 12px; padding: 10px 16px; }
+}
+@media (max-width: 380px) {
+  .day-pills { gap: 3px; }
+  .day-pill { padding: 4px 6px; font-size: 9px; }
+  .ex-card { padding: 6px; }
+  .ex-sets-mini { gap: 2px; }
+  .set-dot-mini { width: 14px; height: 14px; }
+  .kg-input { width: 32px; height: 22px; font-size: 9px; }
+  .side-panel-close { width: 30px; height: 30px; font-size: 15px; }
 }
 </style>
 </head>
@@ -1107,7 +1145,7 @@ body {
 <div class="page">
   <div class="top-row">
     <div class="brand-block">
-      <h1 style="font-size:76px;letter-spacing:10px">ash<span style="font-size:0.6em">t</span>rain</h1>
+      <h1>ash<span style="font-size:0.6em">t</span>rain</h1>
       <span class="brand-badge">набор массы · домашние тренировки</span>
     </div>
     <div class="streak-days-block" id="streakDaysBlock">
