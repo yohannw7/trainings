@@ -318,7 +318,7 @@
   --input-bg: rgba(0,0,0,0.04);
 }
 
-html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; height: 100%; }
+html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; height: 100%; -webkit-overflow-scrolling: touch; }
 body {
   font-family: 'DM Sans', sans-serif;
   background: var(--bg);
@@ -329,6 +329,7 @@ body {
   flex-direction: column;
   transition: background 0.4s, color 0.4s;
   -webkit-font-smoothing: antialiased;
+  -webkit-overflow-scrolling: touch;
 }
 
 .blob { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; transition: background 0.5s; }
@@ -797,15 +798,18 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  max-height: 100%;
 }
 .exercise-list {
   display: flex; flex-direction: column; gap: 6px;
   overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
   min-height: 0;
   padding-right: 4px;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+  -webkit-overflow-scrolling: touch;
 }
 .day-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .day-name {
@@ -1153,10 +1157,13 @@ select.calc-inp { cursor: pointer; }
 }
 @media (max-width: 768px) {
   :root { --bento-cols: 1fr; --page-padding: 12px; --gap: 8px; --h1-size: 34px; --h1-spacing: 2px; --day-name-size: 18px; --timer-ring-size: 100px; --timer-digits-size: 28px; --prog-gap: 12px; --prog-padding: 14px 16px; --timer-padding: 14px; --ex-padding: 12px 14px 10px; --streak-block-padding: 4px 4px 4px 12px; --side-panel-width: 300px; }
+  .bento { grid-template-rows: auto auto 1fr; }
+  .card-progress { grid-column: 1 / -1; grid-row: 1; }
   .top-row { flex-direction: column; align-items: stretch; gap: 8px; }
   .brand-block h1 { font-size: 34px; letter-spacing: 3px; }
   .streak-days-block { width: 100%; }
-  .card-timer { flex-direction: column; align-items: center; }
+  .card-timer { grid-column: 1 / -1; grid-row: 2; flex-direction: column; align-items: center; }
+  .card-exercises { grid-column: 1 / -1; grid-row: 3; }
   .bottom-row { flex-direction: column; align-items: stretch; gap: 6px; }
   .bottom-left { flex-direction: column; align-items: stretch; gap: 6px; }
   .bottom-left > *, .reset-pill, .save-preset-btn, .complete-day-btn { width: 100%; text-align: center; }
