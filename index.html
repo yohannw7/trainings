@@ -1439,7 +1439,11 @@ select.calc-inp { cursor: pointer; }
 const THEME_KEY = 'selectedTheme';
 const THEMES = ['blackout', 'fire', 'aqua', 'forest', 'violet', 'liquid'];
 const DEFAULT_THEME = 'blackout';
-function getTheme() { return localStorage.getItem(THEME_KEY) || DEFAULT_THEME; }
+function getTheme() {
+  let t = localStorage.getItem(THEME_KEY);
+  if (t && t.endsWith('-matte')) t = t.replace('-matte', '');
+  return t || DEFAULT_THEME;
+}
 function applyTheme(theme) {
   document.body.classList.remove(...THEMES.map(t => `theme-${t}`));
   if (theme !== 'blackout') document.body.classList.add(`theme-${theme}`);
@@ -2301,7 +2305,8 @@ function editCalcProfile() {
   showCalcProfileModal();
 }
 
-// ── INIT ──applyTheme(getTheme());
+// ── INIT ──
+applyTheme(getTheme());
 renderAll();
 updateProgress(currentDay);
 startWorkoutTimer();
