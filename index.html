@@ -1907,16 +1907,30 @@ function formatDuration(ms) {
 }
 
 // ── STREAK ──
-function getStreak() { try { const r = localStorage.getItem(STORAGE_STREAK); return r ? JSON.parse(r) : { streak: 0, lastDate: null }; } catch { return { streak: 0, lastDate: null }; } }
+function getWeekId(date) {
+  const d = new Date(date);
+  const dayNum = (d.getDay() + 6) % 7;
+  d.setDate(d.getDate() - dayNum + 3);
+  const jan4 = new Date(d.getFullYear(), 0, 4);
+  const weekNum = 1 + Math.round(((d - jan4) / 86400000 - 3 + (jan4.getDay() + 6) % 7) / 7);
+  return d.getFullYear() + '-W' + String(weekNum).padStart(2, '0');
+}
+
+function getStreak() { try { const r = localStorage.getItem(STORAGE_STREAK); return r ? JSON.parse(r) : { streak: 0, lastWeek: null }; } catch { return { streak: 0, lastWeek: null }; } }
 function saveStreak(d) { localStorage.setItem(STORAGE_STREAK, JSON.stringify(d)); }
 function updateStreakUI() { document.getElementById('streakNum').textContent = getStreak().streak; }
+
 function completeDay() {
   const s = getStreak();
-  const today = new Date().toISOString().split('T')[0];
-  if (s.lastDate === today) { showToast('Сегодня уже отмечено! 🔥'); return; }
-  const yesterday = new Date(Date.now()-86400000).toISOString().split('T')[0];
-  s.streak = (s.lastDate === yesterday) ? s.streak + 1 : 1;
-  s.lastDate = today;
+  const today = getWeekId(new Date());
+  if (s.lastWeek === today) { showToast('На этой неделе уже отмечал! 🔥'); return; }
+
+  const prevWeek = new Date();
+  prevWeek.setDate(prevWeek.getDate() - 7);
+  const lastWeekId = getWeekId(prevWeek);
+
+  s.streak = (s.lastWeek === lastWeekId) ? s.streak + 1 : 1;
+  s.lastWeek = today;
   saveStreak(s);
   updateStreakUI();
 
@@ -1936,7 +1950,7 @@ function completeDay() {
   if (history.length > 100) history.length = 100;
   localStorage.setItem('workoutHistory', JSON.stringify(history));
 
-  showToast(`День засчитан! Стрик: ${s.streak} дн. 🔥` + (duration ? ' · ⏱ ' + formatDuration(duration) : ''));
+  showToast(`День засчитан! Стрик: ${s.streak} нед. 🔥` + (duration ? ' · ⏱ ' + formatDuration(duration) : ''));
 }
 
 function getRestTime() { return localStorage.getItem('restTime') || 90; }
