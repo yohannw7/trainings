@@ -1099,9 +1099,26 @@ select.calc-inp { cursor: pointer; }
 }
 .calc-edit-btn:hover { border-color: var(--accent2); color: var(--accent2); }
 
+/* История тренировок */
+.prog-container { display: flex; flex-direction: column; gap: 8px; }
+.hist-card { padding: 14px 18px; cursor: pointer; }
+.hist-card:hover { border-color: var(--accent); }
+.hist-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.hist-date { font-size: 11px; color: var(--muted); min-width: 80px; }
+.hist-name { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; background: var(--title-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; flex: 1; }
+.hist-meta { font-size: 11px; color: var(--muted); }
+.hist-body { display: none; flex-direction: column; gap: 4px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.hist-open .hist-body { display: flex; }
+.hist-ex { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 4px 0; }
+.hist-ex-name { flex: 1; color: var(--text); }
+.hist-ex-sets { font-size: 10px; color: var(--accent2); letter-spacing: 2px; }
+.hist-ex-pct { font-size: 10px; color: var(--muted); min-width: 24px; text-align: right; }
+.hist-ex-wt { font-size: 10px; color: var(--muted); min-width: 40px; text-align: right; }
+
 @media (max-width: 768px) {
   .calc-grid { grid-template-columns: 1fr; }
   .calc-card { padding: 14px 16px; }
+  .hist-card { padding: 12px 14px; }
 }
 
 @media (max-width: 768px) {
@@ -1423,11 +1440,7 @@ select.calc-inp { cursor: pointer; }
   </div>
 
   <div class="tab-content tab-progress">
-    <div class="placeholder-tab">
-      <div class="placeholder-icon">📈</div>
-      <div class="placeholder-title">Прогресс</div>
-      <div class="placeholder-desc">Скоро здесь будет история тренировок, графики весов и замеров</div>
-    </div>
+    <div id="progressContainer" class="prog-container" style="flex:1;overflow-y:auto;padding-right:4px;scrollbar-width:thin;scrollbar-color:var(--border) transparent"></div>
   </div>
 
 </div> <!-- end page -->
@@ -1605,6 +1618,7 @@ function switchTab(name, btn) {
   if (tab) tab.classList.add('active');
   if (name === 'training') startWorkoutTimer();
   if (name === 'calculators') ensureCalcProfile();
+  if (name === 'progress') renderProgress();
 }
 
 function closeSidePanel() {
@@ -1905,16 +1919,24 @@ function completeDay() {
   s.lastDate = today;
   saveStreak(s);
   updateStreakUI();
+
+  // Сохраняем историю тренировки
   const start = getWorkoutStart();
-  let timeStr = '';
-  if (start) {
-    timeStr = ' · ⏱ ' + formatDuration(Date.now() - start);
-    saveWorkoutStart(null);
-    stopWorkoutTimer();
-    const display = document.getElementById('workoutTimeDisplay');
-    if (display) display.textContent = '00:00';
-  }
-  showToast(`День засчитан! Стрик: ${s.streak} дн. 🔥${timeStr}`);
+  let duration = 0;
+  if (start) { duration = Date.now() - start; saveWorkoutStart(null); stopWorkoutTimer(); const d = document.getElementById('workoutTimeDisplay'); if (d) d.textContent = '00:00'; }
+
+  const day = PLAN[currentDay];
+  const exercises = day.exercises.map((ex, ei) => {
+    const state = loadSt(currentDay, ei, ex.sets);
+    return { name: ex.name, sets: ex.sets, done: state.filter(Boolean).length, weight: localStorage.getItem(wk(currentDay,ei)) || '' };
+  });
+  const entry = { date: today, dayName: day.name, short: day.short, duration, exercises };
+  const history = getWorkoutHistory();
+  history.unshift(entry);
+  if (history.length > 100) history.length = 100;
+  localStorage.setItem('workoutHistory', JSON.stringify(history));
+
+  showToast(`День засчитан! Стрик: ${s.streak} дн. 🔥` + (duration ? ' · ⏱ ' + formatDuration(duration) : ''));
 }
 
 function getRestTime() { return localStorage.getItem('restTime') || 90; }
@@ -2305,6 +2327,38 @@ function editCalcProfile() {
   showCalcProfileModal();
 }
 
+// ── PROGRESS ──
+function getWorkoutHistory() { try { const r = localStorage.getItem('workoutHistory'); return r ? JSON.parse(r) : []; } catch { return []; } }
+
+function renderProgress() {
+  const container = document.getElementById('progressContainer');
+  if (!container) return;
+  const history = getWorkoutHistory();
+  if (history.length === 0) {
+    container.innerHTML = '<div class="placeholder-tab"><div class="placeholder-icon">📈</div><div class="placeholder-title">Нет данных</div><div class="placeholder-desc">Завершите первую тренировку — и она появится здесь</div></div>';
+    return;
+  }
+  let html = '';
+  history.forEach((entry) => {
+    const totalSets = entry.exercises.reduce((a, e) => a + e.sets, 0);
+    const doneSets = entry.exercises.reduce((a, e) => a + e.done, 0);
+    const pct = totalSets > 0 ? Math.round(doneSets / totalSets * 100) : 0;
+    html += `<div class="hist-card card" onclick="this.classList.toggle('hist-open')">
+      <div class="hist-header">
+        <div class="hist-date">${entry.date.replace(/-/g, '.')}</div>
+        <div class="hist-name">${entry.dayName}</div>
+        <div class="hist-meta">${doneSets}/${totalSets} · ${pct}%${entry.duration ? ' · ⏱ ' + formatDuration(entry.duration) : ''}</div>
+      </div>
+      <div class="hist-body">`;
+    entry.exercises.forEach(ex => {
+      const exPct = ex.sets > 0 ? Math.round(ex.done / ex.sets * 100) : 0;
+      html += `<div class="hist-ex"><span class="hist-ex-name">${ex.name}</span><span class="hist-ex-sets">${'●'.repeat(ex.done)}${'○'.repeat(ex.sets - ex.done)}</span><span class="hist-ex-pct">${exPct}%</span>${ex.weight ? '<span class="hist-ex-wt">' + ex.weight + ' кг</span>' : ''}</div>`;
+    });
+    html += `</div></div>`;
+  });
+  container.innerHTML = html;
+}
+
 // ── INIT ──
 applyTheme(getTheme());
 renderAll();
@@ -2312,6 +2366,7 @@ updateProgress(currentDay);
 startWorkoutTimer();
 if (getCalcProfile()) applyCalcProfile(getCalcProfile());
 else { calcBMI(); calcTDEE(); calcMacro(); calcRM(); }
+renderProgress();
 
 // ── GLOBAL TIMER (правая карточка) ──
 function switchClock(m) {
