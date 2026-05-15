@@ -1842,15 +1842,21 @@ function finishSideApproach() {
   if (allDone) {
     const isMobile = window.matchMedia('(max-width: 1024px)').matches;
     if (isMobile) {
-      // На мобилке: закрываем панель, открываем следующее упражнение
+      closeSidePanel();
       const nextEi = PLAN[di].exercises.findIndex((ex, idx) => {
         if (idx <= ei) return false;
         const st = loadSt(di, idx, ex.sets);
         return !st.every(Boolean);
       });
-      closeSidePanel();
       if (nextEi !== -1) {
-        setTimeout(() => openSidePanel(di, nextEi), 350);
+        setTimeout(() => {
+          const nextCard = document.getElementById(`ex-${di}-${nextEi}`);
+          if (nextCard) {
+            document.querySelectorAll('.ex-card').forEach(c => c.classList.remove('active-ex'));
+            nextCard.classList.add('active-ex');
+            nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 350);
       } else {
         showToast('🎉 Все упражнения выполнены!');
       }
