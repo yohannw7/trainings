@@ -826,7 +826,7 @@ body {
   transition: all 0.2s;
   display: grid;
   grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
+  grid-template-rows: auto auto auto;
   gap: 3px 10px;
   align-items: center;
 }
@@ -843,7 +843,7 @@ body {
   grid-column: 2; grid-row: 1;
   white-space: nowrap; align-self: start;
 }
-.ex-sets-mini { grid-column: 1; grid-row: 2; display: flex; gap: 3px; }
+.ex-sets-mini { grid-column: 1; grid-row: 2; display: flex; gap: 3px; align-items: center; }
 .set-dot-mini {
   width: 20px; height: 20px; border-radius: 6px;
   border: 1px solid var(--border);
@@ -866,6 +866,25 @@ body {
   text-align: center; padding: 0 4px;
 }
 .kg-input:focus { outline: none; border-color: var(--accent); }
+.ex-progress {
+  grid-column: 1 / -1; grid-row: 3;
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 2px;
+}
+.ex-prog-track {
+  flex: 1; height: 3px; border-radius: var(--r-pill);
+  background: rgba(0,0,0,0.06); overflow: hidden;
+}
+.ex-prog-fill {
+  height: 100%; border-radius: var(--r-pill);
+  background: var(--prog-bar-grad);
+  transition: width 0.4s ease;
+  box-shadow: 0 0 10px var(--glow);
+}
+.ex-prog-pct {
+  font-size: 10px; font-weight: 600; color: var(--accent2);
+  min-width: 28px; text-align: right;
+}
 
 .bottom-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
 .bottom-left { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
@@ -1664,6 +1683,8 @@ function renderExercises() {
         dots += `<div class="set-dot-mini${state[s]?' done':''}"></div>`;
       }
       const isActive = activeSideEx && activeSideEx.di === di && activeSideEx.ei === ei;
+      const doneCount = state.filter(Boolean).length;
+      const exPct = ex.sets > 0 ? Math.round(doneCount / ex.sets * 100) : 0;
       exHTML += `
         <div class="ex-card${state.every(Boolean)?' completed':''}${isActive?' active-ex':''}" id="ex-${di}-${ei}" onclick="openSidePanel(${di},${ei})">
           <span class="ex-name">${ex.name}</span>
@@ -1674,6 +1695,10 @@ function renderExercises() {
             <input class="kg-input" type="number" placeholder="0" value="${weight}" min="0" step="0.5"
               onclick="event.stopPropagation()"
               oninput="localStorage.setItem('${wk(di,ei)}',this.value)">
+          </div>
+          <div class="ex-progress">
+            <div class="ex-prog-track"><div class="ex-prog-fill" style="width:${exPct}%"></div></div>
+            <span class="ex-prog-pct">${exPct}%</span>
           </div>
         </div>`;
     });
