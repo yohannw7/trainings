@@ -810,6 +810,7 @@ body {
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 .day-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .day-name {
@@ -1173,6 +1174,7 @@ select.calc-inp { cursor: pointer; }
   .ex-name { font-size: 12px; }
   .ex-target { font-size: 9px; }
   .kg-input { width: 44px; height: 30px; font-size: 12px; }
+  .ex-progress { display: none; }
   .day-pill { padding: 6px 10px; font-size: 11px; }
   .settings-btn { top: 10px; right: 10px; width: 36px; height: 36px; font-size: 17px; }
   .side-ex-name { font-size: 22px; }
@@ -1190,7 +1192,9 @@ select.calc-inp { cursor: pointer; }
   .t-btn { padding: 8px; font-size: 11px; }
   .t-btn.primary { padding: 10px; }
   .side-ap-btn { padding: 10px; font-size: 12px; }
+  .side-ap-btn { padding: 10px; font-size: 12px; }
   .side-rest-input { width: 60px; padding: 6px 8px; }
+  .prog-timer { display: none; }
   .page { padding-bottom: calc(var(--page-padding) + env(safe-area-inset-bottom, 0px)); }
 }
 @media (max-width: 480px) {
@@ -1201,13 +1205,16 @@ select.calc-inp { cursor: pointer; }
   .day-pill { padding: 5px 7px; font-size: 10px; }
   .day-pill .del-day { font-size: 11px; }
   .add-day-btn { width: 28px; height: 28px; font-size: 15px; }
-  .ex-card { padding: 8px; gap: 2px 8px; }
-  .ex-name { font-size: 11px; }
-  .ex-target { font-size: 8px; padding: 1px 6px; }
+  .day-header { margin-bottom: 6px; gap: 6px; }
+  .ex-card { padding: 6px 8px; gap: 1px 6px; border-radius: 10px; }
+  .exercise-list { gap: 4px; }
+  .ex-name { font-size: 10px; }
+  .ex-target { font-size: 7px; padding: 1px 5px; display: none; }
   .ex-sets-mini { gap: 2px; }
-  .set-dot-mini { width: 16px; height: 16px; border-radius: 4px; }
-  .kg-input { width: 38px; height: 26px; font-size: 11px; }
-  .ex-prog-pct { font-size: 9px; min-width: 20px; }
+  .set-dot-mini { width: 14px; height: 14px; border-radius: 3px; }
+  .kg-input { width: 34px; height: 22px; font-size: 10px; }
+  .ex-progress { display: none; }
+  .ex-weight { gap: 2px; }
   .settings-btn { top: 6px; right: 6px; width: 30px; height: 30px; font-size: 14px; }
   .side-ex-name { font-size: 18px; }
   .sw-time { font-size: 32px; }
@@ -1221,6 +1228,7 @@ select.calc-inp { cursor: pointer; }
   .prog-ring-wrap { width: 56px; height: 56px; }
   .prog-text h3 { font-size: 14px; }
   .prog-text p { font-size: 11px; }
+  .prog-timer { display: none; }
   .streak-mini .num { font-size: 18px; }
   .streak-mini .icon { font-size: 15px; }
   .hist-name { font-size: 15px; }
