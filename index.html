@@ -942,23 +942,25 @@ body {
 
 .theme-options { display: flex; gap: 8px; flex-wrap: wrap; }
 .theme-option {
-  width: 44px; height: 44px; border-radius: 14px;
+  width: 48px; height: 48px; border-radius: 16px;
   border: 2px solid var(--border); cursor: pointer; transition: all 0.2s; position: relative;
+  overflow: hidden;
 }
 .theme-option:hover { border-color: var(--accent); transform: scale(1.05); }
-.theme-option.active { border-color: var(--accent2); box-shadow: 0 0 14px var(--glow); }
+.theme-option.active { border-color: var(--accent2); box-shadow: 0 0 20px var(--glow); }
 .theme-option.active::after {
   content: '✓'; position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 18px; font-weight: 700;
-  text-shadow: 0 0 8px rgba(0,0,0,0.6);
+  color: #fff; font-size: 20px; font-weight: 700;
+  text-shadow: 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.4);
+  z-index: 1;
 }
-.theme-opt-blackout { background: linear-gradient(135deg, #1a1a2e, #2a2a3a); }
-.theme-opt-fire { background: linear-gradient(135deg, #3d1a0c, #6b2810); }
-.theme-opt-aqua { background: linear-gradient(135deg, #0a2a33, #1a4a55); }
-.theme-opt-forest { background: linear-gradient(135deg, #0a1f0e, #1a3a1e); }
-.theme-opt-violet { background: linear-gradient(135deg, #1a0a2e, #3a1a55); }
-.theme-opt-liquid { background: linear-gradient(135deg, #e8eaf0, #c7cdf5); border: 2px solid rgba(99,102,241,0.3); }
+.theme-opt-blackout { background: linear-gradient(135deg, #2a2a3e 0%, #3a3a5e 30%, #4a4a6e 100%); }
+.theme-opt-fire { background: linear-gradient(135deg, #ff4500 0%, #ff6a00 30%, #ff8c00 60%, #ffb347 100%); }
+.theme-opt-aqua { background: linear-gradient(135deg, #00bcd4 0%, #26c6da 30%, #4dd0e1 60%, #7ee8f5 100%); }
+.theme-opt-forest { background: linear-gradient(135deg, #2e7d32 0%, #43a047 30%, #66bb6a 60%, #7ef58e 100%); }
+.theme-opt-violet { background: linear-gradient(135deg, #7b1fa2 0%, #9c27b0 30%, #ce93d8 60%, #c4a3ff 100%); }
+.theme-opt-liquid { background: linear-gradient(135deg, #6366f1 0%, #818cf8 30%, #a78bfa 60%, #c4b5fd 100%); }
 
 /* Адаптив */
 @media (max-width: 1024px) {
