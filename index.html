@@ -1648,7 +1648,10 @@ function openSidePanel(di, ei) {
   renderSidePanel();
   document.querySelectorAll('.ex-card').forEach(c => c.classList.remove('active-ex'));
   const card = document.getElementById(`ex-${di}-${ei}`);
-  if (card) card.classList.add('active-ex');
+  if (card) {
+    card.classList.add('active-ex');
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
 
 function switchTab(name, btn) {
@@ -1837,8 +1840,24 @@ function finishSideApproach() {
   }
 
   if (allDone) {
-    document.getElementById('sideRestPanel').innerHTML =
-      '<div style="text-align:center;color:var(--accent2);font-weight:600;padding:8px 0;">✅ Все подходы выполнены!</div>';
+    const isMobile = window.matchMedia('(max-width: 1024px)').matches;
+    if (isMobile) {
+      // На мобилке: закрываем панель, открываем следующее упражнение
+      const nextEi = PLAN[di].exercises.findIndex((ex, idx) => {
+        if (idx <= ei) return false;
+        const st = loadSt(di, idx, ex.sets);
+        return !st.every(Boolean);
+      });
+      closeSidePanel();
+      if (nextEi !== -1) {
+        setTimeout(() => openSidePanel(di, nextEi), 350);
+      } else {
+        showToast('🎉 Все упражнения выполнены!');
+      }
+    } else {
+      document.getElementById('sideRestPanel').innerHTML =
+        '<div style="text-align:center;color:var(--accent2);font-weight:600;padding:8px 0;">✅ Все подходы выполнены!</div>';
+    }
   } else {
     startSideRest();
   }
