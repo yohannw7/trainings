@@ -1158,13 +1158,13 @@ select.calc-inp { cursor: pointer; }
 }
 @media (max-width: 768px) {
   :root { --bento-cols: 1fr; --page-padding: 12px; --gap: 8px; --h1-size: 34px; --h1-spacing: 2px; --day-name-size: 18px; --timer-ring-size: 100px; --timer-digits-size: 28px; --prog-gap: 12px; --prog-padding: 14px 16px; --timer-padding: 14px; --ex-padding: 12px 14px 10px; --streak-block-padding: 4px 4px 4px 12px; --side-panel-width: 300px; }
-  .bento { grid-template-rows: auto auto 1fr; }
-  .card-progress { grid-column: 1 / -1; grid-row: 1; }
+  .bento { display: flex; flex-direction: column; grid-template-rows: none; }
+  .card-progress { flex-shrink: 0; }
   .top-row { flex-direction: column; align-items: stretch; gap: 8px; }
   .brand-block h1 { font-size: 34px; letter-spacing: 3px; }
   .streak-days-block { width: 100%; }
   .card-timer { grid-column: 1 / -1; grid-row: 2; flex-direction: column; align-items: center; display: none; }
-  .card-exercises { grid-column: 1 / -1; grid-row: 3; }
+  .card-exercises { grid-column: 1 / -1; flex: 1; min-height: 0; }
   .bottom-row { flex-direction: column; align-items: stretch; gap: 6px; }
   .bottom-left { flex-direction: column; align-items: stretch; gap: 6px; }
   .bottom-left > *, .reset-pill, .save-preset-btn, .complete-day-btn { width: 100%; text-align: center; }
