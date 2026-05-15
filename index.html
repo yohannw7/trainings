@@ -1544,6 +1544,26 @@ function finishSideApproach() {
 
   updateProgress(currentDay);
 
+  // Лайв-обновление полоски прогресса в карточке упражнения
+  const exCard = document.getElementById(`ex-${di}-${ei}`);
+  if (exCard) {
+    const fill = exCard.querySelector('.ex-prog-fill');
+    const pct = exCard.querySelector('.ex-prog-pct');
+    const miniDots = exCard.querySelector('.ex-sets-mini');
+    const exSets = PLAN[di].exercises[ei].sets;
+    const newPct = exSets > 0 ? Math.round(doneCount / exSets * 100) : 0;
+    if (fill) fill.style.width = newPct + '%';
+    if (pct) pct.textContent = newPct + '%';
+    if (miniDots) {
+      let html = '';
+      for (let s = 0; s < exSets; s++)
+        html += `<div class="set-dot-mini${updatedState[s]?' done':''}"></div>`;
+      miniDots.innerHTML = html;
+    }
+    if (allDone) exCard.classList.add('completed');
+    else exCard.classList.remove('completed');
+  }
+
   if (allDone) {
     document.getElementById('sideRestPanel').innerHTML =
       '<div style="text-align:center;color:var(--accent2);font-weight:600;padding:8px 0;">✅ Все подходы выполнены!</div>';
