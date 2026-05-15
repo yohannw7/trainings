@@ -923,7 +923,31 @@ body {
 }
 .reset-pill:hover { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.25); color: #ef4444; }
 
-/* Модалки */
+/* Уведомления */
+.toast-container {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  z-index: 200; display: flex; flex-direction: column; gap: 8px;
+  align-items: center; pointer-events: none;
+}
+.toast {
+  background: var(--bg); border: 1px solid var(--border-h);
+  border-radius: var(--r-lg); padding: 12px 24px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  pointer-events: auto;
+  animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+  max-width: 90vw; text-align: center;
+}
+@keyframes toastIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes toastOut {
+  from { transform: translateY(0);    opacity: 1; }
+  to   { transform: translateY(-20px); opacity: 0; }
+}
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.5);
   backdrop-filter: blur(6px);
@@ -1053,6 +1077,8 @@ body {
     </linearGradient>
   </defs>
 </svg>
+
+<div class="toast-container" id="toastContainer"></div>
 
 <button class="settings-btn" onclick="openSettings()" title="Настройки">⚙</button>
 
@@ -1231,6 +1257,18 @@ function openSettings() {
         </div>
       </div>
     </div>`;
+}
+
+function showToast(msg, duration) {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.animation = 'toastOut 0.25s ease both';
+    setTimeout(() => el.remove(), 250);
+  }, duration || 2500);
 }
 
 // ── BG SYMBOLS ──
@@ -1610,7 +1648,7 @@ function updateStreakUI() { document.getElementById('streakNum').textContent = g
 function completeDay() {
   const s = getStreak();
   const today = new Date().toISOString().split('T')[0];
-  if (s.lastDate === today) { alert('Сегодня уже отмечено! 🔥'); return; }
+  if (s.lastDate === today) { showToast('Сегодня уже отмечено! 🔥'); return; }
   const yesterday = new Date(Date.now()-86400000).toISOString().split('T')[0];
   s.streak = (s.lastDate === yesterday) ? s.streak + 1 : 1;
   s.lastDate = today;
@@ -1625,7 +1663,7 @@ function completeDay() {
     const display = document.getElementById('workoutTimeDisplay');
     if (display) display.textContent = '00:00';
   }
-  alert(`День засчитан! Стрик: ${s.streak} дн. 🔥${timeStr}`);
+  showToast(`День засчитан! Стрик: ${s.streak} дн. 🔥${timeStr}`);
 }
 
 function getRestTime() { return localStorage.getItem('restTime') || 90; }
@@ -1633,7 +1671,7 @@ function saveRestTime(sec) { localStorage.setItem('restTime', sec); }
 
 // ── DAYS ──
 function addDay() {
-  if (PLAN.length >= 7) { alert('Максимум 7 дней!'); return; }
+  if (PLAN.length >= 7) { showToast('Максимум 7 дней'); return; }
   const name = prompt('Название дня:');
   if (!name || !name.trim()) return;
   const short = prompt('Короткое имя:');
@@ -1645,7 +1683,7 @@ function addDay() {
 }
 
 function deleteDay(di) {
-  if (PLAN.length <= 1) { alert('Минимум 1 день!'); return; }
+  if (PLAN.length <= 1) { showToast('Минимум 1 день'); return; }
   if (!confirm(`Удалить «${PLAN[di].name}»?`)) return;
   PLAN.splice(di, 1);
   savePlan(PLAN);
@@ -1785,7 +1823,7 @@ function addExRow() {
 function saveDayEdit(di) {
   const name = document.getElementById('editDayName').value.trim();
   const short = document.getElementById('editDayShort').value.trim();
-  if (!name || !short) { alert('Заполни названия!'); return; }
+  if (!name || !short) { showToast('Заполни названия!'); return; }
   const rows = document.querySelectorAll('#exRowsContainer .exercise-edit-row');
   const exercises = [];
   rows.forEach(row => {
@@ -1794,7 +1832,7 @@ function saveDayEdit(di) {
     const t = row.querySelector('.ex-target-inp').value.trim();
     if (n) exercises.push({ name: n, sets: s, target: t || 'повт.' });
   });
-  if (exercises.length === 0) { alert('Минимум 1 упражнение!'); return; }
+  if (exercises.length === 0) { showToast('Минимум 1 упражнение!'); return; }
   PLAN[di].name = name;
   PLAN[di].short = short;
   PLAN[di].exercises = exercises;
@@ -1814,7 +1852,7 @@ function savePreset() {
   presets[name.trim()] = JSON.parse(JSON.stringify(PLAN));
   savePresets(presets);
   renderPresetSelect();
-  alert(`Пресет «${name.trim()}» сохранён!`);
+  showToast(`Пресет «${name.trim()}» сохранён!`);
 }
 function loadPreset(name) {
   if (!name) return;
@@ -1884,7 +1922,7 @@ function applyTimerSet() {
   const m = parseInt(document.getElementById('timerSetMin').value) || 0;
   const s = parseInt(document.getElementById('timerSetSec').value) || 0;
   const total = m*60 + s;
-  if (total < 1) { alert('Минимум 1 секунда'); return; }
+  if (total < 1) { showToast('Минимум 1 секунда'); return; }
   setTimer(total);
 }
 function toggleTimer() {
