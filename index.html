@@ -351,15 +351,15 @@ body {
   position: absolute;
   pointer-events: none;
   user-select: none;
-  filter: brightness(2.5) contrast(3) saturate(0);
+  filter: brightness(1.3) contrast(1.4) saturate(0);
   mix-blend-mode: multiply;
   animation: bearBgFloat ease-in-out infinite;
 }
 @keyframes bearBgFloat {
-  0%,100% { transform: translateY(0) rotate(0deg); }
-  25%     { transform: translateY(-14px) rotate(2.5deg); }
-  50%     { transform: translateY(0) rotate(0deg); }
-  75%     { transform: translateY(8px) rotate(-2deg); }
+  0%,100% { transform: translateY(0) rotate(var(--r0, 0deg)); }
+  25%     { transform: translateY(-14px) rotate(var(--r1, 2.5deg)); }
+  50%     { transform: translateY(0) rotate(var(--r0, 0deg)); }
+  75%     { transform: translateY(8px) rotate(var(--r1, -2deg)); }
 }
   position: absolute;
   font-family: 'Bebas Neue', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
@@ -1591,18 +1591,18 @@ function showToast(msg, duration) {
   }
   // Добавляем медведей на фон
   if (!isSmall) {
-    const bearCount = 3;
+    const bearCount = 5;
     for (let i = 0; i < bearCount; i++) {
       const img = document.createElement('img');
       img.className = 'bg-bear';
       img.src = 'bear.png';
       img.alt = '';
-      const size = 40 + Math.random() * 40;
-      const x = 2 + Math.random() * 20;
-      const y = 10 + Math.random() * 80;
-      const dur = 8 + Math.random() * 6;
-      const delay = -Math.random() * 8;
-      const op = (0.06 + Math.random() * 0.08).toFixed(3);
+      const size = 50 + Math.random() * 60;
+      const x = Math.random() * 90;
+      const y = Math.random() * 90;
+      const dur = 8 + Math.random() * 8;
+      const delay = -Math.random() * 10;
+      const op = (0.06 + Math.random() * 0.1).toFixed(3);
       const r0 = (Math.random() * 40 - 20).toFixed(1);
       const r1 = (Math.random() * 40 - 20).toFixed(1);
       img.style.cssText = `left:${x}%; top:${y}%; width:${size}px; height:auto; opacity:${op}; animation-duration:${dur}s; animation-delay:${delay}s; --r0:${r0}deg; --r1:${r1}deg;`;
