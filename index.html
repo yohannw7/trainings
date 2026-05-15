@@ -332,19 +332,32 @@ body {
 .blob-3 { width: 300px; height: 300px; top: 50%; left: 55%; background: var(--blob-3); }
 
 .bg-symbols { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.bg-char {
-  position: fixed; left: -30px; bottom: 0; z-index: 0; pointer-events: none;
-  width: 300px; height: auto;
+.bg-char-wrap {
+  position: fixed; left: 0; bottom: 0; z-index: 0; pointer-events: none;
   animation: bearFloat 16s ease-in-out infinite;
+  display: flex; align-items: flex-end;
+}
+.bg-char {
+  width: 300px; height: auto;
+  mix-blend-mode: multiply;
+  filter: brightness(0.5) contrast(2);
+  opacity: 0.45;
+}
+.bg-char-overlay {
+  position: absolute; inset: 0;
+  background: var(--accent2);
+  mix-blend-mode: overlay;
+  opacity: 0.6;
 }
 @keyframes bearFloat {
   0%,100% { transform: translateY(0) translateX(0) rotate(0deg); }
-  25%     { transform: translateY(-12px) translateX(8px) rotate(1.5deg); }
+  25%     { transform: translateY(-12px) translateX(10px) rotate(1.5deg); }
   50%     { transform: translateY(0) translateX(0) rotate(0deg); }
-  75%     { transform: translateY(8px) translateX(-6px) rotate(-1deg); }
+  75%     { transform: translateY(8px) translateX(-8px) rotate(-1deg); }
 }
 @media (max-width: 768px) {
-  .bg-char { width: 180px; left: -20px; }
+  .bg-char-wrap { width: 180px; }
+  .bg-char { width: 180px; }
 }
 .bg-sym {
   position: absolute;
@@ -1092,7 +1105,7 @@ body {
 <div class="blob blob-2"></div>
 <div class="blob blob-3"></div>
 <div class="bg-symbols" id="bgSymbols"></div>
-<img class="bg-char" src="bear.png" alt="">
+<div class="bg-char-wrap"><div class="bg-char-overlay"></div><img class="bg-char" src="bear.png" alt=""></div>
 
 <svg width="0" height="0" style="position:absolute">
   <defs>
