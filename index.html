@@ -1035,20 +1035,53 @@ body {
 }
 
 /* Matte mode overrides */
-body.matte .card { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--glass); box-shadow: none; }
-body.matte .card:hover { border-color: var(--border); }
-body.matte .ex-card { background: var(--input-bg); }
-body.matte .ex-card:hover { background: rgba(255,255,255,0.03); }
+body.matte .card {
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+  background: rgba(255,255,255,0.04);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.06);
+}
+body.matte.theme-liquid .card {
+  background: rgba(255,255,255,0.7);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.06);
+}
+body.matte .card:hover { border-color: var(--border-h); }
+body.matte .streak-days-block {
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+  background: rgba(255,255,255,0.04);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06);
+}
+body.matte.theme-liquid .streak-days-block {
+  background: rgba(255,255,255,0.7);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+body.matte .side-panel {
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+  background: rgba(255,255,255,0.04);
+}
+body.matte.theme-liquid .side-panel {
+  background: rgba(255,255,255,0.7);
+}
+body.matte .ex-card { background: rgba(0,0,0,0.08); border-color: rgba(255,255,255,0.05); }
+body.matte .ex-card:hover { background: rgba(255,255,255,0.06); }
 body.matte .ex-card.completed { background: var(--done); }
-body.matte .ex-card.active-ex { box-shadow: none; }
-body.matte .day-pill.active { box-shadow: none; }
-body.matte .side-panel { backdrop-filter: none; -webkit-backdrop-filter: none; }
+body.matte .ex-card.active-ex { box-shadow: none; border-color: var(--accent2); }
+body.matte .day-pill { background: rgba(0,0,0,0.1); border-color: rgba(255,255,255,0.04); }
+body.matte .day-pill.active { box-shadow: none; background: var(--day-pill-active-bg); }
+body.matte .side-rest-setup { background: rgba(0,0,0,0.08); }
+body.matte .side-rest-active { background: rgba(0,0,0,0.08); }
+body.matte .side-stopwatch.running { background: rgba(0,0,0,0.08); }
+body.matte .settings-btn { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(255,255,255,0.04); }
 body.matte .prog-bar-fill { box-shadow: none; }
 body.matte .timer-mode-btn.active { box-shadow: none; }
 body.matte .btn.accent { box-shadow: none; }
 body.matte .t-btn.primary { box-shadow: none; }
 body.matte .set-dot-mini.done { box-shadow: none; }
 body.matte .theme-option.active { box-shadow: none; }
+body.matte .brand-badge, body.matte .preset-select { backdrop-filter: none; -webkit-backdrop-filter: none; }
+body.matte .modal { backdrop-filter: none; -webkit-backdrop-filter: none; }
+body.matte .toast { backdrop-filter: none; -webkit-backdrop-filter: none; }
 
 /* Адаптив */
 @media (max-width: 1024px) {
