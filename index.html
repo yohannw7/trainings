@@ -495,6 +495,7 @@ body {
   border-radius: var(--r-xl);
 
   padding: 16px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
   overflow-y: auto;
   overflow-x: hidden;
 
@@ -1134,85 +1135,109 @@ select.calc-inp { cursor: pointer; }
   .card-timer { grid-column: 1 / -1; grid-row: auto; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 10px; }
   .card-progress { grid-column: 1 / -1; }
   .card-exercises { grid-column: 1 / -1; }
-
-  /* На узких экранах панель — как выезжающий drawer, чтобы не ломать сетку */
   .side-dock { width: 0 !important; overflow: hidden !important; }
-  .side-panel-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-    z-index: 60; display: none;
-  }
+  .side-panel-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 60; display: none; }
   .side-panel-overlay.open { display: block; }
   .side-panel {
     position: fixed; top: 0; left: 0; bottom: 0;
-    width: var(--side-panel-width);
-    max-width: 90vw;
-    background: var(--bg);
-    border-radius: 0;
-    border: none;
-    border-right: 1px solid var(--border-h);
-    z-index: 70;
-    padding: 20px;
-    overflow-y: auto;
-    transform: translateX(-100%);
-    opacity: 1;
+    width: var(--side-panel-width); max-width: 90vw;
+    background: var(--bg); border-radius: 0; border: none;
+    border-right: 1px solid var(--border-h); z-index: 70;
+    padding: 20px; overflow-y: auto;
+    transform: translateX(-100%); opacity: 1;
     transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
     box-shadow: 10px 0 40px rgba(0,0,0,0.3);
   }
   .side-panel.open { transform: translateX(0); }
 }
 @media (max-width: 768px) {
-  :root { --bento-cols: 1fr; --page-padding: 12px; --gap: 8px; --h1-size: 36px; --h1-spacing: 2px; --day-name-size: 20px; --timer-ring-size: 100px; --timer-digits-size: 28px; --prog-gap: 12px; --prog-padding: 14px 16px; --timer-padding: 14px; --ex-padding: 14px 16px 12px; --streak-block-padding: 5px 5px 5px 12px; --side-panel-width: 300px; }
-  .top-row { flex-direction: column; align-items: stretch; gap: 10px; }
-  .streak-days-block { width: 100%; justify-content: space-between; }
+  :root { --bento-cols: 1fr; --page-padding: 12px; --gap: 8px; --h1-size: 34px; --h1-spacing: 2px; --day-name-size: 18px; --timer-ring-size: 100px; --timer-digits-size: 28px; --prog-gap: 12px; --prog-padding: 14px 16px; --timer-padding: 14px; --ex-padding: 12px 14px 10px; --streak-block-padding: 4px 4px 4px 12px; --side-panel-width: 300px; }
+  .top-row { flex-direction: column; align-items: stretch; gap: 8px; }
+  .brand-block h1 { font-size: 34px; letter-spacing: 3px; }
+  .streak-days-block { width: 100%; }
   .card-timer { flex-direction: column; align-items: center; }
-  .bottom-row { flex-direction: column; align-items: stretch; }
-  .bottom-left { flex-direction: column; align-items: stretch; }
-  .bottom-left > * { width: 100%; }
+  .bottom-row { flex-direction: column; align-items: stretch; gap: 6px; }
+  .bottom-left { flex-direction: column; align-items: stretch; gap: 6px; }
+  .bottom-left > *, .reset-pill, .save-preset-btn, .complete-day-btn { width: 100%; text-align: center; }
   .preset-select { max-width: 100%; }
-  .reset-pill { width: 100%; text-align: center; }
   .ex-card { padding: 10px; }
   .ex-name { font-size: 12px; }
-  .kg-input { width: 42px; height: 28px; font-size: 12px; }
-  .day-pill { padding: 6px 10px; font-size: 11px; }
   .ex-target { font-size: 9px; }
-  .save-preset-btn, .complete-day-btn, .reset-pill { padding: 10px 16px; font-size: 12px; text-align: center; justify-content: center; }
+  .kg-input { width: 44px; height: 30px; font-size: 12px; }
+  .day-pill { padding: 6px 10px; font-size: 11px; }
   .settings-btn { top: 10px; right: 10px; width: 36px; height: 36px; font-size: 17px; }
   .side-ex-name { font-size: 22px; }
   .sw-time { font-size: 40px; }
+  .tab-nav { align-self: stretch; }
+  .tab-btn { flex: 1; text-align: center; font-size: 12px; padding: 8px 10px; }
+  .calc-grid { grid-template-columns: 1fr; }
+  .calc-card { padding: 14px 16px; }
+  .hist-card { padding: 12px 14px; }
+  .timer-mode { gap: 2px; }
+  .timer-mode-btn { padding: 5px 6px; font-size: 10px; }
+  .timer-presets { gap: 3px; }
+  .timer-preset-btn { padding: 4px 8px; font-size: 10px; }
+  .timer-set-inp { padding: 5px 6px; font-size: 11px; }
+  .t-btn { padding: 8px; font-size: 11px; }
+  .t-btn.primary { padding: 10px; }
+  .side-ap-btn { padding: 10px; font-size: 12px; }
+  .side-rest-input { width: 60px; padding: 6px 8px; }
+  .page { padding-bottom: calc(var(--page-padding) + env(safe-area-inset-bottom, 0px)); }
 }
 @media (max-width: 480px) {
-  :root { --page-padding: 10px; --gap: 6px; --h1-size: 30px; --h1-spacing: 1px; --day-name-size: 18px; --timer-ring-size: 90px; --timer-digits-size: 26px; --prog-gap: 10px; --prog-padding: 12px 14px; --timer-padding: 12px 10px; --ex-padding: 12px 14px 10px; --streak-block-padding: 4px 4px 4px 10px; --r-xl: 18px; --r-lg: 14px; --side-panel-width: 100vw; }
-  .brand-block h1 { font-size: 30px !important; letter-spacing: 3px !important; }
-  .brand-block h1 { font-size: 30px !important; letter-spacing: 3px !important; }
-  .brand-block { flex-direction: column; align-items: flex-start; gap: 4px; }
-  .brand-badge { font-size: 9px; padding: 3px 10px; }
-  .day-pill { padding: 5px 8px; font-size: 10px; }
-  .ex-card { padding: 8px; }
+  :root { --page-padding: 10px; --gap: 6px; --h1-size: 28px; --h1-spacing: 1px; --day-name-size: 16px; --timer-ring-size: 85px; --timer-digits-size: 24px; --prog-gap: 8px; --prog-padding: 10px 12px; --timer-padding: 10px 8px; --ex-padding: 10px 12px 8px; --streak-block-padding: 3px 3px 3px 8px; --r-xl: 16px; --r-lg: 12px; --side-panel-width: 100vw; }
+  .brand-block h1 { font-size: 28px !important; letter-spacing: 2px !important; }
+  .brand-block { flex-direction: column; align-items: flex-start; gap: 3px; }
+  .brand-badge { font-size: 9px; padding: 2px 8px; white-space: normal; }
+  .day-pill { padding: 5px 7px; font-size: 10px; }
+  .day-pill .del-day { font-size: 11px; }
+  .add-day-btn { width: 28px; height: 28px; font-size: 15px; }
+  .ex-card { padding: 8px; gap: 2px 8px; }
+  .ex-name { font-size: 11px; }
+  .ex-target { font-size: 8px; padding: 1px 6px; }
   .ex-sets-mini { gap: 2px; }
   .set-dot-mini { width: 16px; height: 16px; border-radius: 4px; }
-  .kg-input { width: 36px; height: 24px; font-size: 10px; }
-  .timer-preset-btn { padding: 3px 8px; font-size: 9px; }
-  .settings-btn { top: 8px; right: 8px; width: 32px; height: 32px; font-size: 15px; }
-  .side-ex-name { font-size: 20px; }
-  .sw-time { font-size: 34px; }
-  .side-set-dot { width: 28px; height: 28px; font-size: 11px; }
-  .timer-mode-btn { font-size: 10px; padding: 4px 6px; }
-  .ex-prog-pct { font-size: 9px; min-width: 22px; }
-  .modal { padding: 16px; }
-  .modal h3 { font-size: 20px; }
-  .modal-field input, .modal-field select { font-size: 13px; padding: 8px 10px; }
-  .toast { font-size: 12px; padding: 10px 16px; }
+  .kg-input { width: 38px; height: 26px; font-size: 11px; }
+  .ex-prog-pct { font-size: 9px; min-width: 20px; }
+  .settings-btn { top: 6px; right: 6px; width: 30px; height: 30px; font-size: 14px; }
+  .side-ex-name { font-size: 18px; }
+  .sw-time { font-size: 32px; }
+  .side-set-dot { width: 26px; height: 26px; border-radius: 8px; font-size: 10px; }
+  .modal { padding: 14px; margin: 8px; }
+  .modal h3 { font-size: 18px; }
+  .modal-field input, .modal-field select { font-size: 12px; padding: 8px 10px; }
+  .toast { font-size: 11px; padding: 8px 14px; }
+  .tab-btn { font-size: 11px; padding: 6px 8px; }
+  .timer-preset-btn { padding: 3px 7px; font-size: 9px; }
+  .prog-ring-wrap { width: 56px; height: 56px; }
+  .prog-text h3 { font-size: 14px; }
+  .prog-text p { font-size: 11px; }
+  .streak-mini .num { font-size: 18px; }
+  .streak-mini .icon { font-size: 15px; }
+  .hist-name { font-size: 15px; }
+  .hist-meta { font-size: 10px; }
+  .page { padding-bottom: calc(var(--page-padding) + env(safe-area-inset-bottom, 8px)); }
 }
 @media (max-width: 380px) {
-  .day-pills { gap: 3px; }
+  :root { --page-padding: 8px; --gap: 5px; --h1-size: 24px; --timer-ring-size: 76px; --timer-digits-size: 22px; }
+  .brand-block h1 { font-size: 24px !important; letter-spacing: 1px !important; }
   .day-pill { padding: 4px 6px; font-size: 9px; }
+  .day-pills { gap: 3px; }
   .ex-card { padding: 6px; }
-  .ex-sets-mini { gap: 2px; }
   .set-dot-mini { width: 14px; height: 14px; }
-  .kg-input { width: 32px; height: 22px; font-size: 9px; }
-  .side-panel-close { width: 30px; height: 30px; font-size: 15px; }
+  .kg-input { width: 32px; height: 22px; font-size: 10px; }
+  .side-panel-close { width: 28px; height: 28px; font-size: 14px; }
+  .timer-mode-btn { font-size: 9px; padding: 4px 5px; }
+  .tab-btn { font-size: 10px; padding: 5px 6px; }
+}
+@media (hover: none) and (pointer: coarse) {
+  .ex-card:hover { background: rgba(0,0,0,0.02); border-color: var(--border); }
+  .day-pill:hover { background: rgba(0,0,0,0.05); color: var(--muted); border-color: var(--border); }
+  .card:hover { border-color: var(--border); }
+  .t-btn:hover { background: rgba(0,0,0,0.03); }
+  .theme-option:hover { transform: none; }
+  .calc-edit-btn:hover { border-color: var(--border); color: var(--muted); }
 }
 </style>
 </head>
@@ -1236,7 +1261,7 @@ select.calc-inp { cursor: pointer; }
   </defs>
 </svg>
 
-<div class="toast-container" id="toastContainer"></div>
+<div class="toast-container" id="toastContainer" style="top:calc(20px + env(safe-area-inset-top, 0px))"></div>
 
 <button class="settings-btn" onclick="openSettings()" title="Настройки">⚙</button>
 
