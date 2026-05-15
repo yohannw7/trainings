@@ -354,10 +354,10 @@ body {
   opacity: 0.18;
 }
 @keyframes bearFloat {
-  0%,100% { left: -20px; top: 50%; }
-  25%     { left: -14px; top: calc(50% - 10px); }
-  50%     { left: -20px; top: 50%; }
-  75%     { left: -26px; top: calc(50% + 7px); }
+  0%,100% { left: -20px; top: 50%; transform: rotate(0deg); }
+  25%     { left: -14px; top: calc(50% - 10px); transform: rotate(3deg); }
+  50%     { left: -20px; top: 50%; transform: rotate(0deg); }
+  75%     { left: -26px; top: calc(50% + 7px); transform: rotate(-2.5deg); }
 }
 @media (max-width: 768px) { .bear-wrap { display: none; } }
 .bg-sym {
