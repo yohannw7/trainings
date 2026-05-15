@@ -1057,8 +1057,9 @@ body {
   color: var(--timer-mode-active-color);
   box-shadow: 0 1px 8px var(--glow);
 }
-.tab-content { display: none; flex-direction: column; flex: 1; min-height: 0; }
+.tab-content { display: none; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
 .tab-content.active { display: flex; }
+.tab-content.tab-calculators.active, .tab-content.tab-progress.active { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
 /* Плейсхолдер для будущих вкладок */
 .placeholder-tab {
