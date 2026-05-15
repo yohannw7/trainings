@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Тренировки</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0f;
+  --glass: rgba(255,255,255,0.04);
+  --glass-h: rgba(255,255,255,0.08);
+  --border: rgba(255,255,255,0.08);
+  --border-h: rgba(255,255,255,0.2);
+  --accent: #888;
+  --accent2: #aaa;
+  --glow: rgba(150,150,150,0.2);
+  --text: #c8c8cc;
+  --muted: rgba(200,200,210,0.5);
+  --done: rgba(255,255,255,0.08);
+  --done-b: rgba(255,255,255,0.2);
+  --r-xl: 24px;
+  --r-lg: 18px;
+  --r-md: 12px;
+  --r-pill: 999px;
+  --blur: blur(20px);
+  --blob-1: radial-gradient(ellipse, rgba(80,80,100,0.25) 0%, transparent 70%);
+  --blob-2: radial-gradient(ellipse, rgba(100,100,120,0.18) 0%, transparent 70%);
+  --blob-3: radial-gradient(ellipse, rgba(120,120,140,0.08) 0%, transparent 65%);
+  --sym-color: rgba(200,200,220,0.7);
+  --ring-grad-1: #888;
+  --ring-grad-2: #aaa;
+  --timer-grad-1: #999;
+  --timer-grad-2: #bbb;
+  --prog-bar-grad: linear-gradient(90deg, #555, #888, #aaa);
+  --day-pill-active-bg: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(200,200,200,0.12));
+  --title-grad: linear-gradient(120deg, #fff 0%, #aaa 100%);
+  --pct-grad: linear-gradient(135deg, #fff, #aaa);
+  --streak-num-grad: linear-gradient(135deg, #fff, #aaa);
+  --day-name-grad: linear-gradient(120deg, #fff, #aaa);
+  --timer-digits-grad: linear-gradient(135deg, #fff, #aaa);
+  --timer-digits-warn: linear-gradient(135deg,#e0e0e0,#b0b0b0);
+  --timer-digits-done: linear-gradient(135deg,#c0c0c0,#909090);
+  --complete-day-btn-bg: linear-gradient(135deg, rgba(46,204,113,0.15), rgba(39,174,96,0.1));
+  --complete-day-btn-border: rgba(46,204,113,0.3);
+  --complete-day-btn-color: #2ecc71;
+  --save-preset-btn-bg: rgba(255,255,255,0.05);
+  --save-preset-btn-border: rgba(255,255,255,0.15);
+  --save-preset-btn-color: #aaa;
+  --reset-pill-bg: rgba(255,80,80,0.05);
+  --reset-pill-border: rgba(255,100,100,0.12);
+  --reset-pill-color: rgba(255,150,150,0.5);
+  --t-btn-primary-bg: linear-gradient(135deg, rgba(200,200,200,0.25), rgba(150,150,150,0.2));
+  --t-btn-primary-border: rgba(200,200,200,0.3);
+  --t-btn-primary-color: #fff;
+  --timer-mode-active-bg: rgba(255,255,255,0.15);
+  --timer-mode-active-color: #ccc;
+  --card-shadow: none;
+  --set-dot-done-bg: linear-gradient(135deg, rgba(255,126,95,0.55), rgba(255,179,71,0.45));
+  --input-bg: rgba(0,0,0,0.2);
+  --page-padding: 20px;
+  --bento-cols: 1fr 1fr 280px;
+  --gap: 12px;
+  --h1-size: 58px;
+  --h1-spacing: 5px;
+  --streak-block-padding: 6px 6px 6px 16px;
+  --prog-gap: 20px;
+  --prog-padding: 20px 22px;
+  --timer-padding: 20px 16px;
+  --timer-ring-size: 130px;
+  --timer-digits-size: 36px;
+  --ex-padding: 18px 20px 14px;
+  --day-name-size: 26px;
+  --ex-card-padding: 10px 14px;
+  --ex-card-gap: 3px 10px;
+  --side-panel-width: 380px;
+  --bento-cols-open: 1fr 1fr;
+}
+
+.theme-fire {
+  --bg: #0d0818;
+  --glass: rgba(255,255,255,0.06);
+  --glass-h: rgba(255,255,255,0.10);
+  --border: rgba(255,180,150,0.13);
+  --border-h: rgba(255,120,100,0.5);
+  --accent: #ff7e5f;
+  --accent2: #ffb347;
+  --glow: rgba(255,100,80,0.35);
+  --text: #fff0ea;
+  --muted: rgba(255,220,200,0.42);
+  --done: rgba(255,100,80,0.18);
+  --done-b: rgba(255,140,100,0.5);
+  --blob-1: radial-gradient(ellipse, rgba(180,40,120,0.32) 0%, transparent 70%);
+  --blob-2: radial-gradient(ellipse, rgba(255,100,50,0.22) 0%, transparent 70%);
+  --blob-3: radial-gradient(ellipse, rgba(255,160,80,0.1) 0%, transparent 65%);
+  --sym-color: rgba(255,160,100,0.9);
+  --ring-grad-1: #ff7e5f;
+  --ring-grad-2: #ffb347;
+  --timer-grad-1: #ff6b6b;
+  --timer-grad-2: #ffb347;
+  --prog-bar-grad: linear-gradient(90deg, #c0392b, #ff7e5f, #ffb347);
+  --day-pill-active-bg: linear-gradient(135deg, rgba(255,126,95,0.32), rgba(200,60,60,0.32));
+  --title-grad: linear-gradient(120deg, #fff 0%, #ffb347 100%);
+  --pct-grad: linear-gradient(135deg, #fff, #ffb347);
+  --streak-num-grad: linear-gradient(135deg, #fff, #ffb347);
+  --day-name-grad: linear-gradient(120deg, #fff, #ffb347);
+  --timer-digits-grad: linear-gradient(135deg, #fff, #ffb347);
+  --timer-digits-warn: linear-gradient(135deg,#ffa07a,#ff6b35);
+  --timer-digits-done: linear-gradient(135deg,#ff9090,#ff4444);
+  --complete-day-btn-bg: linear-gradient(135deg, rgba(46,204,113,0.2), rgba(39,174,96,0.15));
+  --complete-day-btn-border: rgba(46,204,113,0.35);
+  --complete-day-btn-color: #2ecc71;
+  --save-preset-btn-bg: rgba(255,180,80,0.08);
+  --save-preset-btn-border: rgba(255,180,80,0.2);
+  --save-preset-btn-color: var(--accent2);
+  --reset-pill-bg: rgba(255,80,80,0.07);
+  --reset-pill-border: rgba(255,100,100,0.18);
+  --reset-pill-color: rgba(255,150,150,0.6);
+  --t-btn-primary-bg: linear-gradient(135deg, rgba(255,126,95,0.38), rgba(200,60,60,0.38));
+  --t-btn-primary-border: var(--border-h);
+  --t-btn-primary-color: #fff;
+  --timer-mode-active-bg: rgba(255,126,95,0.25);
+  --timer-mode-active-color: #ffb347;
+}
+
+.theme-aqua {
+  --bg: #06181d;
+  --glass: rgba(255,255,255,0.05);
+  --glass-h: rgba(255,255,255,0.09);
+  --border: rgba(100,200,220,0.14);
+  --border-h: rgba(80,200,220,0.5);
+  --accent: #4dd4e0;
+  --accent2: #7ee8f5;
+  --glow: rgba(70,200,220,0.3);
+  --text: #e0f5f8;
+  --muted: rgba(180,230,240,0.45);
+  --done: rgba(60,180,200,0.2);
+  --done-b: rgba(80,200,220,0.5);
+  --blob-1: radial-gradient(ellipse, rgba(20,120,150,0.3) 0%, transparent 70%);
+  --blob-2: radial-gradient(ellipse, rgba(30,160,180,0.2) 0%, transparent 70%);
+  --blob-3: radial-gradient(ellipse, rgba(60,200,200,0.1) 0%, transparent 65%);
+  --sym-color: rgba(100,210,230,0.8);
+  --ring-grad-1: #4dd4e0;
+  --ring-grad-2: #7ee8f5;
+  --timer-grad-1: #4dd4e0;
+  --timer-grad-2: #7ee8f5;
+  --prog-bar-grad: linear-gradient(90deg, #1a7a8a, #4dd4e0, #7ee8f5);
+  --day-pill-active-bg: linear-gradient(135deg, rgba(70,200,220,0.3), rgba(40,140,160,0.3));
+  --title-grad: linear-gradient(120deg, #fff 0%, #7ee8f5 100%);
+  --pct-grad: linear-gradient(135deg, #fff, #7ee8f5);
+  --streak-num-grad: linear-gradient(135deg, #fff, #7ee8f5);
+  --day-name-grad: linear-gradient(120deg, #fff, #7ee8f5);
+  --timer-digits-grad: linear-gradient(135deg, #fff, #7ee8f5);
+  --timer-digits-warn: linear-gradient(135deg,#a0e8f0,#5dcbd8);
+  --timer-digits-done: linear-gradient(135deg,#90d8e0,#48b8c8);
+  --complete-day-btn-bg: linear-gradient(135deg, rgba(46,204,180,0.2), rgba(39,174,150,0.15));
+  --complete-day-btn-border: rgba(46,204,180,0.35);
+  --complete-day-btn-color: #2eccb4;
+  --save-preset-btn-bg: rgba(100,220,240,0.08);
+  --save-preset-btn-border: rgba(100,220,240,0.2);
+  --save-preset-btn-color: var(--accent2);
+  --reset-pill-bg: rgba(255,100,100,0.05);
+  --reset-pill-border: rgba(255,100,100,0.12);
+  --reset-pill-color: rgba(255,150,150,0.5);
+  --t-btn-primary-bg: linear-gradient(135deg, rgba(70,210,225,0.35), rgba(50,160,180,0.3));
+  --t-btn-primary-border: var(--border-h);
+  --t-btn-primary-color: #fff;
+  --timer-mode-active-bg: rgba(70,200,220,0.25);
+  --timer-mode-active-color: #7ee8f5;
+}
+
+.theme-forest {
+  --bg: #0a120c;
+  --glass: rgba(255,255,255,0.05);
+  --glass-h: rgba(255,255,255,0.09);
+  --border: rgba(100,200,130,0.13);
+  --border-h: rgba(80,200,110,0.5);
+  --accent: #4ecc6e;
+  --accent2: #7ef58e;
+  --glow: rgba(70,200,100,0.3);
+  --text: #e0f8e4;
+  --muted: rgba(180,230,190,0.45);
+  --done: rgba(60,180,90,0.2);
+  --done-b: rgba(80,200,110,0.5);
+  --blob-1: radial-gradient(ellipse, rgba(20,120,60,0.3) 0%, transparent 70%);
+  --blob-2: radial-gradient(ellipse, rgba(30,150,70,0.2) 0%, transparent 70%);
+  --blob-3: radial-gradient(ellipse, rgba(60,180,80,0.1) 0%, transparent 65%);
+  --sym-color: rgba(100,210,130,0.8);
+  --ring-grad-1: #4ecc6e;
+  --ring-grad-2: #7ef58e;
+  --timer-grad-1: #4ecc6e;
+  --timer-grad-2: #7ef58e;
+  --prog-bar-grad: linear-gradient(90deg, #1a6e2a, #4ecc6e, #7ef58e);
+  --day-pill-active-bg: linear-gradient(135deg, rgba(70,200,100,0.3), rgba(40,150,60,0.3));
+  --title-grad: linear-gradient(120deg, #fff 0%, #7ef58e 100%);
+  --pct-grad: linear-gradient(135deg, #fff, #7ef58e);
+  --streak-num-grad: linear-gradient(135deg, #fff, #7ef58e);
+  --day-name-grad: linear-gradient(120deg, #fff, #7ef58e);
+  --timer-digits-grad: linear-gradient(135deg, #fff, #7ef58e);
+  --timer-digits-warn: linear-gradient(135deg,#a0f0b0,#5dd878);
+  --timer-digits-done: linear-gradient(135deg,#90e8a0,#48c868);
+  --complete-day-btn-bg: linear-gradient(135deg, rgba(46,204,113,0.2), rgba(39,174,96,0.15));
+  --complete-day-btn-border: rgba(46,204,113,0.35);
+  --complete-day-btn-color: #2ecc71;
+  --save-preset-btn-bg: rgba(100,220,130,0.08);
+  --save-preset-btn-border: rgba(100,220,130,0.2);
+  --save-preset-btn-color: var(--accent2);
+  --reset-pill-bg: rgba(255,100,100,0.05);
+  --reset-pill-border: rgba(255,100,100,0.12);
+  --reset-pill-color: rgba(255,150,150,0.5);
+  --t-btn-primary-bg: linear-gradient(135deg, rgba(70,200,100,0.35), rgba(50,160,70,0.3));
+  --t-btn-primary-border: var(--border-h);
+  --t-btn-primary-color: #fff;
+  --timer-mode-active-bg: rgba(70,200,100,0.25);
+  --timer-mode-active-color: #7ef58e;
+}
+
+.theme-violet {
+  --bg: #100a1a;
+  --glass: rgba(255,255,255,0.06);
+  --glass-h: rgba(255,255,255,0.10);
+  --border: rgba(180,140,255,0.15);
+  --border-h: rgba(160,100,255,0.5);
+  --accent: #9b6dff;
+  --accent2: #c4a3ff;
+  --glow: rgba(140,80,255,0.35);
+  --text: #f0e8ff;
+  --muted: rgba(210,190,250,0.45);
+  --done: rgba(120,80,220,0.2);
+  --done-b: rgba(140,100,240,0.5);
+  --blob-1: radial-gradient(ellipse, rgba(80,20,180,0.3) 0%, transparent 70%);
+  --blob-2: radial-gradient(ellipse, rgba(100,40,200,0.22) 0%, transparent 70%);
+  --blob-3: radial-gradient(ellipse, rgba(140,80,220,0.1) 0%, transparent 65%);
+  --sym-color: rgba(160,120,240,0.8);
+  --ring-grad-1: #9b6dff;
+  --ring-grad-2: #c4a3ff;
+  --timer-grad-1: #9b6dff;
+  --timer-grad-2: #c4a3ff;
+  --prog-bar-grad: linear-gradient(90deg, #5a2d9a, #9b6dff, #c4a3ff);
+  --day-pill-active-bg: linear-gradient(135deg, rgba(140,90,255,0.32), rgba(100,50,200,0.32));
+  --title-grad: linear-gradient(120deg, #fff 0%, #c4a3ff 100%);
+  --pct-grad: linear-gradient(135deg, #fff, #c4a3ff);
+  --streak-num-grad: linear-gradient(135deg, #fff, #c4a3ff);
+  --day-name-grad: linear-gradient(120deg, #fff, #c4a3ff);
+  --timer-digits-grad: linear-gradient(135deg, #fff, #c4a3ff);
+  --timer-digits-warn: linear-gradient(135deg,#d0c0ff,#b090f0);
+  --timer-digits-done: linear-gradient(135deg,#c0a8f0,#a080e0);
+  --complete-day-btn-bg: linear-gradient(135deg, rgba(46,204,113,0.2), rgba(39,174,96,0.15));
+  --complete-day-btn-border: rgba(46,204,113,0.35);
+  --complete-day-btn-color: #2ecc71;
+  --save-preset-btn-bg: rgba(180,150,255,0.08);
+  --save-preset-btn-border: rgba(180,150,255,0.2);
+  --save-preset-btn-color: var(--accent2);
+  --reset-pill-bg: rgba(255,80,80,0.07);
+  --reset-pill-border: rgba(255,100,100,0.18);
+  --reset-pill-color: rgba(255,150,150,0.6);
+  --t-btn-primary-bg: linear-gradient(135deg, rgba(150,100,255,0.35), rgba(110,60,220,0.3));
+  --t-btn-primary-border: var(--border-h);
+  --t-btn-primary-color: #fff;
+  --timer-mode-active-bg: rgba(140,90,255,0.25);
+  --timer-mode-active-color: #c4a3ff;
+}
+
+.theme-liquid {
+  --bg: #f0f2f5;
+  --glass: rgba(255,255,255,0.55);
+  --glass-h: rgba(255,255,255,0.75);
+  --border: rgba(0,0,0,0.06);
+  --border-h: rgba(99,102,241,0.4);
+  --accent: #6366f1;
+  --accent2: #818cf8;
+  --glow: rgba(99,102,241,0.2);
+  --text: #1e1b2e;
+  --muted: rgba(30,27,46,0.45);
+  --done: rgba(99,102,241,0.12);
+  --done-b: rgba(99,102,241,0.35);
+  --blob-1: radial-gradient(ellipse, rgba(99,102,241,0.12) 0%, transparent 70%);
+  --blob-2: radial-gradient(ellipse, rgba(168,85,247,0.10) 0%, transparent 70%);
+  --blob-3: radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 65%);
+  --sym-color: rgba(99,102,241,0.15);
+  --ring-grad-1: #6366f1;
+  --ring-grad-2: #818cf8;
+  --timer-grad-1: #6366f1;
+  --timer-grad-2: #a78bfa;
+  --prog-bar-grad: linear-gradient(90deg, #6366f1, #818cf8, #a78bfa);
+  --day-pill-active-bg: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15));
+  --title-grad: linear-gradient(120deg, #1e1b2e 0%, #6366f1 100%);
+  --pct-grad: linear-gradient(135deg, #1e1b2e, #6366f1);
+  --streak-num-grad: linear-gradient(135deg, #1e1b2e, #6366f1);
+  --day-name-grad: linear-gradient(120deg, #1e1b2e, #6366f1);
+  --timer-digits-grad: linear-gradient(135deg, #1e1b2e, #6366f1);
+  --timer-digits-warn: linear-gradient(135deg,#ef4444,#dc2626);
+  --timer-digits-done: linear-gradient(135deg,#f87171,#ef4444);
+  --complete-day-btn-bg: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(22,163,74,0.1));
+  --complete-day-btn-border: rgba(34,197,94,0.35);
+  --complete-day-btn-color: #16a34a;
+  --save-preset-btn-bg: rgba(99,102,241,0.06);
+  --save-preset-btn-border: rgba(99,102,241,0.18);
+  --save-preset-btn-color: #6366f1;
+  --reset-pill-bg: rgba(239,68,68,0.06);
+  --reset-pill-border: rgba(239,68,68,0.15);
+  --reset-pill-color: rgba(239,68,68,0.55);
+  --t-btn-primary-bg: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.2));
+  --t-btn-primary-border: var(--border-h);
+  --t-btn-primary-color: #fff;
+  --timer-mode-active-bg: rgba(99,102,241,0.15);
+  --timer-mode-active-color: #6366f1;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+  --set-dot-done-bg: linear-gradient(135deg, rgba(99,102,241,0.5), rgba(139,92,246,0.45));
+  --input-bg: rgba(0,0,0,0.04);
+}
+
+html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; height: 100%; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: background 0.4s, color 0.4s;
+  -webkit-font-smoothing: antialiased;
+}
+
+.blob { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; transition: background 0.5s; }
+.blob-1 { width: 700px; height: 500px; top: -200px; left: -200px; background: var(--blob-1); }
+.blob-2 { width: 500px; height: 500px; bottom: -150px; right: -100px; background: var(--blob-2); }
+.blob-3 { width: 300px; height: 300px; top: 50%; left: 55%; background: var(--blob-3); }
+
+.bg-symbols { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.bg-sym {
+  position: absolute;
+  font-family: 'Bebas Neue', sans-serif;
+  user-select: none;
+  line-height: 1;
+  animation: symFloat ease-in-out infinite;
+  transition: color 0.4s;
+}
+@keyframes symFloat {
+  0%,100% { transform: translateY(0) rotate(var(--r0)); }
+  50%      { transform: translateY(-16px) rotate(var(--r1)); }
+}
+
+.page {
+  position: relative; z-index: 1;
+  max-width: 1200px; margin: 0 auto;
+  padding: var(--page-padding);
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+.settings-btn {
+  position: fixed; top: 16px; right: 20px; z-index: 50;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.25s;
+  box-shadow: var(--card-shadow);
+}
+.settings-btn:hover { border-color: var(--accent); color: var(--accent2); background: var(--glass-h); }
+
+.top-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px; gap: 12px; flex-wrap: wrap; flex-shrink: 0;
+}
+.brand-block { display: flex; align-items: baseline; gap: 12px; }
+.brand-block h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: var(--h1-size); letter-spacing: var(--h1-spacing); line-height: 1;
+  background: var(--title-grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.brand-badge {
+  font-size: 11px; color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 4px 12px; border-radius: var(--r-pill);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  background: var(--glass);
+  white-space: nowrap;
+}
+
+.streak-days-block {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  padding: var(--streak-block-padding);
+  flex-wrap: wrap;
+  box-shadow: var(--card-shadow);
+}
+.streak-mini { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.streak-mini .icon { font-size: 18px; animation: pulse 1.5s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:0.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.15)} }
+.streak-mini .num {
+  font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+  background: var(--streak-num-grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  line-height: 1;
+}
+.day-pills { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.day-pill {
+  padding: 7px 14px; border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.05);
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all 0.22s; white-space: nowrap;
+  display: flex; align-items: center; gap: 6px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.day-pill:hover { background: var(--glass-h); color: var(--text); border-color: var(--accent); }
+.day-pill.active {
+  background: var(--day-pill-active-bg);
+  border-color: var(--border-h);
+  color: #fff;
+  box-shadow: 0 2px 18px var(--glow);
+}
+.day-pill .del-day { font-size: 13px; color: var(--muted); cursor: pointer; line-height: 1; transition: color 0.2s; padding: 2px; }
+.day-pill .del-day:hover { color: #ef4444; }
+.add-day-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.add-day-btn:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(255,255,255,0.05); }
+
+/* Layout */
+.page-layout {
+  display: flex;
+  gap: var(--gap);
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.side-dock {
+  flex: 0 0 auto;
+  width: 0;
+  overflow: hidden;
+  transition: width 0.35s cubic-bezier(0.4,0,0.2,1);
+  align-self: stretch;
+}
+.side-dock.open { width: 280px; }
+.bento {
+  display: grid;
+  grid-template-columns: var(--bento-cols);
+  grid-template-rows: auto 1fr;
+  gap: var(--gap);
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  transition: grid-template-columns 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+.bento.panel-open {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* Side panel:
+   - Desktop: docked inside layout (как правая карточка таймера)
+   - Мобильные: выезжающий drawer поверх (см. media ниже) */
+.side-panel-overlay { display: none; }
+.side-panel {
+  height: 100%;
+  width: 100%;
+
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+
+  padding: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  transform: translateX(-20px);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease;
+}
+.side-dock.open .side-panel { transform: translateX(0); opacity: 1; }
+.side-panel-close {
+  align-self: flex-end;
+  background: none; border: 1px solid var(--border);
+  color: var(--muted); width: 36px; height: 36px; border-radius: 50%;
+  font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.side-panel-close:hover { border-color: var(--accent); color: var(--accent2); }
+.side-ex-name {
+  font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px;
+  background: var(--day-name-grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.side-ex-target { font-size: 13px; color: var(--muted); }
+
+/* Блок подходов в боковой панели */
+.side-sets-row {
+  display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+}
+.side-set-dot {
+  width: 34px; height: 34px; border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.05);
+  color: var(--muted);
+  font-size: 13px; font-family: 'DM Sans', sans-serif;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.18s;
+}
+.side-set-dot.done {
+  background: var(--set-dot-done-bg);
+  border-color: var(--done-b);
+  color: #fff; font-weight: 600;
+  box-shadow: 0 2px 10px var(--glow);
+}
+.side-set-delete {
+  font-size: 11px; color: var(--muted); cursor: pointer;
+  background: none; border: 1px solid var(--border);
+  padding: 4px 10px; border-radius: var(--r-pill);
+  transition: all 0.2s;
+}
+.side-set-delete:hover { color: #ef4444; border-color: #ef4444; }
+
+/* Таймер в боковой панели */
+.side-timer-ring-wrap { position: relative; width: 140px; height: 140px; flex-shrink: 0; align-self: center; }
+.side-timer-ring-wrap svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+.side-tr-bg { fill: none; stroke: rgba(0,0,0,0.05); stroke-width: 6; }
+.side-tr-fill { fill: none; stroke: url(#timerGrad); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.9s linear; }
+.side-timer-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.side-timer-digits {
+  font-family: 'Bebas Neue', sans-serif; font-size: 38px; letter-spacing: 2px; line-height: 1;
+  background: var(--timer-digits-grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.side-timer-digits.warning { background: var(--timer-digits-warn); -webkit-background-clip:text; background-clip:text; filter: drop-shadow(0 0 8px rgba(239,68,68,0.5)); }
+.side-timer-digits.done { background: var(--timer-digits-done); -webkit-background-clip:text; background-clip:text; }
+.side-timer-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+
+/* Отдых перед подходом */
+.side-rest-setup {
+  display: flex; flex-direction: column; gap: 6px;
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 12px;
+}
+.side-rest-setup label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.side-rest-setup .rest-row { display: flex; gap: 8px; align-items: center; }
+.side-rest-input {
+  width: 70px; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--input-bg);
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; text-align: center;
+}
+.side-rest-input:focus { outline: none; border-color: var(--accent); }
+
+/* Кнопки подходов */
+.side-approach-btns { display: flex; gap: 8px; margin-top: 12px; }
+
+/* Секундомер подхода */
+.side-stopwatch {
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+.side-stopwatch.running {
+  text-align: center;
+  padding: 14px 12px 10px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+}
+.sw-time {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 52px; letter-spacing: 3px; line-height: 1;
+  background: var(--timer-digits-grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.sw-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+.side-stopwatch.result { display: flex; justify-content: center; padding: 2px 0; }
+.sw-result-chip {
+  font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 500;
+  color: var(--accent2);
+  background: var(--done); border: 1px solid var(--done-b);
+  padding: 4px 14px; border-radius: var(--r-pill);
+  animation: chipIn 0.32s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes chipIn {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+.side-ap-btn {
+  flex: 1; padding: 12px; border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.side-ap-btn.start {
+  background: var(--t-btn-primary-bg);
+  border-color: var(--t-btn-primary-border);
+  color: var(--t-btn-primary-color);
+}
+.side-ap-btn.finish {
+  background: rgba(0,0,0,0.08); color: var(--muted);
+}
+.side-ap-btn.finish:not(:disabled) {
+  background: var(--complete-day-btn-bg);
+  border-color: var(--complete-day-btn-border);
+  color: var(--complete-day-btn-color);
+}
+.side-ap-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Отдых идёт */
+.side-rest-active {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 14px; background: var(--glass); border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  position: relative;
+}
+.side-rest-cancel {
+  position: absolute; top: 8px; right: 8px;
+  background: none; border: none; color: var(--muted);
+  font-size: 16px; cursor: pointer; transition: all 0.2s;
+  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+}
+.side-rest-cancel:hover { background: rgba(255,255,255,0.05); color: #ef4444; }
+.side-rest-active-label { font-size: 10px; color: var(--muted); text-transform: uppercase; }
+.side-rest-active-timer {
+  font-family: 'Bebas Neue', sans-serif; font-size: 36px;
+  color: var(--accent2);
+}
+
+/* Карточки */
+.card {
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.4s;
+  box-shadow: var(--card-shadow);
+}
+.card:hover { border-color: var(--border-h); }
+
+.card-progress {
+  grid-column: 1 / 3;
+  padding: var(--prog-padding);
+  display: flex; align-items: center; gap: var(--prog-gap);
+}
+.prog-ring-wrap { flex-shrink: 0; position: relative; width: 70px; height: 70px; }
+.prog-ring-wrap svg { transform: rotate(-90deg); }
+.prog-ring-bg { fill: none; stroke: rgba(0,0,0,0.06); stroke-width: 5; }
+.prog-ring-fill { fill: none; stroke: url(#ringGrad); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.5s ease; }
+.prog-center {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px;
+  background: var(--pct-grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.prog-text h3 { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+.prog-text p { font-size: 12px; color: var(--muted); }
+.prog-bar-wrap { flex: 1; min-width: 0; }
+.prog-bar-track {
+  height: 5px; background: rgba(0,0,0,0.05);
+  border-radius: var(--r-pill); overflow: hidden; margin-bottom: 6px;
+}
+.prog-bar-fill {
+  height: 100%;
+  background: var(--prog-bar-grad);
+  border-radius: var(--r-pill);
+  transition: width 0.4s ease;
+  box-shadow: 0 0 12px var(--glow);
+}
+.prog-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+.prog-stat { font-size: 11px; color: var(--muted); }
+.prog-stat span { color: var(--text); font-weight: 500; }
+
+.card-timer {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  padding: var(--timer-padding);
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  overflow-y: auto;
+  transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.4,0,0.2,1);
+}
+.card-timer.timer-exit {
+  opacity: 0;
+  transform: translateX(18px);
+  pointer-events: none;
+}
+.card-timer.timer-enter {
+  opacity: 0;
+  transform: translateX(18px);
+}
+.timer-mode { display: flex; background: rgba(0,0,0,0.05); border-radius: var(--r-pill); padding: 3px; gap: 0; width: 100%; }
+.timer-mode-btn {
+  flex: 1; padding: 6px 8px; border-radius: var(--r-pill);
+  border: none; background: transparent; color: var(--muted);
+  font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.timer-mode-btn.active {
+  background: var(--timer-mode-active-bg);
+  color: var(--timer-mode-active-color);
+  box-shadow: 0 1px 8px var(--glow);
+}
+.timer-ring-wrap { position: relative; width: var(--timer-ring-size); height: var(--timer-ring-size); flex-shrink: 0; }
+.timer-ring-wrap svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+.tr-bg { fill: none; stroke: rgba(0,0,0,0.05); stroke-width: 6; }
+.tr-fill { fill: none; stroke: url(#timerGrad); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.9s linear; }
+.timer-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.timer-digits {
+  font-family: 'Bebas Neue', sans-serif; font-size: var(--timer-digits-size); letter-spacing: 2px; line-height: 1;
+  background: var(--timer-digits-grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  transition: filter 0.3s;
+}
+.timer-digits.warning { background: var(--timer-digits-warn); -webkit-background-clip:text; background-clip:text; filter: drop-shadow(0 0 8px rgba(239,68,68,0.5)); }
+.timer-digits.done { background: var(--timer-digits-done); -webkit-background-clip:text; background-clip:text; }
+.timer-label { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; }
+.timer-controls { display: flex; flex-direction: column; gap: 5px; width: 100%; }
+.t-btn {
+  width: 100%; padding: 9px; border-radius: var(--r-lg);
+  border: 1px solid var(--border); background: rgba(0,0,0,0.03);
+  color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.22s;
+}
+.t-btn:hover { background: var(--glass-h); }
+.t-btn.primary {
+  background: var(--t-btn-primary-bg);
+  border-color: var(--t-btn-primary-border);
+  color: var(--t-btn-primary-color);
+  box-shadow: 0 3px 20px var(--glow);
+}
+.t-row { display: flex; gap: 5px; }
+.t-row .t-btn { flex: 1; }
+.timer-presets { display: flex; gap: 4px; flex-wrap: wrap; width: 100%; justify-content: center; }
+.timer-preset-btn {
+  padding: 4px 10px; border-radius: var(--r-pill);
+  border: 1px solid var(--border); background: rgba(0,0,0,0.03);
+  color: var(--muted); font-family: 'DM Sans', sans-serif;
+  font-size: 10px; font-weight: 500; cursor: pointer; transition: all 0.18s;
+}
+.timer-preset-btn:hover { background: var(--glass-h); color: var(--text); border-color: var(--accent); }
+.timer-preset-btn.active { background: var(--timer-mode-active-bg); color: var(--timer-mode-active-color); border-color: var(--border-h); }
+.timer-set-row { display: flex; gap: 4px; align-items: center; width: 100%; }
+.timer-set-inp {
+  flex: 1; padding: 6px 8px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--input-bg);
+  color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 12px; text-align: center; min-width: 0;
+}
+.timer-set-inp:focus { outline: none; border-color: var(--accent); }
+.laps-box { width: 100%; max-height: 70px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.lap-item { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); padding: 3px 2px; border-bottom: 0.5px solid var(--border); }
+.lap-item:last-child { border-bottom: none; }
+
+.card-exercises {
+  padding: var(--ex-padding);
+  grid-column: 1 / 3;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.exercise-list {
+  display: flex; flex-direction: column; gap: 6px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.day-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.day-name {
+  font-family: 'Bebas Neue', sans-serif; font-size: var(--day-name-size); letter-spacing: 2px;
+  background: var(--day-name-grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.day-count { font-size: 11px; color: var(--muted); }
+.edit-day-btn {
+  background: none; border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer; padding: 3px 10px; border-radius: var(--r-pill);
+  font-size: 12px; transition: all 0.2s;
+  margin-left: auto;
+}
+.edit-day-btn:hover { border-color: var(--accent); color: var(--accent2); }
+
+
+.ex-card {
+  background: rgba(0,0,0,0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 3px 10px;
+  align-items: center;
+}
+.ex-card:hover { background: var(--glass-h); border-color: var(--accent); }
+.ex-card.completed { background: var(--done); border-color: var(--done-b); }
+.ex-card.active-ex { border-color: var(--accent2); box-shadow: 0 0 16px var(--glow); }
+.ex-name { font-size: 13px; font-weight: 500; grid-column: 1; grid-row: 1; }
+.ex-card.completed .ex-name { color: var(--muted); text-decoration: line-through; }
+.ex-target {
+  font-size: 10px; color: var(--muted);
+  background: rgba(0,0,0,0.03);
+  border: 1px solid var(--border);
+  padding: 2px 8px; border-radius: var(--r-pill);
+  grid-column: 2; grid-row: 1;
+  white-space: nowrap; align-self: start;
+}
+.ex-sets-mini { grid-column: 1; grid-row: 2; display: flex; gap: 3px; }
+.set-dot-mini {
+  width: 20px; height: 20px; border-radius: 6px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.05);
+  transition: all 0.18s;
+}
+.set-dot-mini.done {
+  background: var(--set-dot-done-bg);
+  border-color: var(--done-b);
+  box-shadow: 0 1px 6px var(--glow);
+}
+.ex-weight { grid-column: 2; grid-row: 2; display: flex; align-items: center; gap: 4px; }
+.kg-label { font-size: 10px; color: var(--muted); }
+.kg-input {
+  width: 48px; height: 26px; border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 11px;
+  text-align: center; padding: 0 4px;
+}
+.kg-input:focus { outline: none; border-color: var(--accent); }
+
+.bottom-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; flex-wrap: wrap; gap: 8px; flex-shrink: 0; }
+.bottom-left { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.complete-day-btn {
+  padding: 8px 18px; border-radius: var(--r-pill);
+  background: var(--complete-day-btn-bg);
+  border: 1px solid var(--complete-day-btn-border);
+  color: var(--complete-day-btn-color);
+  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.complete-day-btn:hover { filter: brightness(1.15); }
+.save-preset-btn {
+  padding: 8px 18px; border-radius: var(--r-pill);
+  background: var(--save-preset-btn-bg);
+  border: 1px solid var(--save-preset-btn-border);
+  color: var(--save-preset-btn-color);
+  font-family: 'DM Sans', sans-serif; font-size: 12px;
+  cursor: pointer; transition: all 0.2s;
+}
+.save-preset-btn:hover { background: rgba(0,0,0,0.04); border-color: var(--accent); }
+.preset-select {
+  background: var(--glass); border: 1px solid var(--border);
+  color: var(--text); padding: 7px 12px; border-radius: var(--r-pill);
+  font-family: 'DM Sans', sans-serif; font-size: 12px;
+  backdrop-filter: var(--blur); cursor: pointer;
+  max-width: 180px;
+}
+.reset-pill {
+  padding: 8px 20px; border-radius: var(--r-pill);
+  background: var(--reset-pill-bg);
+  border: 1px solid var(--reset-pill-border);
+  color: var(--reset-pill-color);
+  font-family: 'DM Sans', sans-serif; font-size: 12px;
+  cursor: pointer; transition: all 0.2s;
+}
+.reset-pill:hover { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.25); color: #ef4444; }
+
+/* Модалки */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(6px);
+  z-index: 100; display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.modal {
+  background: var(--bg); border: 1px solid var(--border-h);
+  border-radius: var(--r-xl); padding: 24px; max-width: 550px; width: 100%;
+  max-height: 85vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+.modal h3 { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; color: var(--accent2); margin-bottom: 16px; }
+.modal-field { margin-bottom: 12px; }
+.modal-field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; }
+.modal-field input, .modal-field select {
+  width: 100%; padding: 10px 12px; border-radius: var(--r-md);
+  border: 1px solid var(--border); background: var(--input-bg);
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+}
+.modal-field input:focus { outline: none; border-color: var(--accent); }
+.exercise-edit-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.exercise-edit-row input { flex: 1; min-width: 80px; }
+.exercise-edit-row .small { width: 50px; flex: none; }
+.modal-actions { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; flex-wrap: wrap; }
+.btn {
+  padding: 8px 18px; border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--glass);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 12px;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn:hover { background: var(--glass-h); }
+.btn.accent { background: var(--t-btn-primary-bg); border-color: var(--border-h); color: #fff; }
+.btn.green { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.35); color: #16a34a; }
+.btn.red { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.25); color: #ef4444; }
+
+.theme-options { display: flex; gap: 8px; flex-wrap: wrap; }
+.theme-option {
+  width: 44px; height: 44px; border-radius: 14px;
+  border: 2px solid var(--border); cursor: pointer; transition: all 0.2s; position: relative;
+}
+.theme-option:hover { border-color: var(--accent); transform: scale(1.05); }
+.theme-option.active { border-color: var(--accent2); box-shadow: 0 0 14px var(--glow); }
+.theme-option.active::after {
+  content: '✓'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 18px; font-weight: 700;
+  text-shadow: 0 0 8px rgba(0,0,0,0.6);
+}
+.theme-opt-blackout { background: linear-gradient(135deg, #1a1a2e, #2a2a3a); }
+.theme-opt-fire { background: linear-gradient(135deg, #3d1a0c, #6b2810); }
+.theme-opt-aqua { background: linear-gradient(135deg, #0a2a33, #1a4a55); }
+.theme-opt-forest { background: linear-gradient(135deg, #0a1f0e, #1a3a1e); }
+.theme-opt-violet { background: linear-gradient(135deg, #1a0a2e, #3a1a55); }
+.theme-opt-liquid { background: linear-gradient(135deg, #e8eaf0, #c7cdf5); border: 2px solid rgba(99,102,241,0.3); }
+
+/* Адаптив */
+@media (max-width: 1024px) {
+  :root { --bento-cols: 1fr 1fr; --page-padding: 16px; --gap: 10px; --h1-size: 44px; --h1-spacing: 3px; --day-name-size: 22px; --timer-ring-size: 110px; --timer-digits-size: 30px; --prog-gap: 14px; --prog-padding: 16px 18px; --side-panel-width: 340px; }
+  .card-timer { grid-column: 1 / -1; grid-row: auto; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .card-progress { grid-column: 1 / -1; }
+  .card-exercises { grid-column: 1 / -1; }
+
+  /* На узких экранах панель — как выезжающий drawer, чтобы не ломать сетку */
+  .side-dock { width: 0 !important; overflow: hidden !important; }
+  .side-panel-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    z-index: 60; display: none;
+  }
+  .side-panel-overlay.open { display: block; }
+  .side-panel {
+    position: fixed; top: 0; left: 0; bottom: 0;
+    width: var(--side-panel-width);
+    max-width: 90vw;
+    background: var(--bg);
+    border-radius: 0;
+    border: none;
+    border-right: 1px solid var(--border-h);
+    z-index: 70;
+    padding: 20px;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    opacity: 1;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 10px 0 40px rgba(0,0,0,0.3);
+  }
+  .side-panel.open { transform: translateX(0); }
+}
+@media (max-width: 768px) {
+  :root { --bento-cols: 1fr; --page-padding: 12px; --gap: 8px; --h1-size: 36px; --h1-spacing: 2px; --day-name-size: 20px; --timer-ring-size: 100px; --timer-digits-size: 28px; --prog-gap: 12px; --prog-padding: 14px 16px; --timer-padding: 14px; --ex-padding: 14px 16px 12px; --streak-block-padding: 5px 5px 5px 12px; --side-panel-width: 300px; }
+  .top-row { flex-direction: column; align-items: stretch; gap: 10px; }
+  .streak-days-block { width: 100%; justify-content: space-between; }
+  .card-timer { flex-direction: column; align-items: center; }
+  .bottom-row { flex-direction: column; align-items: stretch; }
+  .bottom-left { flex-direction: column; align-items: stretch; }
+  .bottom-left > * { width: 100%; }
+  .preset-select { max-width: 100%; }
+  .reset-pill { width: 100%; text-align: center; }
+}
+@media (max-width: 480px) {
+  :root { --page-padding: 10px; --gap: 6px; --h1-size: 30px; --h1-spacing: 1px; --day-name-size: 18px; --timer-ring-size: 90px; --timer-digits-size: 26px; --prog-gap: 10px; --prog-padding: 12px 14px; --timer-padding: 12px 10px; --ex-padding: 12px 14px 10px; --streak-block-padding: 4px 4px 4px 10px; --r-xl: 18px; --r-lg: 14px; --side-panel-width: 100vw; }
+}
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+<div class="bg-symbols" id="bgSymbols"></div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="var(--ring-grad-1)"/>
+      <stop offset="100%" stop-color="var(--ring-grad-2)"/>
+    </linearGradient>
+    <linearGradient id="timerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="var(--timer-grad-1)"/>
+      <stop offset="100%" stop-color="var(--timer-grad-2)"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<button class="settings-btn" onclick="openSettings()" title="Настройки">⚙</button>
+
+<!-- Оверлей (только для мобильного drawer-режима) -->
+<div class="side-panel-overlay" id="sideOverlay" onclick="closeSidePanel()"></div>
+
+<div class="page">
+  <div class="top-row">
+    <div class="brand-block">
+      <h1>ТРЕНИРОВКИ</h1>
+      <span class="brand-badge">Набор массы · Дома</span>
+    </div>
+    <div class="streak-days-block" id="streakDaysBlock">
+      <div class="streak-mini">
+        <span class="icon">🔥</span>
+        <span class="num" id="streakNum">0</span>
+      </div>
+      <div class="day-pills" id="dayPillsContainer"></div>
+      <button class="add-day-btn" id="addDayBtn" onclick="addDay()" title="Добавить день">+</button>
+    </div>
+  </div>
+
+  <div class="page-layout">
+    <!-- Левая панель (интерфейс внутри страницы, как правая карточка таймера) -->
+    <div class="side-dock" id="sideDock">
+      <div class="side-panel" id="sidePanel">
+        <button class="side-panel-close" onclick="closeSidePanel()">✕</button>
+        <div id="sideContent"></div>
+      </div>
+    </div>
+    <div class="bento">
+      <div class="card card-progress">
+        <div class="prog-ring-wrap">
+          <svg width="70" height="70" viewBox="0 0 70 70">
+            <circle class="prog-ring-bg" cx="35" cy="35" r="30"/>
+            <circle class="prog-ring-fill" id="prog-ring" cx="35" cy="35" r="30"
+              stroke-dasharray="188.5" stroke-dashoffset="188.5"/>
+          </svg>
+          <div class="prog-center" id="prog-pct">0%</div>
+        </div>
+        <div class="prog-bar-wrap">
+          <div class="prog-text" style="margin-bottom:8px">
+            <h3 id="prog-title">Начнём тренировку</h3>
+            <p id="prog-sub">Нажми на упражнение</p>
+          </div>
+          <div class="prog-bar-track">
+            <div class="prog-bar-fill" id="prog-fill" style="width:0%"></div>
+          </div>
+          <div class="prog-stats" style="margin-top:6px">
+            <div class="prog-stat">Сделано: <span id="prog-done">0</span></div>
+            <div class="prog-stat">Осталось: <span id="prog-left">0</span></div>
+            <div class="prog-stat">Всего: <span id="prog-total">0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-timer" id="timerCard">
+        <div class="timer-mode">
+          <button class="timer-mode-btn active" onclick="switchClock('timer')">Таймер</button>
+          <button class="timer-mode-btn" onclick="switchClock('sw')">Секундомер</button>
+        </div>
+        <div id="panel-timer" style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%">
+          <div class="timer-ring-wrap">
+            <svg width="130" height="130" viewBox="0 0 130 130">
+              <circle class="tr-bg" cx="65" cy="65" r="55"/>
+              <circle class="tr-fill" id="timer-ring" cx="65" cy="65" r="55"
+                stroke-dasharray="345.6" stroke-dashoffset="0"/>
+            </svg>
+            <div class="timer-center">
+              <div class="timer-digits" id="timer-display">01:30</div>
+              <div class="timer-label">отдых</div>
+            </div>
+          </div>
+          <div class="timer-controls">
+            <button class="t-btn primary" id="timer-btn" onclick="toggleTimer()">Старт</button>
+            <button class="t-btn" onclick="resetTimer()">Сброс</button>
+          </div>
+          <div class="timer-presets" id="timerPresets">
+            <button class="timer-preset-btn" onclick="setTimer(30)">0:30</button>
+            <button class="timer-preset-btn active" onclick="setTimer(60)">1:00</button>
+            <button class="timer-preset-btn" onclick="setTimer(90)">1:30</button>
+            <button class="timer-preset-btn" onclick="setTimer(120)">2:00</button>
+            <button class="timer-preset-btn" onclick="setTimer(180)">3:00</button>
+            <button class="timer-preset-btn" onclick="setTimer(300)">5:00</button>
+          </div>
+          <div class="timer-set-row">
+            <input type="number" class="timer-set-inp" id="timerSetMin" value="1" min="0" max="99" placeholder="мин">
+            <span style="color:var(--muted);font-size:12px">:</span>
+            <input type="number" class="timer-set-inp" id="timerSetSec" value="30" min="0" max="59" placeholder="сек">
+            <button class="t-btn" style="flex:none;padding:6px 14px;font-size:11px" onclick="applyTimerSet()">OK</button>
+          </div>
+        </div>
+        <div id="panel-sw" style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%">
+          <div class="timer-ring-wrap">
+            <svg width="130" height="130" viewBox="0 0 130 130">
+              <circle class="tr-bg" cx="65" cy="65" r="55"/>
+              <circle class="tr-fill" id="sw-ring" cx="65" cy="65" r="55"
+                stroke-dasharray="345.6" stroke-dashoffset="345.6"/>
+            </svg>
+            <div class="timer-center">
+              <div class="timer-digits" id="sw-display" style="font-size:28px">00:00</div>
+              <div class="timer-label">секундомер</div>
+            </div>
+          </div>
+          <div class="timer-controls">
+            <button class="t-btn primary" id="sw-btn" onclick="toggleSW()">Старт</button>
+            <div class="t-row">
+              <button class="t-btn" onclick="lapSW()">Круг</button>
+              <button class="t-btn" onclick="resetSW()">Сброс</button>
+            </div>
+          </div>
+          <div class="laps-box" id="laps-list"></div>
+        </div>
+      </div>
+
+      <div class="card card-exercises" id="exercisesContainer"></div>
+    </div>
+  </div>
+
+  <div class="bottom-row">
+    <div class="bottom-left">
+      <button class="complete-day-btn" onclick="completeDay()">✓ Завершить день</button>
+      <button class="save-preset-btn" onclick="savePreset()">💾 Сохранить пресет</button>
+      <select class="preset-select" id="presetSelect" onchange="loadPreset(this.value)">
+        <option value="">— Загрузить пресет —</option>
+      </select>
+    </div>
+    <button class="reset-pill" onclick="resetDay()">Сбросить день</button>
+  </div>
+</div>
+
+<div id="modalContainer"></div>
+
+<script>
+// ── THEME ──
+const THEME_KEY = 'selectedTheme';
+const THEMES = ['blackout', 'fire', 'aqua', 'forest', 'violet', 'liquid'];
+const DEFAULT_THEME = 'blackout';
+function getTheme() { return localStorage.getItem(THEME_KEY) || DEFAULT_THEME; }
+function applyTheme(theme) {
+  document.body.classList.remove(...THEMES.map(t => `theme-${t}`));
+  if (theme !== 'blackout') document.body.classList.add(`theme-${theme}`);
+  updateSymbolColors();
+}
+function setTheme(theme) { localStorage.setItem(THEME_KEY, theme); applyTheme(theme); }
+function updateSymbolColors() {
+  const style = getComputedStyle(document.body);
+  const color = style.getPropertyValue('--sym-color').trim();
+  document.querySelectorAll('.bg-sym').forEach(s => s.style.color = color);
+}
+
+function openSettings() {
+  const current = getTheme();
+  document.getElementById('modalContainer').innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal" style="max-width:420px">
+        <h3>⚙ Настройки</h3>
+        <div class="modal-field">
+          <label>Тема</label>
+          <div class="theme-options">
+            <div class="theme-option theme-opt-blackout${current==='blackout'?' active':''}" onclick="setTheme('blackout');openSettings();" title="Blackout"></div>
+            <div class="theme-option theme-opt-fire${current==='fire'?' active':''}" onclick="setTheme('fire');openSettings();" title="Fire"></div>
+            <div class="theme-option theme-opt-aqua${current==='aqua'?' active':''}" onclick="setTheme('aqua');openSettings();" title="Aqua"></div>
+            <div class="theme-option theme-opt-forest${current==='forest'?' active':''}" onclick="setTheme('forest');openSettings();" title="Forest"></div>
+            <div class="theme-option theme-opt-violet${current==='violet'?' active':''}" onclick="setTheme('violet');openSettings();" title="Violet"></div>
+            <div class="theme-option theme-opt-liquid${current==='liquid'?' active':''}" onclick="setTheme('liquid');openSettings();" title="Liquid Glass"></div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn accent" onclick="closeModal()">Закрыть</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── BG SYMBOLS ──
+(function(){
+  const syms = ['✦','◈','⊕','✗','▲','◇','⬡','⊞','✚','◉','⌬','⊿','✕','△','◻','⬢','╋','⋆','✧','◆','⟡','⬟','✱','⌀'];
+  const container = document.getElementById('bgSymbols');
+  const count = window.innerWidth < 480 ? 16 : 28;
+  for(let i=0;i<count;i++){
+    const el = document.createElement('div');
+    el.className = 'bg-sym';
+    const sym = syms[Math.floor(Math.random()*syms.length)];
+    const size = 14 + Math.random()*70;
+    const x = Math.random()*100;
+    const y = Math.random()*100;
+    const dur = 5 + Math.random()*8;
+    const delay = -Math.random()*10;
+    const r0 = (Math.random()*40-20).toFixed(1)+'deg';
+    const r1 = (Math.random()*40-20).toFixed(1)+'deg';
+    const op = (0.10 + Math.random()*0.15).toFixed(3);
+    el.textContent = sym;
+    el.style.cssText = `left:${x}%; top:${y}%; font-size:${size}px; opacity:${op}; --r0:${r0}; --r1:${r1}; animation-duration:${dur}s; animation-delay:${delay}s;`;
+    container.appendChild(el);
+  }
+  updateSymbolColors();
+})();
+
+// ── STATE ──
+const STORAGE_PLAN = 'customPlan_v2';
+const STORAGE_PRESETS = 'planPresets_v2';
+const STORAGE_STREAK = 'streakData';
+
+const DEFAULT_PLAN = [
+  { name: 'ГРУДЬ / ТРИЦЕПС', short: 'Грудь', exercises: [
+    { name: "Отжимания широкие", sets: 4, target: "12–15" },
+    { name: "Жим гантелей лёжа", sets: 4, target: "10–12" },
+    { name: "Разводка гантелей", sets: 3, target: "12" },
+    { name: "Отжимания узкие", sets: 3, target: "12" },
+    { name: "Французский жим", sets: 3, target: "12" },
+  ]},
+  { name: 'СПИНА / БИЦЕПС', short: 'Спина', exercises: [
+    { name: "Подтягивания широкие", sets: 4, target: "макс." },
+    { name: "Подтягивания обр. хватом", sets: 4, target: "макс." },
+    { name: "Тяга гантели в наклоне", sets: 4, target: "10–12" },
+    { name: "Сгибания на бицепс", sets: 3, target: "12" },
+    { name: "Молотковые сгибания", sets: 3, target: "12" },
+  ]},
+  { name: 'НОГИ / ПЛЕЧИ', short: 'Ноги', exercises: [
+    { name: "Приседания с гантелями", sets: 4, target: "15" },
+    { name: "Выпады с гантелями", sets: 3, target: "12" },
+    { name: "Румынская тяга", sets: 4, target: "12" },
+    { name: "Жим сидя над головой", sets: 4, target: "12" },
+    { name: "Подъём в стороны", sets: 3, target: "15" },
+  ]},
+  { name: 'ПОЛНОЕ ТЕЛО', short: 'Фулл', exercises: [
+    { name: "Подтягивания", sets: 5, target: "макс." },
+    { name: "Отжимания с возвышения", sets: 4, target: "12" },
+    { name: "Болгарские приседания", sets: 3, target: "10" },
+    { name: "Тяга к подбородку", sets: 3, target: "12" },
+    { name: "Планка", sets: 3, target: "45–60 сек" },
+  ]},
+];
+
+function loadPlan() {
+  try { const r = localStorage.getItem(STORAGE_PLAN); return r ? JSON.parse(r) : JSON.parse(JSON.stringify(DEFAULT_PLAN)); }
+  catch { return JSON.parse(JSON.stringify(DEFAULT_PLAN)); }
+}
+function savePlan(plan) { localStorage.setItem(STORAGE_PLAN, JSON.stringify(plan)); }
+
+let PLAN = loadPlan();
+let currentDay = 0;
+
+const sk = (d,e) => `wt2_d${d}_e${e}`;
+const wk = (d,e) => `wt2_d${d}_e${e}_w`;
+const loadSt = (d,e,n) => { try { const r=localStorage.getItem(sk(d,e)); return r?JSON.parse(r):new Array(n).fill(false); } catch{ return new Array(n).fill(false); } };
+const saveSt = (d,e,s) => localStorage.setItem(sk(d,e), JSON.stringify(s));
+
+// ── SIDE PANEL ──
+let activeSideEx = null;
+let approachTimer = null;
+let approachElapsed = 0;
+let restTimerInterval = null;
+let restRemaining = 0;
+let isResting = false;
+
+function openSidePanel(di, ei) {
+  activeSideEx = { di, ei };
+  const isDrawer = window.matchMedia('(max-width: 1024px)').matches;
+  if (isDrawer) {
+    document.getElementById('sideOverlay').classList.add('open');
+  } else {
+    const timerCard = document.getElementById('timerCard');
+    // Анимация ухода таймера
+    timerCard.classList.add('timer-exit');
+    setTimeout(() => {
+      timerCard.style.display = 'none';
+      timerCard.classList.remove('timer-exit');
+      document.getElementById('sideDock').classList.add('open');
+      document.querySelector('.bento').classList.add('panel-open');
+    }, 280);
+  }
+  document.getElementById('sidePanel').classList.add('open');
+  renderSidePanel();
+  document.querySelectorAll('.ex-card').forEach(c => c.classList.remove('active-ex'));
+  const card = document.getElementById(`ex-${di}-${ei}`);
+  if (card) card.classList.add('active-ex');
+}
+
+function closeSidePanel() {
+  document.getElementById('sideOverlay').classList.remove('open');
+  document.getElementById('sideDock').classList.remove('open');
+  document.getElementById('sidePanel').classList.remove('open');
+  document.querySelector('.bento').classList.remove('panel-open');
+
+  // Анимация появления таймера
+  const timerCard = document.getElementById('timerCard');
+  timerCard.classList.add('timer-enter');
+  timerCard.style.display = '';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      timerCard.classList.remove('timer-enter');
+    });
+  });
+
+  activeSideEx = null;
+  if (approachTimer) { clearInterval(approachTimer); approachTimer = null; }
+  if (restTimerInterval) { clearInterval(restTimerInterval); restTimerInterval = null; }
+  document.querySelectorAll('.ex-card').forEach(c => c.classList.remove('active-ex'));
+  renderExercises();
+}
+
+function renderSidePanel() {
+  if (!activeSideEx) return;
+  const { di, ei } = activeSideEx;
+  const ex = PLAN[di].exercises[ei];
+  const state = loadSt(di, ei, ex.sets);
+  const doneCount = state.filter(Boolean).length;
+  const allDone = state.every(Boolean);
+  const restTime = getRestTime();
+
+  let setsHTML = '';
+  for (let s = 0; s < ex.sets; s++)
+    setsHTML += `<div class="side-set-dot${state[s]?' done':''}">${s+1}</div>`;
+
+  document.getElementById('sideContent').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px;">
+
+      <div>
+        <div class="side-ex-name">${ex.name}</div>
+        <div class="side-ex-target">${ex.target} · ${doneCount}/${ex.sets} подходов</div>
+      </div>
+
+      <div class="side-sets-row">${setsHTML}</div>
+
+      ${doneCount > 0 ? `<button class="side-set-delete" onclick="deleteLastSet(${di},${ei})">↩ Отменить последний</button>` : ''}
+
+      <div id="sideStopwatch" class="side-stopwatch"></div>
+
+      <div id="sideRestPanel"></div>
+
+      ${!allDone ? `
+        <div class="side-rest-setup">
+          <label>Отдых перед подходом (сек)</label>
+          <div class="rest-row">
+            <input type="number" class="side-rest-input" id="sideRestInput"
+              value="${restTime}" min="5" max="600" step="5"
+              onchange="saveRestTime(this.value)">
+          </div>
+        </div>
+      ` : ''}
+
+      ${allDone
+        ? `<div style="text-align:center;color:var(--accent2);font-weight:600;padding:8px 0;">✅ Все подходы выполнены!</div>`
+        : `<div style="display:flex;flex-direction:column;gap:6px;">
+             <div class="side-approach-btns">
+               <button class="side-ap-btn start" id="sideStartBtn"
+                 onclick="startSideApproach()"
+                 onmouseenter="showRestWarning()"
+                 onmouseleave="hideRestWarning()">▶ Начать подход</button>
+               <button class="side-ap-btn finish" id="sideFinishBtn"
+                 onclick="finishSideApproach()" disabled>✓ Завершить</button>
+             </div>
+             <div id="restWarning" style="font-size:11px;color:var(--accent);text-align:center;min-height:16px;transition:opacity 0.2s;opacity:0;"></div>
+           </div>`
+      }
+
+    </div>
+  `;
+}
+
+function startSideApproach() {
+  if (!activeSideEx) return;
+  if (isResting) return; // нельзя начать пока идёт отдых
+
+  isResting = false;
+  document.getElementById('sideFinishBtn').disabled = false;
+  document.getElementById('sideStartBtn').disabled = true;
+  document.getElementById('sideRestPanel').innerHTML = '';
+  if (restTimerInterval) { clearInterval(restTimerInterval); restTimerInterval = null; }
+
+  approachElapsed = 0;
+  const sw = document.getElementById('sideStopwatch');
+  if (sw) {
+    sw.className = 'side-stopwatch running';
+    sw.innerHTML = `<div class="sw-time" id="swTime">00:00</div><div class="sw-label">время подхода</div>`;
+  }
+
+  const startTime = Date.now();
+  if (approachTimer) clearInterval(approachTimer);
+  approachTimer = setInterval(() => {
+    approachElapsed = Math.floor((Date.now() - startTime) / 1000);
+    const el = document.getElementById('swTime');
+    if (el) el.textContent = fmt(approachElapsed);
+  }, 100);
+}
+
+function finishSideApproach() {
+  if (!activeSideEx || !approachTimer) return;
+  clearInterval(approachTimer); approachTimer = null;
+
+  // Сразу гасим обе кнопки
+  const startBtn = document.getElementById('sideStartBtn');
+  const finishBtn = document.getElementById('sideFinishBtn');
+  if (finishBtn) finishBtn.disabled = true;
+  if (startBtn) startBtn.disabled = true;
+
+  const finalTime = fmt(approachElapsed);
+
+  // Анимация схлопывания секундомера в чип
+  const sw = document.getElementById('sideStopwatch');
+  if (sw) {
+    sw.style.opacity = '0';
+    sw.style.transform = 'scale(0.88)';
+    setTimeout(() => {
+      sw.style.opacity = '';
+      sw.style.transform = '';
+      sw.className = 'side-stopwatch result';
+      sw.innerHTML = `<span class="sw-result-chip">⏱ ${finalTime}</span>`;
+    }, 240);
+  }
+
+  const { di, ei } = activeSideEx;
+  const state = loadSt(di, ei, PLAN[di].exercises[ei].sets);
+  const nextIdx = state.findIndex(s => !s);
+  if (nextIdx !== -1) { state[nextIdx] = true; saveSt(di, ei, state); }
+
+  const updatedState = loadSt(di, ei, PLAN[di].exercises[ei].sets);
+  const doneCount = updatedState.filter(Boolean).length;
+  const allDone = updatedState.every(Boolean);
+
+  const targetEl = document.querySelector('.side-ex-target');
+  if (targetEl) targetEl.textContent = `${PLAN[di].exercises[ei].target} · ${doneCount}/${PLAN[di].exercises[ei].sets} подходов`;
+  const dotsEl = document.querySelector('.side-sets-row');
+  if (dotsEl) {
+    let html = '';
+    for (let s = 0; s < PLAN[di].exercises[ei].sets; s++)
+      html += `<div class="side-set-dot${updatedState[s]?' done':''}">${s+1}</div>`;
+    dotsEl.innerHTML = html;
+  }
+
+  updateProgress(currentDay);
+
+  if (allDone) {
+    document.getElementById('sideRestPanel').innerHTML =
+      '<div style="text-align:center;color:var(--accent2);font-weight:600;padding:8px 0;">✅ Все подходы выполнены!</div>';
+  } else {
+    startSideRest();
+  }
+}
+
+function startSideRest() {
+  const restPanel = document.getElementById('sideRestPanel');
+  const restTime = parseInt(document.getElementById('sideRestInput')?.value) || getRestTime();
+  restRemaining = restTime;
+  isResting = true;
+  
+  restPanel.innerHTML = `
+    <div class="side-rest-active">
+      <button class="side-rest-cancel" onclick="cancelSideRest()" title="Отменить отдых">✕</button>
+      <span class="side-rest-active-label">Отдых</span>
+      <span class="side-rest-active-timer" id="sideRestTimer">${fmt(restRemaining)}</span>
+    </div>`;
+  
+  if (restTimerInterval) clearInterval(restTimerInterval);
+  restTimerInterval = setInterval(() => {
+    restRemaining--;
+    const display = document.getElementById('sideRestTimer');
+    if (display) display.textContent = fmt(restRemaining);
+    
+    if (restRemaining <= 0) {
+      clearInterval(restTimerInterval); restTimerInterval = null;
+      isResting = false;
+      document.getElementById('sideRestPanel').innerHTML = '<div style="text-align:center;color:var(--accent2);padding:8px;">✓ Можно начинать!</div>';
+      playSound();
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      document.getElementById('sideStartBtn').disabled = false;
+    }
+  }, 1000);
+}
+
+function cancelSideRest() {
+  if (restTimerInterval) { clearInterval(restTimerInterval); restTimerInterval = null; }
+  isResting = false;
+  document.getElementById('sideRestPanel').innerHTML = '';
+  const startBtn = document.getElementById('sideStartBtn');
+  if (startBtn) startBtn.disabled = false;
+}
+
+function deleteLastSet(di, ei) {
+  const state = loadSt(di, ei, PLAN[di].exercises[ei].sets);
+  const lastDoneIdx = state.map((v,i) => v ? i : -1).filter(i => i !== -1).pop();
+  if (lastDoneIdx !== undefined) {
+    state[lastDoneIdx] = false;
+    saveSt(di, ei, state);
+  }
+  // Отменяем отдых и подход
+  if (restTimerInterval) { clearInterval(restTimerInterval); restTimerInterval = null; }
+  if (approachTimer) { clearInterval(approachTimer); approachTimer = null; }
+  renderSidePanel();
+  updateProgress(currentDay);
+}
+
+function updateSideTimerRing(secondsFraction) {
+  const ring = document.getElementById('sideTimerRing');
+  if (!ring) return;
+  const circ = 377;
+  ring.style.strokeDashoffset = circ - (circ * Math.min(secondsFraction, 60) / 60);
+}
+
+// ── STREAK ──
+function getStreak() { try { const r = localStorage.getItem(STORAGE_STREAK); return r ? JSON.parse(r) : { streak: 0, lastDate: null }; } catch { return { streak: 0, lastDate: null }; } }
+function saveStreak(d) { localStorage.setItem(STORAGE_STREAK, JSON.stringify(d)); }
+function updateStreakUI() { document.getElementById('streakNum').textContent = getStreak().streak; }
+function completeDay() {
+  const s = getStreak();
+  const today = new Date().toISOString().split('T')[0];
+  if (s.lastDate === today) { alert('Сегодня уже отмечено! 🔥'); return; }
+  const yesterday = new Date(Date.now()-86400000).toISOString().split('T')[0];
+  s.streak = (s.lastDate === yesterday) ? s.streak + 1 : 1;
+  s.lastDate = today;
+  saveStreak(s);
+  updateStreakUI();
+  alert(`День засчитан! Стрик: ${s.streak} дн. 🔥`);
+}
+
+function getRestTime() { return localStorage.getItem('restTime') || 90; }
+function saveRestTime(sec) { localStorage.setItem('restTime', sec); }
+
+// ── DAYS ──
+function addDay() {
+  if (PLAN.length >= 7) { alert('Максимум 7 дней!'); return; }
+  const name = prompt('Название дня:');
+  if (!name || !name.trim()) return;
+  const short = prompt('Короткое имя:');
+  if (!short || !short.trim()) return;
+  PLAN.push({ name: name.trim().toUpperCase(), short: short.trim(), exercises: [{ name: "Новое упражнение", sets: 3, target: "10" }] });
+  savePlan(PLAN);
+  renderAll();
+  switchDay(PLAN.length - 1);
+}
+
+function deleteDay(di) {
+  if (PLAN.length <= 1) { alert('Минимум 1 день!'); return; }
+  if (!confirm(`Удалить «${PLAN[di].name}»?`)) return;
+  PLAN.splice(di, 1);
+  savePlan(PLAN);
+  if (currentDay >= PLAN.length) currentDay = PLAN.length - 1;
+  renderAll();
+}
+
+function renderDayPills() {
+  const container = document.getElementById('dayPillsContainer');
+  container.innerHTML = '';
+  PLAN.forEach((day, i) => {
+    const pill = document.createElement('button');
+    pill.className = 'day-pill' + (i === currentDay ? ' active' : '');
+    pill.innerHTML = `${day.short} <span class="del-day" onclick="event.stopPropagation();deleteDay(${i})">×</span>`;
+    pill.onclick = () => switchDay(i);
+    container.appendChild(pill);
+  });
+  document.getElementById('addDayBtn').style.display = PLAN.length >= 7 ? 'none' : 'flex';
+}
+
+function renderExercises() {
+  const container = document.getElementById('exercisesContainer');
+  container.innerHTML = '';
+  PLAN.forEach((day, di) => {
+    const dayDiv = document.createElement('div');
+    dayDiv.className = 'day';
+    dayDiv.id = `day-${di}`;
+    dayDiv.style.display = di === currentDay ? 'block' : 'none';
+    let exHTML = '';
+    day.exercises.forEach((ex, ei) => {
+      const state = loadSt(di, ei, ex.sets);
+      const weight = localStorage.getItem(wk(di,ei)) || '';
+      let dots = '';
+      for (let s = 0; s < ex.sets; s++) {
+        dots += `<div class="set-dot-mini${state[s]?' done':''}"></div>`;
+      }
+      const isActive = activeSideEx && activeSideEx.di === di && activeSideEx.ei === ei;
+      exHTML += `
+        <div class="ex-card${state.every(Boolean)?' completed':''}${isActive?' active-ex':''}" id="ex-${di}-${ei}" onclick="openSidePanel(${di},${ei})">
+          <span class="ex-name">${ex.name}</span>
+          <span class="ex-target">${ex.target}</span>
+          <div class="ex-sets-mini">${dots}</div>
+          <div class="ex-weight">
+            <span class="kg-label">кг</span>
+            <input class="kg-input" type="number" placeholder="0" value="${weight}" min="0" step="0.5"
+              onclick="event.stopPropagation()"
+              oninput="localStorage.setItem('${wk(di,ei)}',this.value)">
+          </div>
+        </div>`;
+    });
+    dayDiv.innerHTML = `
+      <div class="day-header">
+        <span class="day-name">${day.name}</span>
+        <span class="day-count">${day.exercises.length} упр.</span>
+        <button class="edit-day-btn" onclick="event.stopPropagation();openDayEditor(${di})">✎ Ред.</button>
+      </div>
+      <div class="exercise-list">${exHTML}</div>`;
+    container.appendChild(dayDiv);
+  });
+  updateProgress(currentDay);
+}
+
+function switchDay(day) {
+  currentDay = day;
+  closeSidePanel();
+  document.querySelectorAll('.day').forEach((d,i) => d.style.display = i===day?'block':'none');
+  renderDayPills();
+  updateProgress(day);
+}
+
+function updateProgress(day) {
+  let total=0, done=0;
+  PLAN[day].exercises.forEach((ex,ei)=>{
+    const s=loadSt(day,ei,ex.sets); total+=ex.sets; done+=s.filter(Boolean).length;
+  });
+  const pct = total>0 ? Math.round(done/total*100) : 0;
+  const circ = 188.5;
+  document.getElementById('prog-ring').style.strokeDashoffset = circ - (circ * pct/100);
+  document.getElementById('prog-pct').textContent = pct+'%';
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-done').textContent = done;
+  document.getElementById('prog-left').textContent = total-done;
+  document.getElementById('prog-total').textContent = total;
+  document.getElementById('prog-title').textContent = pct===100 ? '🎉 Завершена!' : pct>0 ? `${pct}%` : 'Начнём';
+  document.getElementById('prog-sub').textContent = pct===100 ? 'Отлично!' : `${done}/${total} подходов`;
+}
+
+function resetDay() {
+  if (!confirm('Сбросить прогресс этого дня?')) return;
+  PLAN[currentDay].exercises.forEach((_,ei) => localStorage.removeItem(sk(currentDay,ei)));
+  closeSidePanel();
+  renderExercises();
+}
+
+// ── DAY EDITOR ──
+function openDayEditor(di) {
+  const day = PLAN[di];
+  let exRows = day.exercises.map((ex) => `
+    <div class="exercise-edit-row">
+      <input type="text" value="${ex.name}" placeholder="Название" class="ex-name-inp">
+      <input type="number" value="${ex.sets}" placeholder="Подх." class="small ex-sets-inp" min="1" max="20">
+      <input type="text" value="${ex.target}" placeholder="Цель" class="ex-target-inp">
+      <button class="btn red" onclick="this.parentElement.remove()">✕</button>
+    </div>`).join('');
+  document.getElementById('modalContainer').innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal">
+        <h3>Ред. день</h3>
+        <div class="modal-field"><label>Название</label><input type="text" id="editDayName" value="${day.name}"></div>
+        <div class="modal-field"><label>Короткое имя</label><input type="text" id="editDayShort" value="${day.short}"></div>
+        <div class="modal-field"><label>Упражнения</label><div id="exRowsContainer">${exRows}</div><button class="btn green" onclick="addExRow()" style="margin-top:6px">+ Упражнение</button></div>
+        <div class="modal-actions">
+          <button class="btn" onclick="closeModal()">Отмена</button>
+          <button class="btn accent" onclick="saveDayEdit(${di})">Сохранить</button>
+        </div>
+      </div>
+    </div>`;
+}
+function addExRow() {
+  const container = document.getElementById('exRowsContainer');
+  const row = document.createElement('div');
+  row.className = 'exercise-edit-row';
+  row.innerHTML = `<input type="text" value="" placeholder="Название" class="ex-name-inp"><input type="number" value="3" placeholder="Подх." class="small ex-sets-inp" min="1" max="20"><input type="text" value="" placeholder="Цель" class="ex-target-inp"><button class="btn red" onclick="this.parentElement.remove()">✕</button>`;
+  container.appendChild(row);
+}
+function saveDayEdit(di) {
+  const name = document.getElementById('editDayName').value.trim();
+  const short = document.getElementById('editDayShort').value.trim();
+  if (!name || !short) { alert('Заполни названия!'); return; }
+  const rows = document.querySelectorAll('#exRowsContainer .exercise-edit-row');
+  const exercises = [];
+  rows.forEach(row => {
+    const n = row.querySelector('.ex-name-inp').value.trim();
+    const s = parseInt(row.querySelector('.ex-sets-inp').value) || 3;
+    const t = row.querySelector('.ex-target-inp').value.trim();
+    if (n) exercises.push({ name: n, sets: s, target: t || 'повт.' });
+  });
+  if (exercises.length === 0) { alert('Минимум 1 упражнение!'); return; }
+  PLAN[di].name = name;
+  PLAN[di].short = short;
+  PLAN[di].exercises = exercises;
+  savePlan(PLAN);
+  closeModal();
+  renderAll();
+}
+function closeModal() { document.getElementById('modalContainer').innerHTML = ''; }
+
+// ── PRESETS ──
+function getPresets() { try { const r = localStorage.getItem(STORAGE_PRESETS); return r ? JSON.parse(r) : {}; } catch { return {}; } }
+function savePresets(p) { localStorage.setItem(STORAGE_PRESETS, JSON.stringify(p)); }
+function savePreset() {
+  const name = prompt('Название пресета:');
+  if (!name || !name.trim()) return;
+  const presets = getPresets();
+  presets[name.trim()] = JSON.parse(JSON.stringify(PLAN));
+  savePresets(presets);
+  renderPresetSelect();
+  alert(`Пресет «${name.trim()}» сохранён!`);
+}
+function loadPreset(name) {
+  if (!name) return;
+  if (!confirm(`Загрузить «${name}»?`)) { document.getElementById('presetSelect').value = ''; return; }
+  const presets = getPresets();
+  if (presets[name]) {
+    PLAN = JSON.parse(JSON.stringify(presets[name]));
+    savePlan(PLAN);
+    currentDay = 0;
+    closeSidePanel();
+    renderAll();
+    document.getElementById('presetSelect').value = '';
+  }
+}
+function renderPresetSelect() {
+  const sel = document.getElementById('presetSelect');
+  const presets = getPresets();
+  sel.innerHTML = '<option value="">— Загрузить пресет —</option>';
+  Object.keys(presets).forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o); });
+}
+
+function renderAll() {
+  renderDayPills();
+  renderExercises();
+  renderPresetSelect();
+  updateStreakUI();
+}
+
+// ── SOUND (громче на 30%) ──
+function playSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    gain.gain.value = 0.39; // +30%
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    osc.stop(ctx.currentTime + 0.5);
+  } catch(e) {}
+}
+
+// ── INIT ──
+applyTheme(getTheme());
+renderAll();
+updateProgress(currentDay);
+
+// ── GLOBAL TIMER (правая карточка) ──
+function switchClock(m) {
+  document.querySelectorAll('#timerCard .timer-mode-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&m==='timer')||(i===1&&m==='sw')));
+  document.getElementById('panel-timer').style.display = m==='timer'?'flex':'none';
+  document.getElementById('panel-sw').style.display = m==='sw'?'flex':'none';
+}
+const CIRC_T = 345.6;
+let timerTotal=90, timerLeft=90, timerInt=null, timerOn=false;
+const fmt = s => String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+function updateTimerRing() { document.getElementById('timer-ring').style.strokeDashoffset = CIRC_T - (CIRC_T * timerLeft/timerTotal); }
+function setTimer(s) { resetTimer(); timerTotal=s; timerLeft=s; document.getElementById('timer-display').textContent=fmt(s); document.getElementById('timer-display').className='timer-digits'; updateTimerRing();
+  document.querySelectorAll('.timer-preset-btn').forEach(b => { b.classList.toggle('active', parseInt(b.getAttribute('onclick').match(/\d+/)[0]) === s); });
+  document.getElementById('timerSetMin').value = Math.floor(s/60);
+  document.getElementById('timerSetSec').value = s%60;
+}
+function applyTimerSet() {
+  const m = parseInt(document.getElementById('timerSetMin').value) || 0;
+  const s = parseInt(document.getElementById('timerSetSec').value) || 0;
+  const total = m*60 + s;
+  if (total < 1) { alert('Минимум 1 секунда'); return; }
+  setTimer(total);
+}
+function toggleTimer() {
+  if (timerOn) { clearInterval(timerInt); timerOn=false; document.getElementById('timer-btn').textContent='Старт'; return; }
+  if (timerLeft<=0) timerLeft=timerTotal;
+  timerOn=true; document.getElementById('timer-btn').textContent='Пауза';
+  timerInt = setInterval(()=>{
+    timerLeft--;
+    const d = document.getElementById('timer-display');
+    d.textContent = fmt(timerLeft);
+    d.className = 'timer-digits'+(timerLeft<=10&&timerLeft>0?' warning':timerLeft<=0?' done':'');
+    updateTimerRing();
+    if (timerLeft<=0) { clearInterval(timerInt); timerOn=false; document.getElementById('timer-btn').textContent='Старт'; playSound(); if (navigator.vibrate) navigator.vibrate([200,100,200]); }
+  }, 1000);
+}
+function resetTimer() { clearInterval(timerInt); timerOn=false; timerLeft=timerTotal; document.getElementById('timer-display').textContent=fmt(timerTotal); document.getElementById('timer-display').className='timer-digits'; document.getElementById('timer-btn').textContent='Старт'; updateTimerRing(); }
+
+let swMs=0, swInt=null, swOn=false, swLaps=[], swLastLap=0;
+const fmtSW = ms => { const s=Math.floor(ms/1000),m=Math.floor(s/60); return String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0')+'.'+String(Math.floor((ms%1000)/10)).padStart(2,'0'); };
+function toggleSW() {
+  if (swOn) { clearInterval(swInt); swOn=false; document.getElementById('sw-btn').textContent='Продолжить'; return; }
+  const start=Date.now()-swMs; swOn=true; document.getElementById('sw-btn').textContent='Пауза';
+  swInt=setInterval(()=>{
+    swMs=Date.now()-start;
+    document.getElementById('sw-display').textContent=fmtSW(swMs);
+    document.getElementById('sw-ring').style.strokeDashoffset = CIRC_T - (CIRC_T * ((swMs%60000)/60000));
+  },30);
+}
+function lapSW() {
+  if(!swOn&&swMs===0) return;
+  const lapTime = swMs - swLastLap; swLastLap = swMs;
+  swLaps.unshift({n:swLaps.length+1, t:fmtSW(swMs), lap:fmtSW(lapTime)});
+  document.getElementById('laps-list').innerHTML = swLaps.map(l=>`<div class="lap-item"><span>Круг ${l.n}</span><span style="color:var(--muted)">${l.lap}</span><span>${l.t}</span></div>`).join('');
+}
+function resetSW() { clearInterval(swInt); swOn=false; swMs=0; swLaps=[]; swLastLap=0; document.getElementById('sw-display').textContent='00:00'; document.getElementById('sw-btn').textContent='Старт'; document.getElementById('laps-list').innerHTML=''; document.getElementById('sw-ring').style.strokeDashoffset=CIRC_T; }
+</script>
+</body>
+</html>
