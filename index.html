@@ -339,9 +339,9 @@ body {
 
 .bg-symbols { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
 .bear-wrap {
-  position: fixed; left: 0; top: 50%; pointer-events: none; z-index: 0;
+  position: fixed; left: -20px; top: 50%; pointer-events: none; z-index: 0;
   width: 260px;
-  animation: bearFloat 14s ease-in-out infinite;
+  animation: bearFloat 10s ease-in-out infinite;
 }
 .bear-inner {
   position: relative; width: 100%;
@@ -349,14 +349,15 @@ body {
 }
 .bear {
   width: 100%; height: auto; display: block;
-  filter: grayscale(1) brightness(1.6) contrast(2);
+  filter: brightness(2.5) contrast(3) saturate(0);
   mix-blend-mode: multiply;
-  opacity: 0.2;
+  opacity: 0.18;
 }
 @keyframes bearFloat {
-  0%,100% { top: 50%; }
-  33%     { top: calc(50% - 12px); }
-  66%     { top: calc(50% + 8px); }
+  0%,100% { left: -20px; top: 50%; }
+  25%     { left: -14px; top: calc(50% - 10px); }
+  50%     { left: -20px; top: 50%; }
+  75%     { left: -26px; top: calc(50% + 7px); }
 }
 @media (max-width: 768px) { .bear-wrap { display: none; } }
 .bg-sym {
