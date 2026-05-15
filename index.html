@@ -1318,7 +1318,7 @@ select.calc-inp { cursor: pointer; }
                 stroke-dasharray="345.6" stroke-dashoffset="0"/>
             </svg>
             <div class="timer-center">
-              <div class="timer-digits" id="timer-display">01:30</div>
+              <div class="timer-digits" id="timer-display">01:00</div>
               <div class="timer-label">отдых</div>
             </div>
           </div>
@@ -1338,7 +1338,7 @@ select.calc-inp { cursor: pointer; }
           <div class="timer-set-row">
             <input type="number" class="timer-set-inp" id="timerSetMin" value="1" min="0" max="99" placeholder="мин">
             <span style="color:var(--muted);font-size:12px">:</span>
-            <input type="number" class="timer-set-inp" id="timerSetSec" value="30" min="0" max="59" placeholder="сек">
+            <input type="number" class="timer-set-inp" id="timerSetSec" value="0" min="0" max="59" placeholder="сек">
           </div>
         </div>
         <div id="panel-sw" style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%">
@@ -2389,7 +2389,7 @@ function switchClock(m) {
   document.getElementById('panel-sw').style.display = m==='sw'?'flex':'none';
 }
 const CIRC_T = 345.6;
-let timerTotal=90, timerLeft=90, timerInt=null, timerOn=false;
+let timerTotal=60, timerLeft=60, timerInt=null, timerOn=false;
 const fmt = s => String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
 function updateTimerRing() { document.getElementById('timer-ring').style.strokeDashoffset = CIRC_T - (CIRC_T * timerLeft/timerTotal); }
 function setTimer(s) { resetTimer(); timerTotal=s; timerLeft=s; document.getElementById('timer-display').textContent=fmt(s); document.getElementById('timer-display').className='timer-digits'; updateTimerRing();
