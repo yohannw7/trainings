@@ -338,29 +338,29 @@ body {
 .blob-3 { width: 300px; height: 300px; top: 50%; left: 55%; background: var(--blob-3); }
 
 .bg-symbols { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.bear-wrap {
-  position: fixed; left: -20px; top: 50%; pointer-events: none; z-index: 0;
-  width: 260px;
-  animation: bearFloat 10s ease-in-out infinite;
+.bg-sym {
+  position: absolute;
+  font-family: 'Bebas Neue', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+  user-select: none;
+  line-height: 1;
+  animation: symFloat ease-in-out infinite;
+  transition: color 0.4s;
+  filter: grayscale(1);
 }
-.bear-inner {
-  position: relative; width: 100%;
-  transform: translateY(-50%);
-}
-.bear {
-  width: 100%; height: auto; display: block;
+.bg-bear {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
   filter: brightness(2.5) contrast(3) saturate(0);
   mix-blend-mode: multiply;
-  opacity: 0.18;
+  animation: bearBgFloat ease-in-out infinite;
 }
-@keyframes bearFloat {
-  0%,100% { left: -20px; top: 50%; transform: rotate(0deg); }
-  25%     { left: -14px; top: calc(50% - 10px); transform: rotate(3deg); }
-  50%     { left: -20px; top: 50%; transform: rotate(0deg); }
-  75%     { left: -26px; top: calc(50% + 7px); transform: rotate(-2.5deg); }
+@keyframes bearBgFloat {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  25%     { transform: translateY(-14px) rotate(2.5deg); }
+  50%     { transform: translateY(0) rotate(0deg); }
+  75%     { transform: translateY(8px) rotate(-2deg); }
 }
-@media (max-width: 768px) { .bear-wrap { display: none; } }
-.bg-sym {
   position: absolute;
   font-family: 'Bebas Neue', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
   user-select: none;
@@ -1150,7 +1150,6 @@ select.calc-inp { cursor: pointer; }
   .calc-card { padding: 14px 16px; }
   .hist-card { padding: 12px 14px; }
 }
-
 @media (max-width: 768px) {
   .tab-btn { font-size: 12px; padding: 6px 14px; }
 }
@@ -1181,6 +1180,7 @@ select.calc-inp { cursor: pointer; }
   .side-panel.open { transform: translateX(0); }
 }
 @media (max-width: 768px) {
+  .bg-bear { display: none; }
   :root { --bento-cols: 1fr; --page-padding: 12px; --gap: 8px; --h1-size: 34px; --h1-spacing: 2px; --day-name-size: 18px; --timer-ring-size: 100px; --timer-digits-size: 28px; --prog-gap: 12px; --prog-padding: 14px 16px; --timer-padding: 14px; --ex-padding: 12px 14px 10px; --streak-block-padding: 4px 4px 4px 12px; --side-panel-width: 300px; }
   .bento { display: flex; flex-direction: column; grid-template-rows: none; }
   .card-progress { flex-shrink: 0; }
@@ -1284,7 +1284,6 @@ select.calc-inp { cursor: pointer; }
 <div class="blob blob-2"></div>
 <div class="blob blob-3"></div>
 <div class="bg-symbols" id="bgSymbols"></div>
-<div class="bear-wrap"><div class="bear-inner"><img class="bear" src="bear.png" alt=""></div></div>
 
 <svg width="0" height="0" style="position:absolute">
   <defs>
@@ -1573,6 +1572,7 @@ function showToast(msg, duration) {
   const syms = ['🔥','⚡','🏋️','🎯','✦','⬢'];
   const container = document.getElementById('bgSymbols');
   const count = window.innerWidth < 480 ? 16 : 28;
+  const isSmall = window.innerWidth < 480;
   for(let i=0;i<count;i++){
     const el = document.createElement('div');
     el.className = 'bg-sym';
@@ -1588,6 +1588,26 @@ function showToast(msg, duration) {
     el.textContent = sym;
     el.style.cssText = `left:${x}%; top:${y}%; font-size:${size}px; opacity:${op}; --r0:${r0}; --r1:${r1}; animation-duration:${dur}s; animation-delay:${delay}s;`;
     container.appendChild(el);
+  }
+  // Добавляем медведей на фон
+  if (!isSmall) {
+    const bearCount = 3;
+    for (let i = 0; i < bearCount; i++) {
+      const img = document.createElement('img');
+      img.className = 'bg-bear';
+      img.src = 'bear.png';
+      img.alt = '';
+      const size = 40 + Math.random() * 40;
+      const x = 2 + Math.random() * 20;
+      const y = 10 + Math.random() * 80;
+      const dur = 8 + Math.random() * 6;
+      const delay = -Math.random() * 8;
+      const op = (0.06 + Math.random() * 0.08).toFixed(3);
+      const r0 = (Math.random() * 40 - 20).toFixed(1);
+      const r1 = (Math.random() * 40 - 20).toFixed(1);
+      img.style.cssText = `left:${x}%; top:${y}%; width:${size}px; height:auto; opacity:${op}; animation-duration:${dur}s; animation-delay:${delay}s; --r0:${r0}deg; --r1:${r1}deg;`;
+      container.appendChild(img);
+    }
   }
   updateSymbolColors();
 })();
