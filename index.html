@@ -338,6 +338,32 @@ body {
 .blob-3 { width: 300px; height: 300px; top: 50%; left: 55%; background: var(--blob-3); }
 
 .bg-symbols { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.bear-wrap {
+  position: fixed; left: 0; top: 50%; pointer-events: none; z-index: 0;
+  width: 260px;
+  animation: bearFloat 14s ease-in-out infinite;
+}
+.bear-inner {
+  position: relative; width: 100%;
+  transform: translateY(-50%);
+}
+.bear {
+  width: 100%; height: auto; display: block;
+  mix-blend-mode: multiply; filter: brightness(0.4) contrast(1.8);
+  opacity: 0.35;
+}
+.bear-overlay {
+  position: absolute; inset: 0;
+  background: var(--accent2);
+  mix-blend-mode: overlay; opacity: 0.5;
+}
+@keyframes bearFloat {
+  0%,100% { top: 50%; }
+  33%     { top: calc(50% - 12px); }
+  66%     { top: calc(50% + 8px); }
+}
+@media (max-width: 768px) { .bear-wrap { width: 160px; } }
+@media (max-width: 480px) { .bear-wrap { width: 120px; } }
 .bg-sym {
   position: absolute;
   font-family: 'Bebas Neue', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
@@ -1262,6 +1288,7 @@ select.calc-inp { cursor: pointer; }
 <div class="blob blob-2"></div>
 <div class="blob blob-3"></div>
 <div class="bg-symbols" id="bgSymbols"></div>
+<div class="bear-wrap"><div class="bear-inner"><div class="bear-overlay"></div><img class="bear" src="bear.png" alt=""></div></div>
 
 <svg width="0" height="0" style="position:absolute">
   <defs>
