@@ -280,7 +280,7 @@
   --blob-1: radial-gradient(ellipse, rgba(99,102,241,0.12) 0%, transparent 70%);
   --blob-2: radial-gradient(ellipse, rgba(168,85,247,0.10) 0%, transparent 70%);
   --blob-3: radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 65%);
-  --sym-color: rgba(99,102,241,0.15);
+  --sym-color: rgba(99,102,241,0.4);
   --ring-grad-1: #6366f1;
   --ring-grad-2: #818cf8;
   --timer-grad-1: #6366f1;
@@ -334,7 +334,7 @@ body {
 .bg-symbols { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
 .bg-sym {
   position: absolute;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: 'Bebas Neue', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
   user-select: none;
   line-height: 1;
   animation: symFloat ease-in-out infinite;
@@ -1208,14 +1208,14 @@ function openSettings() {
 
 // ── BG SYMBOLS ──
 (function(){
-  const syms = ['✦','◈','⊕','✗','▲','◇','⬡','⊞','✚','◉','⌬','⊿','✕','△','◻','⬢','╋','⋆','✧','◆','⟡','⬟','✱','⌀'];
+  const syms = ['🔥','⚡','🏋️','🎯','✦','⬢'];
   const container = document.getElementById('bgSymbols');
   const count = window.innerWidth < 480 ? 16 : 28;
   for(let i=0;i<count;i++){
     const el = document.createElement('div');
     el.className = 'bg-sym';
     const sym = syms[Math.floor(Math.random()*syms.length)];
-    const size = 14 + Math.random()*70;
+    const size = 20 + Math.random()*80;
     const x = Math.random()*100;
     const y = Math.random()*100;
     const dur = 5 + Math.random()*8;
