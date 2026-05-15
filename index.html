@@ -1027,6 +1027,51 @@ body {
 .theme-opt-violet { background: linear-gradient(135deg, #7b1fa2 0%, #9c27b0 30%, #ce93d8 60%, #c4a3ff 100%); }
 .theme-opt-liquid { background: linear-gradient(135deg, #6366f1 0%, #818cf8 30%, #a78bfa 60%, #c4b5fd 100%); }
 
+/* Табы */
+.tab-nav {
+  display: flex; gap: 4px; flex-shrink: 0;
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  padding: 4px;
+  margin-bottom: 10px;
+  align-self: flex-start;
+}
+.tab-btn {
+  padding: 8px 20px; border-radius: var(--r-pill);
+  border: none; background: transparent;
+  color: var(--muted); font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  transition: all 0.2s; white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active {
+  background: var(--timer-mode-active-bg);
+  color: var(--timer-mode-active-color);
+  box-shadow: 0 1px 8px var(--glow);
+}
+.tab-content { display: none; flex-direction: column; flex: 1; min-height: 0; }
+.tab-content.active { display: flex; }
+
+/* Плейсхолдер для будущих вкладок */
+.placeholder-tab {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+  padding: 40px;
+}
+.placeholder-icon { font-size: 64px; opacity: 0.3; }
+.placeholder-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; background: var(--title-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.placeholder-desc { font-size: 13px; color: var(--muted); text-align: center; max-width: 300px; }
+
+@media (max-width: 768px) {
+  .tab-btn { font-size: 12px; padding: 6px 14px; }
+}
+@media (max-width: 480px) {
+  .tab-btn { font-size: 11px; padding: 5px 10px; }
+}
+
 /* Адаптив */
 @media (max-width: 1024px) {
   :root { --bento-cols: 1fr 1fr; --page-padding: 16px; --gap: 10px; --h1-size: 44px; --h1-spacing: 3px; --day-name-size: 22px; --timer-ring-size: 110px; --timer-digits-size: 30px; --prog-gap: 14px; --prog-padding: 16px 18px; --side-panel-width: 340px; }
@@ -1158,7 +1203,14 @@ body {
     </div>
   </div>
 
-  <div class="page-layout">
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('training',this)">🏋️ Тренировки</button>
+    <button class="tab-btn" onclick="switchTab('calculators',this)">🧮 Калькуляторы</button>
+    <button class="tab-btn" onclick="switchTab('progress',this)">📈 Прогресс</button>
+  </div>
+
+  <div class="tab-content tab-training active">
+    <div class="page-layout">
     <!-- Левая панель (интерфейс внутри страницы, как правая карточка таймера) -->
     <div class="side-dock" id="sideDock">
       <div class="side-panel" id="sidePanel">
@@ -1270,7 +1322,25 @@ body {
     </div>
     <button class="reset-pill" onclick="resetDay()">Сбросить день</button>
   </div>
-</div>
+</div> <!-- end tab-training -->
+
+  <div class="tab-content tab-calculators">
+    <div class="placeholder-tab">
+      <div class="placeholder-icon">🧮</div>
+      <div class="placeholder-title">Калькуляторы</div>
+      <div class="placeholder-desc">Скоро здесь появится расчёт калорий, ИМТ, рабочего веса и макросов</div>
+    </div>
+  </div>
+
+  <div class="tab-content tab-progress">
+    <div class="placeholder-tab">
+      <div class="placeholder-icon">📈</div>
+      <div class="placeholder-title">Прогресс</div>
+      <div class="placeholder-desc">Скоро здесь будет история тренировок, графики весов и замеров</div>
+    </div>
+  </div>
+
+</div> <!-- end page -->
 
 <div id="modalContainer"></div>
 
@@ -1431,6 +1501,16 @@ function openSidePanel(di, ei) {
   document.querySelectorAll('.ex-card').forEach(c => c.classList.remove('active-ex'));
   const card = document.getElementById(`ex-${di}-${ei}`);
   if (card) card.classList.add('active-ex');
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  const tab = document.querySelector('.tab-content.tab-' + name);
+  if (tab) tab.classList.add('active');
+  // Если переключились обратно на тренировки — обновляем таймер
+  if (name === 'training') startWorkoutTimer();
 }
 
 function closeSidePanel() {
