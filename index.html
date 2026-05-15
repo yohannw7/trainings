@@ -1090,6 +1090,14 @@ select.calc-inp { cursor: pointer; }
   background: rgba(0,0,0,0.06); border: 1px solid var(--border);
   text-align: center; margin-top: 4px;
 }
+.calc-edit-btn {
+  position: absolute; top: 12px; right: 14px;
+  background: none; border: 1px solid var(--border);
+  color: var(--muted); width: 30px; height: 30px; border-radius: 50%;
+  font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.calc-edit-btn:hover { border-color: var(--accent2); color: var(--accent2); }
 
 @media (max-width: 768px) {
   .calc-grid { grid-template-columns: 1fr; }
@@ -1356,6 +1364,10 @@ select.calc-inp { cursor: pointer; }
 </div> <!-- end tab-training -->
 
   <div class="tab-content tab-calculators">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:4px">
+      <span style="font-size:11px;color:var(--muted);flex:1">Данные подставляются из вашего профиля</span>
+      <button class="calc-edit-btn" onclick="editCalcProfile()" title="Изменить данные">✎</button>
+    </div>
     <div class="calc-grid">
       <div class="card calc-card">
         <div class="calc-title">ИМТ</div>
@@ -1587,8 +1599,8 @@ function switchTab(name, btn) {
   btn.classList.add('active');
   const tab = document.querySelector('.tab-content.tab-' + name);
   if (tab) tab.classList.add('active');
-  // Если переключились обратно на тренировки — обновляем таймер
   if (name === 'training') startWorkoutTimer();
+  if (name === 'calculators') ensureCalcProfile();
 }
 
 function closeSidePanel() {
@@ -2203,12 +2215,98 @@ function playSound() {
   } catch(e) {}
 }
 
-// ── INIT ──
-applyTheme(getTheme());
+// ── CALC PROFILE ──
+const CP_KEY = 'calcProfile';
+
+function getCalcProfile() { try { const r = localStorage.getItem(CP_KEY); return r ? JSON.parse(r) : null; } catch { return null; } }
+function saveCalcProfile(d) { localStorage.setItem(CP_KEY, JSON.stringify(d)); }
+
+function ensureCalcProfile() {
+  const p = getCalcProfile();
+  if (p) { applyCalcProfile(p); return; }
+  showCalcProfileModal();
+}
+
+function showCalcProfileModal() {
+  const p = getCalcProfile();
+  document.getElementById('modalContainer').innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal" style="max-width:400px">
+        <h3>🧮 Ваши данные</h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Заполните один раз — подставится во все калькуляторы</p>
+        <div class="modal-field"><label>Пол</label>
+          <select id="cpGender"><option value="male"${p&&p.gender==='male'?' selected':''}>Мужской</option><option value="female"${p&&p.gender==='female'?' selected':''}>Женский</option></select>
+        </div>
+        <div class="modal-field"><label>Возраст</label><input type="number" id="cpAge" value="${p?p.age:25}" min="10" max="100"></div>
+        <div class="modal-field"><label>Вес (кг)</label><input type="number" id="cpWeight" value="${p?p.weight:75}" min="20" max="300" step="0.1"></div>
+        <div class="modal-field"><label>Рост (см)</label><input type="number" id="cpHeight" value="${p?p.height:175}" min="100" max="250"></div>
+        <div class="modal-field"><label>Активность</label>
+          <select id="cpActivity">
+            <option value="1.2"${p&&p.activity==='1.2'?' selected':''}>Сидячий образ жизни</option>
+            <option value="1.375"${p&&p.activity==='1.375'?' selected':''}>Лёгкая активность (1-3 дня)</option>
+            <option value="1.55"${!p||p.activity==='1.55'?' selected':''}>Умеренная (3-5 дней)</option>
+            <option value="1.725"${p&&p.activity==='1.725'?' selected':''}>Высокая (6-7 дней)</option>
+            <option value="1.9"${p&&p.activity==='1.9'?' selected':''}>Экстремальная (2 раза в день)</option>
+          </select>
+        </div>
+        <div class="modal-field"><label>Цель</label>
+          <select id="cpGoal">
+            <option value="cut"${p&&p.goal==='cut'?' selected':''}>Сушка</option>
+            <option value="maintain"${!p||p.goal==='maintain'?' selected':''}>Поддержание</option>
+            <option value="bulk"${p&&p.goal==='bulk'?' selected':''}>Набор массы</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button class="btn accent" onclick="confirmCalcProfile()">Сохранить</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function confirmCalcProfile() {
+  const data = {
+    gender: document.getElementById('cpGender').value,
+    age: document.getElementById('cpAge').value,
+    weight: document.getElementById('cpWeight').value,
+    height: document.getElementById('cpHeight').value,
+    activity: document.getElementById('cpActivity').value,
+    goal: document.getElementById('cpGoal').value
+  };
+  saveCalcProfile(data);
+  closeModal();
+  applyCalcProfile(data);
+}
+
+function applyCalcProfile(p) {
+  if (!p) return;
+  if (document.getElementById('bmiWeight')) document.getElementById('bmiWeight').value = p.weight;
+  if (document.getElementById('bmiHeight')) document.getElementById('bmiHeight').value = p.height;
+  if (document.getElementById('tdeeGender')) document.getElementById('tdeeGender').value = p.gender;
+  if (document.getElementById('tdeeAge')) document.getElementById('tdeeAge').value = p.age;
+  if (document.getElementById('tdeeWeight')) document.getElementById('tdeeWeight').value = p.weight;
+  if (document.getElementById('tdeeHeight')) document.getElementById('tdeeHeight').value = p.height;
+  if (document.getElementById('tdeeActivity')) document.getElementById('tdeeActivity').value = p.activity;
+  if (document.getElementById('macroGoal')) document.getElementById('macroGoal').value = p.goal;
+  calcBMI(); calcTDEE(); calcMacro(); calcRM();
+  // Подставляем TDEE в поле калорий для БЖУ
+  const tdeeEl = document.getElementById('tdeeResult');
+  if (tdeeEl) {
+    const match = tdeeEl.textContent.match(/TDEE:\s*(\d+)/);
+    if (match && document.getElementById('macroKcal')) document.getElementById('macroKcal').value = match[1];
+    calcMacro();
+  }
+}
+
+function editCalcProfile() {
+  showCalcProfileModal();
+}
+
+// ── INIT ──applyTheme(getTheme());
 renderAll();
 updateProgress(currentDay);
 startWorkoutTimer();
-calcBMI(); calcTDEE(); calcMacro(); calcRM();
+if (getCalcProfile()) applyCalcProfile(getCalcProfile());
+else { calcBMI(); calcTDEE(); calcMacro(); calcRM(); }
 
 // ── GLOBAL TIMER (правая карточка) ──
 function switchClock(m) {
