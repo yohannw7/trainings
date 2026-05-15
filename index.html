@@ -349,13 +349,9 @@ body {
 }
 .bear {
   width: 100%; height: auto; display: block;
-  mix-blend-mode: multiply; filter: brightness(0.4) contrast(1.8);
-  opacity: 0.35;
-}
-.bear-overlay {
-  position: absolute; inset: 0;
-  background: var(--accent2);
-  mix-blend-mode: overlay; opacity: 0.5;
+  filter: grayscale(1) brightness(1.6) contrast(2);
+  mix-blend-mode: multiply;
+  opacity: 0.2;
 }
 @keyframes bearFloat {
   0%,100% { top: 50%; }
@@ -1287,7 +1283,7 @@ select.calc-inp { cursor: pointer; }
 <div class="blob blob-2"></div>
 <div class="blob blob-3"></div>
 <div class="bg-symbols" id="bgSymbols"></div>
-<div class="bear-wrap"><div class="bear-inner"><div class="bear-overlay"></div><img class="bear" src="bear.png" alt=""></div></div>
+<div class="bear-wrap"><div class="bear-inner"><img class="bear" src="bear.png" alt=""></div></div>
 
 <svg width="0" height="0" style="position:absolute">
   <defs>
