@@ -1065,6 +1065,37 @@ body {
 .placeholder-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; background: var(--title-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .placeholder-desc { font-size: 13px; color: var(--muted); text-align: center; max-width: 300px; }
 
+/* Калькуляторы */
+.calc-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap);
+  flex: 1; align-content: start;
+}
+.calc-card {
+  padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;
+}
+.calc-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; background: var(--title-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; }
+.calc-desc { font-size: 11px; color: var(--muted); margin-top: -6px; }
+.calc-row { display: flex; align-items: center; gap: 10px; }
+.calc-label { font-size: 12px; color: var(--muted); min-width: 80px; flex-shrink: 0; }
+.calc-inp {
+  flex: 1; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--input-bg);
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px;
+}
+.calc-inp:focus { outline: none; border-color: var(--accent2); box-shadow: 0 0 12px var(--glow); }
+select.calc-inp { cursor: pointer; }
+.calc-result {
+  font-size: 14px; font-weight: 600; color: var(--accent2);
+  padding: 10px; border-radius: var(--r-md);
+  background: rgba(0,0,0,0.06); border: 1px solid var(--border);
+  text-align: center; margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .calc-grid { grid-template-columns: 1fr; }
+  .calc-card { padding: 14px 16px; }
+}
+
 @media (max-width: 768px) {
   .tab-btn { font-size: 12px; padding: 6px 14px; }
 }
@@ -1325,10 +1356,57 @@ body {
 </div> <!-- end tab-training -->
 
   <div class="tab-content tab-calculators">
-    <div class="placeholder-tab">
-      <div class="placeholder-icon">🧮</div>
-      <div class="placeholder-title">Калькуляторы</div>
-      <div class="placeholder-desc">Скоро здесь появится расчёт калорий, ИМТ, рабочего веса и макросов</div>
+    <div class="calc-grid">
+      <div class="card calc-card">
+        <div class="calc-title">ИМТ</div>
+        <div class="calc-desc">Индекс массы тела</div>
+        <div class="calc-row"><span class="calc-label">Вес (кг)</span><input type="number" class="calc-inp" id="bmiWeight" value="75" min="20" max="300" oninput="calcBMI()"></div>
+        <div class="calc-row"><span class="calc-label">Рост (см)</span><input type="number" class="calc-inp" id="bmiHeight" value="175" min="100" max="250" oninput="calcBMI()"></div>
+        <div class="calc-result" id="bmiResult">24.5 — Норма</div>
+      </div>
+
+      <div class="card calc-card">
+        <div class="calc-title">Калории (TDEE)</div>
+        <div class="calc-desc">Суточная норма</div>
+        <div class="calc-row"><span class="calc-label">Пол</span>
+          <select class="calc-inp" id="tdeeGender" onchange="calcTDEE()"><option value="male">Мужской</option><option value="female">Женский</option></select>
+        </div>
+        <div class="calc-row"><span class="calc-label">Возраст</span><input type="number" class="calc-inp" id="tdeeAge" value="25" min="10" max="100" oninput="calcTDEE()"></div>
+        <div class="calc-row"><span class="calc-label">Вес (кг)</span><input type="number" class="calc-inp" id="tdeeWeight" value="75" min="20" max="300" oninput="calcTDEE()"></div>
+        <div class="calc-row"><span class="calc-label">Рост (см)</span><input type="number" class="calc-inp" id="tdeeHeight" value="175" min="100" max="250" oninput="calcTDEE()"></div>
+        <div class="calc-row"><span class="calc-label">Активность</span>
+          <select class="calc-inp" id="tdeeActivity" onchange="calcTDEE()">
+            <option value="1.2">Сидячий</option>
+            <option value="1.375">Лёгкая</option>
+            <option value="1.55" selected>Умеренная</option>
+            <option value="1.725">Высокая</option>
+            <option value="1.9">Экстремальная</option>
+          </select>
+        </div>
+        <div class="calc-result" id="tdeeResult">BMR: 1775 ккал · TDEE: 2750 ккал</div>
+      </div>
+
+      <div class="card calc-card">
+        <div class="calc-title">БЖУ</div>
+        <div class="calc-desc">Белки / Жиры / Углеводы</div>
+        <div class="calc-row"><span class="calc-label">Калории</span><input type="number" class="calc-inp" id="macroKcal" value="2750" min="500" max="10000" oninput="calcMacro()"></div>
+        <div class="calc-row"><span class="calc-label">Цель</span>
+          <select class="calc-inp" id="macroGoal" onchange="calcMacro()">
+            <option value="cut">Сушка</option>
+            <option value="maintain" selected>Поддержание</option>
+            <option value="bulk">Масса</option>
+          </select>
+        </div>
+        <div class="calc-result" id="macroResult">Б: 206г · Ж: 76г · У: 309г</div>
+      </div>
+
+      <div class="card calc-card">
+        <div class="calc-title">1RM</div>
+        <div class="calc-desc">Максимум на 1 раз</div>
+        <div class="calc-row"><span class="calc-label">Вес (кг)</span><input type="number" class="calc-inp" id="rmWeight" value="80" min="1" max="500" oninput="calcRM()"></div>
+        <div class="calc-row"><span class="calc-label">Повторения</span><input type="number" class="calc-inp" id="rmReps" value="8" min="1" max="30" oninput="calcRM()"></div>
+        <div class="calc-result" id="rmResult">1RM: 99 кг</div>
+      </div>
     </div>
   </div>
 
@@ -2069,6 +2147,46 @@ function renderAll() {
   updateStreakUI();
 }
 
+// ── CALCULATORS ──
+function calcBMI() {
+  const w = parseFloat(document.getElementById('bmiWeight').value) || 0;
+  const h = parseFloat(document.getElementById('bmiHeight').value) || 0;
+  if (!w || !h) { document.getElementById('bmiResult').textContent = '—'; return; }
+  const bmi = w / ((h/100)*(h/100));
+  let cat = bmi < 16 ? 'Выраженный дефицит' : bmi < 18.5 ? 'Недостаточный вес' : bmi < 25 ? 'Норма' : bmi < 30 ? 'Избыточный вес' : bmi < 35 ? 'Ожирение I' : bmi < 40 ? 'Ожирение II' : 'Ожирение III';
+  document.getElementById('bmiResult').textContent = bmi.toFixed(1) + ' — ' + cat;
+}
+
+function calcTDEE() {
+  const g = document.getElementById('tdeeGender').value;
+  const a = parseFloat(document.getElementById('tdeeAge').value) || 25;
+  const w = parseFloat(document.getElementById('tdeeWeight').value) || 70;
+  const h = parseFloat(document.getElementById('tdeeHeight').value) || 170;
+  const act = parseFloat(document.getElementById('tdeeActivity').value) || 1.55;
+  let bmr = g === 'male' ? 10*w + 6.25*h - 5*a + 5 : 10*w + 6.25*h - 5*a - 161;
+  const tdee = Math.round(bmr * act);
+  document.getElementById('tdeeResult').textContent = 'BMR: ' + Math.round(bmr) + ' ккал · TDEE: ' + tdee + ' ккал';
+}
+
+function calcMacro() {
+  const kcal = parseFloat(document.getElementById('macroKcal').value) || 2000;
+  const goal = document.getElementById('macroGoal').value;
+  const ratios = { cut: { p: 0.4, f: 0.25, c: 0.35 }, maintain: { p: 0.3, f: 0.25, c: 0.45 }, bulk: { p: 0.25, f: 0.2, c: 0.55 } };
+  const r = ratios[goal];
+  const p = Math.round(kcal * r.p / 4);
+  const f = Math.round(kcal * r.f / 9);
+  const c = Math.round(kcal * r.c / 4);
+  document.getElementById('macroResult').textContent = 'Б: ' + p + 'г · Ж: ' + f + 'г · У: ' + c + 'г';
+}
+
+function calcRM() {
+  const w = parseFloat(document.getElementById('rmWeight').value) || 0;
+  const r = parseInt(document.getElementById('rmReps').value) || 1;
+  if (!w || r < 1) { document.getElementById('rmResult').textContent = '—'; return; }
+  const rm = Math.round(w * (1 + r/30));
+  document.getElementById('rmResult').textContent = '1RM: ' + rm + ' кг';
+}
+
 // ── SOUND (громче на 30%) ──
 function playSound() {
   try {
@@ -2090,6 +2208,7 @@ applyTheme(getTheme());
 renderAll();
 updateProgress(currentDay);
 startWorkoutTimer();
+calcBMI(); calcTDEE(); calcMacro(); calcRM();
 
 // ── GLOBAL TIMER (правая карточка) ──
 function switchClock(m) {
