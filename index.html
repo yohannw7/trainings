@@ -1194,47 +1194,44 @@ select.calc-inp { cursor: pointer; }
   .t-btn { padding: 8px; font-size: 11px; }
   .t-btn.primary { padding: 10px; }
   .side-ap-btn { padding: 10px; font-size: 12px; }
-  .side-ap-btn { padding: 10px; font-size: 12px; }
   .side-rest-input { width: 60px; padding: 6px 8px; }
   .prog-timer { display: none; }
   .page { padding-bottom: calc(var(--page-padding) + env(safe-area-inset-bottom, 0px)); }
 }
 @media (max-width: 480px) {
-  :root { --page-padding: 10px; --gap: 6px; --h1-size: 28px; --h1-spacing: 1px; --day-name-size: 16px; --timer-ring-size: 85px; --timer-digits-size: 24px; --prog-gap: 8px; --prog-padding: 10px 12px; --timer-padding: 10px 8px; --ex-padding: 10px 12px 8px; --streak-block-padding: 3px 3px 3px 8px; --r-xl: 16px; --r-lg: 12px; --side-panel-width: 100vw; }
-  .brand-block h1 { font-size: 28px !important; letter-spacing: 2px !important; }
+  :root { --page-padding: 10px; --gap: 6px; --h1-size: 30px; --h1-spacing: 2px; --day-name-size: 18px; --timer-ring-size: 85px; --timer-digits-size: 26px; --prog-gap: 8px; --prog-padding: 10px 12px; --timer-padding: 10px 8px; --ex-padding: 10px 12px 8px; --streak-block-padding: 3px 3px 3px 8px; --r-xl: 16px; --r-lg: 12px; --side-panel-width: 100vw; }
+  .brand-block h1 { font-size: 30px !important; letter-spacing: 2px !important; }
   .brand-block { flex-direction: column; align-items: flex-start; gap: 3px; }
-  .brand-badge { font-size: 9px; padding: 2px 8px; white-space: normal; }
-  .day-pill { padding: 5px 7px; font-size: 10px; }
-  .day-pill .del-day { font-size: 11px; }
-  .add-day-btn { width: 28px; height: 28px; font-size: 15px; }
-  .day-header { margin-bottom: 6px; gap: 6px; }
-  .ex-card { padding: 6px 8px; gap: 1px 6px; border-radius: 10px; }
-  .exercise-list { gap: 4px; }
-  .ex-name { font-size: 10px; }
-  .ex-target { font-size: 7px; padding: 1px 5px; display: none; }
-  .ex-sets-mini { gap: 2px; }
-  .set-dot-mini { width: 14px; height: 14px; border-radius: 3px; }
-  .kg-input { width: 34px; height: 22px; font-size: 10px; }
-  .ex-progress { display: none; }
-  .ex-weight { gap: 2px; }
-  .settings-btn { top: 6px; right: 6px; width: 30px; height: 30px; font-size: 14px; }
-  .side-ex-name { font-size: 18px; }
-  .sw-time { font-size: 32px; }
-  .side-set-dot { width: 26px; height: 26px; border-radius: 8px; font-size: 10px; }
-  .modal { padding: 14px; margin: 8px; }
-  .modal h3 { font-size: 18px; }
-  .modal-field input, .modal-field select { font-size: 12px; padding: 8px 10px; }
-  .toast { font-size: 11px; padding: 8px 14px; }
-  .tab-btn { font-size: 11px; padding: 6px 8px; }
-  .timer-preset-btn { padding: 3px 7px; font-size: 9px; }
+  .brand-badge { font-size: 10px; padding: 3px 10px; }
+  .day-pill { padding: 6px 10px; font-size: 11px; }
+  .day-pill .del-day { font-size: 12px; }
+  .add-day-btn { width: 30px; height: 30px; font-size: 16px; }
+  .day-header { margin-bottom: 8px; gap: 8px; }
+  .day-count { font-size: 12px; }
+  .ex-card { padding: 8px 10px; gap: 2px 8px; border-radius: 12px; }
+  .exercise-list { gap: 5px; }
+  .ex-name { font-size: 12px; }
+  .ex-sets-mini { gap: 3px; }
+  .set-dot-mini { width: 16px; height: 16px; border-radius: 4px; }
+  .kg-input { width: 38px; height: 26px; font-size: 11px; }
+  .settings-btn { top: 8px; right: 8px; width: 32px; height: 32px; font-size: 15px; }
+  .side-ex-name { font-size: 20px; }
+  .sw-time { font-size: 34px; }
+  .side-set-dot { width: 28px; height: 28px; border-radius: 8px; font-size: 11px; }
+  .modal { padding: 16px; margin: 10px; }
+  .modal h3 { font-size: 20px; }
+  .modal-field input, .modal-field select { font-size: 13px; padding: 10px 12px; }
+  .toast { font-size: 12px; padding: 10px 18px; }
+  .tab-btn { font-size: 12px; padding: 7px 10px; }
+  .timer-preset-btn { padding: 4px 10px; font-size: 10px; }
   .prog-ring-wrap { width: 56px; height: 56px; }
-  .prog-text h3 { font-size: 14px; }
-  .prog-text p { font-size: 11px; }
+  .prog-text h3 { font-size: 15px; }
+  .prog-text p { font-size: 12px; }
   .prog-timer { display: none; }
-  .streak-mini .num { font-size: 18px; }
-  .streak-mini .icon { font-size: 15px; }
-  .hist-name { font-size: 15px; }
-  .hist-meta { font-size: 10px; }
+  .streak-mini .num { font-size: 20px; }
+  .streak-mini .icon { font-size: 16px; }
+  .hist-name { font-size: 16px; }
+  .hist-meta { font-size: 11px; }
   .page { padding-bottom: calc(var(--page-padding) + env(safe-area-inset-bottom, 8px)); }
 }
 @media (max-width: 380px) {
