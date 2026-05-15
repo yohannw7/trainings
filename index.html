@@ -698,6 +698,8 @@ body {
 .prog-stats { display: flex; gap: 16px; flex-wrap: wrap; }
 .prog-stat { font-size: 11px; color: var(--muted); }
 .prog-stat span { color: var(--text); font-weight: 500; }
+.prog-timer { font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+.prog-timer #workoutTimeDisplay { font-size: 16px; color: var(--accent2); }
 
 .card-timer {
   grid-column: 3;
@@ -1084,6 +1086,11 @@ body {
             <div class="prog-stat">Сделано: <span id="prog-done">0</span></div>
             <div class="prog-stat">Осталось: <span id="prog-left">0</span></div>
             <div class="prog-stat">Всего: <span id="prog-total">0</span></div>
+          </div>
+          <div class="prog-timer" id="progTimer" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)">
+            <span>⏱</span>
+            <span id="workoutTimeDisplay">00:00</span>
+            <span style="font-size:10px;color:var(--muted)">тренировка</span>
           </div>
         </div>
       </div>
@@ -1533,6 +1540,50 @@ function updateSideTimerRing(secondsFraction) {
   ring.style.strokeDashoffset = circ - (circ * Math.min(secondsFraction, 60) / 60);
 }
 
+// ── WORKOUT TIMER ──
+let workoutTimerInterval = null;
+const WT_KEY = 'workoutStart';
+
+function getWorkoutStart() {
+  try { return parseInt(localStorage.getItem(WT_KEY)) || null; } catch { return null; }
+}
+
+function saveWorkoutStart(ts) {
+  if (ts) localStorage.setItem(WT_KEY, ts);
+  else localStorage.removeItem(WT_KEY);
+}
+
+function startWorkoutTimer() {
+  let start = getWorkoutStart();
+  if (!start) {
+    start = Date.now();
+    saveWorkoutStart(start);
+  }
+  if (workoutTimerInterval) clearInterval(workoutTimerInterval);
+  workoutTimerInterval = setInterval(() => {
+    const elapsed = Date.now() - parseInt(start);
+    const totalSec = Math.floor(elapsed / 1000);
+    const m = String(Math.floor(totalSec / 60)).padStart(2, '0');
+    const s = String(totalSec % 60).padStart(2, '0');
+    const display = document.getElementById('workoutTimeDisplay');
+    if (display) display.textContent = m + ':' + s;
+  }, 1000);
+}
+
+function stopWorkoutTimer() {
+  if (workoutTimerInterval) { clearInterval(workoutTimerInterval); workoutTimerInterval = null; }
+}
+
+function formatDuration(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (h > 0) return `${h}ч ${m}мин`;
+  if (m > 0) return `${m}мин ${s}сек`;
+  return `${s}сек`;
+}
+
 // ── STREAK ──
 function getStreak() { try { const r = localStorage.getItem(STORAGE_STREAK); return r ? JSON.parse(r) : { streak: 0, lastDate: null }; } catch { return { streak: 0, lastDate: null }; } }
 function saveStreak(d) { localStorage.setItem(STORAGE_STREAK, JSON.stringify(d)); }
@@ -1546,7 +1597,16 @@ function completeDay() {
   s.lastDate = today;
   saveStreak(s);
   updateStreakUI();
-  alert(`День засчитан! Стрик: ${s.streak} дн. 🔥`);
+  const start = getWorkoutStart();
+  let timeStr = '';
+  if (start) {
+    timeStr = ' · ⏱ ' + formatDuration(Date.now() - start);
+    saveWorkoutStart(null);
+    stopWorkoutTimer();
+    const display = document.getElementById('workoutTimeDisplay');
+    if (display) display.textContent = '00:00';
+  }
+  alert(`День засчитан! Стрик: ${s.streak} дн. 🔥${timeStr}`);
 }
 
 function getRestTime() { return localStorage.getItem('restTime') || 90; }
@@ -1632,6 +1692,7 @@ function renderExercises() {
 function switchDay(day) {
   currentDay = day;
   closeSidePanel();
+  startWorkoutTimer();
   document.querySelectorAll('.day').forEach((d,i) => d.style.display = i===day?'block':'none');
   renderDayPills();
   updateProgress(day);
@@ -1657,6 +1718,10 @@ function updateProgress(day) {
 function resetDay() {
   if (!confirm('Сбросить прогресс этого дня?')) return;
   PLAN[currentDay].exercises.forEach((_,ei) => localStorage.removeItem(sk(currentDay,ei)));
+  saveWorkoutStart(null);
+  stopWorkoutTimer();
+  const display = document.getElementById('workoutTimeDisplay');
+  if (display) display.textContent = '00:00';
   closeSidePanel();
   renderExercises();
 }
@@ -1773,6 +1838,7 @@ function playSound() {
 applyTheme(getTheme());
 renderAll();
 updateProgress(currentDay);
+startWorkoutTimer();
 
 // ── GLOBAL TIMER (правая карточка) ──
 function switchClock(m) {
