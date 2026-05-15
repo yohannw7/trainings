@@ -1022,67 +1022,6 @@ body {
 .theme-opt-violet { background: linear-gradient(135deg, #7b1fa2 0%, #9c27b0 30%, #ce93d8 60%, #c4a3ff 100%); }
 .theme-opt-liquid { background: linear-gradient(135deg, #6366f1 0%, #818cf8 30%, #a78bfa 60%, #c4b5fd 100%); }
 
-.theme-opt-blackout-matte { background: #3a3a5e; }
-.theme-opt-fire-matte { background: #b8451e; }
-.theme-opt-aqua-matte { background: #1a8a9a; }
-.theme-opt-forest-matte { background: #2d7a3a; }
-.theme-opt-violet-matte { background: #6a2a8a; }
-.theme-opt-liquid-matte { background: #6366f1; }
-
-.theme-section-title {
-  font-size: 11px; color: var(--muted); text-transform: uppercase;
-  letter-spacing: 1px; width: 100%; margin-top: 8px; margin-bottom: 4px;
-}
-
-/* Matte mode overrides */
-body.matte .card {
-  backdrop-filter: none; -webkit-backdrop-filter: none;
-  background: rgba(255,255,255,0.04);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.06);
-}
-body.matte.theme-liquid .card {
-  background: rgba(255,255,255,0.7);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  border-color: rgba(0,0,0,0.06);
-}
-body.matte .card:hover { border-color: var(--border-h); }
-body.matte .streak-days-block {
-  backdrop-filter: none; -webkit-backdrop-filter: none;
-  background: rgba(255,255,255,0.04);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.06);
-}
-body.matte.theme-liquid .streak-days-block {
-  background: rgba(255,255,255,0.7);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-}
-body.matte .side-panel {
-  backdrop-filter: none; -webkit-backdrop-filter: none;
-  background: rgba(255,255,255,0.04);
-}
-body.matte.theme-liquid .side-panel {
-  background: rgba(255,255,255,0.7);
-}
-body.matte .ex-card { background: rgba(0,0,0,0.08); border-color: rgba(255,255,255,0.05); }
-body.matte .ex-card:hover { background: rgba(255,255,255,0.06); }
-body.matte .ex-card.completed { background: var(--done); }
-body.matte .ex-card.active-ex { box-shadow: none; border-color: var(--accent2); }
-body.matte .day-pill { background: rgba(0,0,0,0.1); border-color: rgba(255,255,255,0.04); }
-body.matte .day-pill.active { box-shadow: none; background: var(--day-pill-active-bg); }
-body.matte .side-rest-setup { background: rgba(0,0,0,0.08); }
-body.matte .side-rest-active { background: rgba(0,0,0,0.08); }
-body.matte .side-stopwatch.running { background: rgba(0,0,0,0.08); }
-body.matte .settings-btn { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(255,255,255,0.04); }
-body.matte .prog-bar-fill { box-shadow: none; }
-body.matte .timer-mode-btn.active { box-shadow: none; }
-body.matte .btn.accent { box-shadow: none; }
-body.matte .t-btn.primary { box-shadow: none; }
-body.matte .set-dot-mini.done { box-shadow: none; }
-body.matte .theme-option.active { box-shadow: none; }
-body.matte .brand-badge, body.matte .preset-select { backdrop-filter: none; -webkit-backdrop-filter: none; }
-body.matte .modal { backdrop-filter: none; -webkit-backdrop-filter: none; }
-body.matte .toast { backdrop-filter: none; -webkit-backdrop-filter: none; }
-
 /* Адаптив */
 @media (max-width: 1024px) {
   :root { --bento-cols: 1fr 1fr; --page-padding: 16px; --gap: 10px; --h1-size: 44px; --h1-spacing: 3px; --day-name-size: 22px; --timer-ring-size: 110px; --timer-digits-size: 30px; --prog-gap: 14px; --prog-padding: 16px 18px; --side-panel-width: 340px; }
@@ -1299,11 +1238,8 @@ const THEMES = ['blackout', 'fire', 'aqua', 'forest', 'violet', 'liquid'];
 const DEFAULT_THEME = 'blackout';
 function getTheme() { return localStorage.getItem(THEME_KEY) || DEFAULT_THEME; }
 function applyTheme(theme) {
-  const isMatte = theme.endsWith('-matte');
-  const baseTheme = isMatte ? theme.replace('-matte', '') : theme;
-  document.body.classList.remove(...THEMES.map(t => `theme-${t}`), 'matte');
-  if (baseTheme !== 'blackout') document.body.classList.add(`theme-${baseTheme}`);
-  if (isMatte) document.body.classList.add('matte');
+  document.body.classList.remove(...THEMES.map(t => `theme-${t}`));
+  if (theme !== 'blackout') document.body.classList.add(`theme-${theme}`);
   updateSymbolColors();
 }
 function setTheme(theme) { localStorage.setItem(THEME_KEY, theme); applyTheme(theme); }
@@ -1315,21 +1251,20 @@ function updateSymbolColors() {
 
 function openSettings() {
   const current = getTheme();
-  const isMatte = current.endsWith('-matte');
-  const curBase = isMatte ? current.replace('-matte', '') : current;
-  const glossy = ['blackout', 'fire', 'aqua', 'forest', 'violet', 'liquid'];
-  const g = (t) => `<div class="theme-option theme-opt-${t}${curBase===t&&!isMatte?' active':''}" onclick="setTheme('${t}');openSettings();" title="${t}"></div>`;
-  const m = (t) => `<div class="theme-option theme-opt-${t}-matte${curBase===t&&isMatte?' active':''}" onclick="setTheme('${t}-matte');openSettings();" title="${t} matte"></div>`;
   document.getElementById('modalContainer').innerHTML = `
     <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
       <div class="modal" style="max-width:420px">
         <h3>⚙ Настройки</h3>
         <div class="modal-field">
           <label>Тема</label>
-          <div class="theme-section-title">Glossy</div>
-          <div class="theme-options">${glossy.map(g).join('')}</div>
-          <div class="theme-section-title">Matte</div>
-          <div class="theme-options">${glossy.map(m).join('')}</div>
+          <div class="theme-options">
+            <div class="theme-option theme-opt-blackout${current==='blackout'?' active':''}" onclick="setTheme('blackout');openSettings();" title="Blackout"></div>
+            <div class="theme-option theme-opt-fire${current==='fire'?' active':''}" onclick="setTheme('fire');openSettings();" title="Fire"></div>
+            <div class="theme-option theme-opt-aqua${current==='aqua'?' active':''}" onclick="setTheme('aqua');openSettings();" title="Aqua"></div>
+            <div class="theme-option theme-opt-forest${current==='forest'?' active':''}" onclick="setTheme('forest');openSettings();" title="Forest"></div>
+            <div class="theme-option theme-opt-violet${current==='violet'?' active':''}" onclick="setTheme('violet');openSettings();" title="Violet"></div>
+            <div class="theme-option theme-opt-liquid${current==='liquid'?' active':''}" onclick="setTheme('liquid');openSettings();" title="Liquid Glass"></div>
+          </div>
         </div>
         <div class="modal-actions">
           <button class="btn accent" onclick="closeModal()">Закрыть</button>
