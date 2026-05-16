@@ -1594,11 +1594,13 @@ function showToast(msg, duration) {
     const bearImgs = ['bear.png', 'bear2.png', 'bear3.png'];
     const bearCount = 12;
     for (let i = 0; i < bearCount; i++) {
+      const src = bearImgs[Math.floor(Math.random() * bearImgs.length)];
+      const isBear3 = src === 'bear3.png';
       const img = document.createElement('img');
       img.className = 'bg-bear';
-      img.src = bearImgs[Math.floor(Math.random() * bearImgs.length)];
+      img.src = src;
       img.alt = '';
-      const size = 50 + Math.random() * 60;
+      const size = (50 + Math.random() * 60) * (isBear3 ? 1.35 : 1);
       const x = Math.random() * 90;
       const y = Math.random() * 90;
       const dur = 8 + Math.random() * 8;
