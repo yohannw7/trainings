@@ -1591,11 +1591,12 @@ function showToast(msg, duration) {
   }
   // Добавляем медведей на фон
   if (!isSmall) {
+    const bearImgs = ['bear.png', 'bear2.png'];
     const bearCount = 12;
     for (let i = 0; i < bearCount; i++) {
       const img = document.createElement('img');
       img.className = 'bg-bear';
-      img.src = 'bear.png';
+      img.src = bearImgs[Math.floor(Math.random() * bearImgs.length)];
       img.alt = '';
       const size = 50 + Math.random() * 60;
       const x = Math.random() * 90;
