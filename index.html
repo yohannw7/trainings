@@ -1442,16 +1442,9 @@ select.calc-inp { cursor: pointer; }
           <div class="timer-presets" id="timerPresets">
             <button class="timer-preset-btn" onclick="setTimer(30)">0:30</button>
             <button class="timer-preset-btn active" onclick="setTimer(60)">1:00</button>
-            <button class="timer-preset-btn" onclick="setTimer(90)">1:30</button>
             <button class="timer-preset-btn" onclick="setTimer(120)">2:00</button>
-            <button class="timer-preset-btn" onclick="setTimer(180)">3:00</button>
-            <button class="timer-preset-btn" onclick="setTimer(300)">5:00</button>
-          </div>
-          <div class="timer-set-row">
-            <input type="number" class="timer-set-inp" id="timerSetMin" value="1" min="0" max="99" placeholder="мин">
-            <span style="color:#000;font-size:12px;font-weight:bold">:</span>
-            <input type="number" class="timer-set-inp" id="timerSetSec" value="0" min="0" max="59" placeholder="сек">
-            <button class="t-btn" style="flex:none;padding:5px 12px" onclick="applyTimerSet()">SET</button>
+            <button class="timer-preset-btn" onclick="setTimer(240)">4:00</button>
+            <button class="timer-preset-btn" onclick="setTimer(600)">10:00</button>
           </div>
         </div>
         <div id="panel-sw" style="display:none;flex-direction:column;align-items:center;gap:12px;width:100%">
@@ -2551,15 +2544,6 @@ const fmt = s => String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padSt
 function updateTimerRing() {}
 function setTimer(s) { resetTimer(); timerTotal=s; timerLeft=s; document.getElementById('timer-display').textContent=fmt(s);
   document.querySelectorAll('.timer-preset-btn').forEach(b => { b.classList.toggle('active', parseInt(b.getAttribute('onclick').match(/\d+/)[0]) === s); });
-  document.getElementById('timerSetMin').value = Math.floor(s/60);
-  document.getElementById('timerSetSec').value = s%60;
-}
-function applyTimerSet() {
-  const m = parseInt(document.getElementById('timerSetMin').value) || 0;
-  const s = parseInt(document.getElementById('timerSetSec').value) || 0;
-  const total = m*60 + s;
-  if (total < 1) { showToast('Минимум 1 секунда'); return; }
-  setTimer(total);
 }
 function toggleTimer() {
   if (timerOn) { clearInterval(timerInt); timerOn=false; document.getElementById('timer-btn').textContent='START'; return; }
