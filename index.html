@@ -805,10 +805,9 @@ body::after {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
 }
 .timer-digits {
-  font-family: 'Bebas Neue', sans-serif; font-size: var(--timer-digits-size); letter-spacing: 2px; line-height: 1;
-  background: var(--timer-digits-grad);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  transition: filter 0.3s;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: var(--timer-digits-size); letter-spacing: 2px; line-height: 1;
+  color: var(--text); font-weight: bold;
 }
 .timer-digits.warning { background: var(--timer-digits-warn); -webkit-background-clip:text; background-clip:text; filter: drop-shadow(0 0 8px rgba(239,68,68,0.5)); }
 .timer-digits.done { background: var(--timer-digits-done); -webkit-background-clip:text; background-clip:text; }
