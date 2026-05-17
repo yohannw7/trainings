@@ -763,6 +763,7 @@ body {
 .timer-ring-wrap svg { transform: rotate(-90deg); width: 100%; height: 100%; }
 .tr-bg { fill: none; stroke: rgba(0,0,0,0.05); stroke-width: 6; }
 .tr-fill { fill: none; stroke: url(#timerGrad); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.9s linear; }
+.tr-fill.pulsing { animation: pulseRing 1.2s ease-in-out infinite; }
 .timer-center {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -1276,6 +1277,34 @@ select.calc-inp { cursor: pointer; }
   .theme-option:hover { transform: none; }
   .calc-edit-btn:hover { border-color: var(--border); color: var(--muted); }
 }
+
+/* Noise overlay */
+.noise-overlay {
+  position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+  width: 100%; height: 100%; opacity: 0.035;
+  mix-blend-mode: overlay;
+}
+
+/* Микро-анимации */
+@keyframes pulseRing {
+  0%,100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+@keyframes flashComplete {
+  0% { background: rgba(46,204,113,0.25); }
+  100% { background: transparent; }
+}
+@keyframes fadeInTab {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.tab-content.active { animation: fadeInTab 0.25s ease both; }
+
+/* Неоновый акцент */
+.ex-card.active-ex { border-color: var(--accent2); box-shadow: 0 0 20px var(--glow), inset 0 0 20px var(--glow); }
+.t-btn.primary:hover { filter: brightness(1.2); }
+.day-pill.active { box-shadow: 0 0 16px var(--glow); }
+.modal .btn.accent:hover { filter: brightness(1.2); }
 </style>
 </head>
 <body>
@@ -1284,6 +1313,14 @@ select.calc-inp { cursor: pointer; }
 <div class="blob blob-2"></div>
 <div class="blob blob-3"></div>
 <div class="bg-symbols" id="bgSymbols"></div>
+
+<svg class="noise-overlay" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <filter id="noiseFilter">
+    <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+  <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
+</svg>
 
 <svg width="0" height="0" style="position:absolute">
   <defs>
@@ -1848,6 +1885,9 @@ function finishSideApproach() {
   }
 
   const { di, ei } = activeSideEx;
+  // Вспышка на карточке упражнения
+  const flashCard = document.getElementById(`ex-${di}-${ei}`);
+  if (flashCard) { flashCard.style.animation = 'none'; void flashCard.offsetWidth; flashCard.style.animation = 'flashComplete 0.4s ease'; }
   const state = loadSt(di, ei, PLAN[di].exercises[ei].sets);
   const nextIdx = state.findIndex(s => !s);
   if (nextIdx !== -1) { state[nextIdx] = true; saveSt(di, ei, state); }
@@ -2526,9 +2566,9 @@ function applyTimerSet() {
   setTimer(total);
 }
 function toggleTimer() {
-  if (timerOn) { clearInterval(timerInt); timerOn=false; document.getElementById('timer-btn').textContent='Старт'; return; }
+  if (timerOn) { clearInterval(timerInt); timerOn=false; document.getElementById('timer-btn').textContent='Старт'; document.getElementById('timer-ring').classList.remove('pulsing'); return; }
   if (timerLeft<=0) timerLeft=timerTotal;
-  timerOn=true; document.getElementById('timer-btn').textContent='Пауза';
+  timerOn=true; document.getElementById('timer-btn').textContent='Пауза'; document.getElementById('timer-ring').classList.add('pulsing');
   timerInt = setInterval(()=>{
     timerLeft--;
     const d = document.getElementById('timer-display');
