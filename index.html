@@ -335,18 +335,15 @@ body {
   -webkit-font-smoothing: antialiased;
   -webkit-overflow-scrolling: touch;
   position: relative;
+  border-radius: 14px;
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.4), 0 0 0 4px #000, 0 0 0 6px #1a1a2e;
 }
 body::after {
   content: '';
   position: fixed; inset: 0; z-index: 9999; pointer-events: none;
-  background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.1) 50%), linear-gradient(90deg, rgba(255,0,0,0.06), rgba(0,255,0,0.02), rgba(0,0,255,0.06));
-  background-size: 100% 2px, 3px 100%;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 3px);
+  background-size: 100% 3px;
 }
-
-.blob { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; transition: background 0.5s; }
-.blob-1 { width: 700px; height: 500px; top: -200px; left: -200px; background: var(--blob-1); }
-.blob-2 { width: 500px; height: 500px; bottom: -150px; right: -100px; background: var(--blob-2); }
-.blob-3 { width: 300px; height: 300px; top: 50%; left: 55%; background: var(--blob-3); }
 
 .bg-symbols { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
 .bg-sym {
@@ -1086,6 +1083,29 @@ body::after {
 .btn:active { border-color: #808080 #fff #fff #808080; padding: 6px 14px 4px 16px; }
 .btn:hover { filter: brightness(1.05); }
 .btn.accent { background: var(--xp-blue); border-color: #003399; color: #fff; }
+
+/* VHS glitch on hover */
+.btn:hover, .t-btn:hover, .tab-btn:hover, .timer-preset-btn:hover, .timer-mode-btn:hover {
+  animation: glitchBtn 0.3s ease infinite;
+}
+@keyframes glitchBtn {
+  0% { transform: translate(0); }
+  20% { transform: translate(-1px, 1px); }
+  40% { transform: translate(1px, -1px); }
+  60% { transform: translate(-1px, -1px); }
+  80% { transform: translate(1px, 1px); }
+  100% { transform: translate(0); }
+}
+
+/* Blinking cursor */
+.crt-cursor {
+  position: fixed; bottom: 20px; right: 20px; z-index: 9998;
+  font-family: 'Courier New', monospace;
+  font-size: 20px; color: #32cd32;
+  pointer-events: none;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
 .btn.green { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.35); color: #16a34a; }
 .btn.red { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.25); color: #ef4444; }
 
@@ -1337,10 +1357,8 @@ select.calc-inp { cursor: pointer; }
 </head>
 <body>
 
-<div class="blob blob-1"></div>
-<div class="blob blob-2"></div>
-<div class="blob blob-3"></div>
 <div class="bg-symbols" id="bgSymbols"></div>
+<div class="crt-cursor">_</div>
 
 <svg width="0" height="0" style="position:absolute">
   <defs>
