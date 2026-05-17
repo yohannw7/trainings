@@ -1316,6 +1316,10 @@ select.calc-inp { cursor: pointer; }
         <span class="icon">🔥</span>
         <span class="num" id="streakNum">0</span>
       </div>
+      <div class="streak-mini" style="border-left:1px solid var(--border);padding-left:10px">
+        <span style="font-size:11px;color:var(--muted);font-weight:400">всего</span>
+        <span class="num" id="totalWorkouts" style="font-family:'Bebas Neue',sans-serif;font-size:20px;background:var(--pct-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">0</span>
+      </div>
       <div class="day-pills" id="dayPillsContainer"></div>
       <button class="add-day-btn" id="addDayBtn" onclick="addDay()" title="Добавить день">+</button>
     </div>
@@ -2027,9 +2031,14 @@ function getWeekId(date) {
   return d.getFullYear() + '-W' + String(weekNum).padStart(2, '0');
 }
 
-function getStreak() { try { const r = localStorage.getItem(STORAGE_STREAK); return r ? JSON.parse(r) : { streak: 0, lastWeek: null }; } catch { return { streak: 0, lastWeek: null }; } }
+function getStreak() { try { const r = localStorage.getItem(STORAGE_STREAK); return r ? JSON.parse(r) : { streak: 0, lastWeek: null, total: 0 }; } catch { return { streak: 0, lastWeek: null, total: 0 }; } }
 function saveStreak(d) { localStorage.setItem(STORAGE_STREAK, JSON.stringify(d)); }
-function updateStreakUI() { document.getElementById('streakNum').textContent = getStreak().streak; }
+function updateStreakUI() {
+  const d = getStreak();
+  document.getElementById('streakNum').textContent = d.streak;
+  const totalEl = document.getElementById('totalWorkouts');
+  if (totalEl) totalEl.textContent = d.total;
+}
 
 function completeDay() {
   const s = getStreak();
@@ -2042,6 +2051,7 @@ function completeDay() {
 
   s.streak = (s.lastWeek === lastWeekId) ? s.streak + 1 : 1;
   s.lastWeek = today;
+  s.total = (s.total || 0) + 1;
   saveStreak(s);
   updateStreakUI();
 
