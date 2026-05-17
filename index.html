@@ -1797,6 +1797,9 @@ function initCollapsibleCards() {
   document.querySelectorAll('.card').forEach(c => {
     if (!c.dataset.collapseInit) {
       c.dataset.collapseInit = '1';
+      if (window.innerWidth <= 768 && c.classList.contains('card-progress')) {
+        c.classList.add('collapsed');
+      }
       c.addEventListener('click', function(e) {
         if (window.innerWidth > 768) return;
         if (e.target.closest('button,.t-btn,.btn,input,select,.side-set-delete,.day-pill,.add-day-btn,.kg-input,.ex-card,.timer-preset-btn,.timer-mode-btn')) return;
