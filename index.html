@@ -1271,8 +1271,15 @@ select.calc-inp { cursor: pointer; }
   .card-timer { grid-column: 1 / -1; grid-row: 2; flex-direction: column; align-items: center; display: none; }
   .card-exercises { grid-column: 1 / -1; flex: 1 1 0; min-height: 0; max-height: none; }
   .card-exercises .exercise-list { overflow-y: auto; flex: 1 1 0; }
-  .card { padding-top: 28px !important; }
-  .card::before { height: 20px; font-size: 10px; }
+  .card { padding-top: 28px !important; cursor: pointer; }
+  .card::before { height: 20px; font-size: 10px; cursor: pointer; }
+  .card::after {
+    content: '−'; position: absolute; top: 0; right: 8px;
+    height: 20px; display: flex; align-items: center;
+    color: white; font-weight: bold; font-size: 14px; z-index: 2;
+  }
+  .card.collapsed > div { display: none !important; }
+  .card.collapsed::after { content: '+'; }
   .card-progress::before, .card-timer::before, .card-exercises::before { font-size: 10px; }
   .prog-ring-wrap { display: none; }
   .prog-stats { gap: 8px; }
@@ -1774,6 +1781,21 @@ function switchTab(name, btn) {
   if (name === 'training') startWorkoutTimer();
   if (name === 'calculators') ensureCalcProfile();
   if (name === 'progress') renderProgress();
+  // Init collapsible cards on mobile
+  initCollapsibleCards();
+}
+
+function initCollapsibleCards() {
+  document.querySelectorAll('.card').forEach(c => {
+    if (!c.dataset.collapseInit) {
+      c.dataset.collapseInit = '1';
+      c.addEventListener('click', function(e) {
+        if (window.innerWidth > 768) return;
+        if (e.target.closest('button,.t-btn,.btn,input,select,.side-set-delete,.day-pill,.add-day-btn,.kg-input,.ex-card,.timer-preset-btn,.timer-mode-btn')) return;
+        this.classList.toggle('collapsed');
+      });
+    }
+  });
 }
 
 function closeSidePanel() {
@@ -2564,6 +2586,7 @@ startWorkoutTimer();
 if (getCalcProfile()) applyCalcProfile(getCalcProfile());
 else { calcBMI(); calcTDEE(); calcMacro(); calcRM(); }
 renderProgress();
+initCollapsibleCards();
 
 // ── GLOBAL TIMER (правая карточка) ──
 function switchClock(m) {
