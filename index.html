@@ -1286,9 +1286,17 @@ select.calc-inp { cursor: pointer; }
   .prog-stat { font-size: 10px; }
   .streak-mini:last-child { display: none; }
   .streak-mini .num { font-size: 16px; }
-  .bottom-row { flex-direction: column; align-items: stretch; gap: 6px; }
-  .bottom-left { flex-direction: column; align-items: stretch; gap: 6px; }
-  .bottom-left > *, .reset-pill, .save-preset-btn, .complete-day-btn { width: 100%; text-align: center; }
+  .bottom-row { flex-direction: row; flex-wrap: wrap; justify-content: stretch; gap: 4px; margin-top: 4px; }
+  .bottom-left { flex-direction: row; flex-wrap: wrap; gap: 4px; flex: 1; }
+  .bottom-left > *, .reset-pill, .save-preset-btn, .complete-day-btn {
+    width: auto; flex: 1; min-width: 0;
+    padding: 4px 6px; font-size: 9px; text-align: center;
+    border-width: 2px; border-style: solid;
+  }
+  .complete-day-btn { background: #228b22; border-color: #000; color: #fff; }
+  .save-preset-btn { background: #d4d0c8; border-color: #808080; color: #000; }
+  .reset-pill { background: #ff0000; border-color: #000; color: #fff; }
+  .preset-select { padding: 3px 4px; font-size: 9px; max-width: 100%; flex: 1; }
   .preset-select { max-width: 100%; }
   .ex-card { padding: 10px; }
   .ex-name { font-size: 12px; }
