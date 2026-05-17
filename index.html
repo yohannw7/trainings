@@ -531,14 +531,12 @@ body::after {
   height: 100%;
   width: 100%;
 
-  background: var(--glass);
-  backdrop-filter: var(--blur);
-  -webkit-backdrop-filter: var(--blur);
-  border: 1px solid var(--border);
-  border-radius: var(--r-xl);
+  background: var(--window-bg);
+  border: 2px solid #003399;
+  box-shadow: 2px 2px 0px #000;
 
   padding: 16px;
-  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  padding-top: calc(35px + env(safe-area-inset-top, 0px));
   overflow-y: auto;
   overflow-x: hidden;
 
@@ -549,6 +547,7 @@ body::after {
   transform: translateX(-20px);
   opacity: 0;
   transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease;
+  position: relative;
 }
 .side-dock.open .side-panel { transform: translateX(0); opacity: 1; }
 .side-panel-close {
@@ -786,15 +785,16 @@ body::after {
 }
 .timer-mode { display: flex; background: rgba(0,0,0,0.05); border-radius: var(--r-pill); padding: 3px; gap: 0; width: 100%; }
 .timer-mode-btn {
-  flex: 1; padding: 6px 8px; border-radius: var(--r-pill);
-  border: none; background: transparent; color: var(--muted);
-  font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
-  cursor: pointer; transition: all 0.2s; text-align: center;
+  flex: 1; padding: 4px 10px;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  background: #d4d0c8;
+  color: #000;
+  font-family: 'Tahoma', sans-serif; font-size: 11px; font-weight: bold;
+  cursor: pointer; text-align: center;
 }
-.timer-mode-btn.active {
-  background: var(--timer-mode-active-bg);
-  color: var(--timer-mode-active-color);
-  box-shadow: 0 1px 8px var(--glow);
+.timer-mode-btn:active { border-color: #808080 #fff #fff #808080; }
+.timer-mode-btn.active { background: var(--xp-blue); color: #fff; border-color: #003399; }
 }
 .timer-ring-wrap { position: relative; width: var(--timer-ring-size); height: var(--timer-ring-size); flex-shrink: 0; }
 .timer-ring-wrap svg { transform: rotate(-90deg); width: 100%; height: 100%; }
@@ -815,29 +815,43 @@ body::after {
 .timer-label { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; }
 .timer-controls { display: flex; flex-direction: column; gap: 5px; width: 100%; }
 .t-btn {
-  width: 100%; padding: 9px; border-radius: var(--r-lg);
-  border: 1px solid var(--border); background: rgba(0,0,0,0.03);
-  color: var(--text); font-family: 'DM Sans', sans-serif;
-  font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.22s;
+  width: 100%; padding: 6px 12px;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  background: #d4d0c8;
+  color: #000;
+  font-family: 'Tahoma', sans-serif; font-size: 11px;
+  font-weight: bold; cursor: pointer;
 }
-.t-btn:hover { background: var(--glass-h); }
-.t-btn.primary {
-  background: var(--t-btn-primary-bg);
-  border-color: var(--t-btn-primary-border);
-  color: var(--t-btn-primary-color);
-  box-shadow: 0 3px 20px var(--glow);
-}
+.t-btn:active { border-color: #808080 #fff #fff #808080; padding: 7px 11px 5px 13px; }
+.t-btn.primary { background: var(--xp-blue); color: #fff; border-color: #003399; }
 .t-row { display: flex; gap: 5px; }
 .t-row .t-btn { flex: 1; }
 .timer-presets { display: flex; gap: 4px; flex-wrap: wrap; width: 100%; justify-content: center; }
-.timer-preset-btn {
-  padding: 4px 10px; border-radius: var(--r-pill);
-  border: 1px solid var(--border); background: rgba(0,0,0,0.03);
-  color: var(--muted); font-family: 'DM Sans', sans-serif;
-  font-size: 10px; font-weight: 500; cursor: pointer; transition: all 0.18s;
+.xp-timer-display {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 56px; font-weight: bold;
+  background: #000; color: #32cd32;
+  padding: 16px 24px;
+  border: 3px inset #808080;
+  text-align: center;
+  width: 100%;
+  text-shadow: 0 0 8px #32cd32;
+  letter-spacing: 4px;
 }
-.timer-preset-btn:hover { background: var(--glass-h); color: var(--text); border-color: var(--accent); }
-.timer-preset-btn.active { background: var(--timer-mode-active-bg); color: var(--timer-mode-active-color); border-color: var(--border-h); }
+.timer-preset-btn {
+  padding: 4px 10px;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  background: #d4d0c8;
+  color: #000;
+  font-family: 'Courier New', monospace; font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+.timer-preset-btn:active { border-color: #808080 #fff #fff #808080; }
+.timer-preset-btn.active { background: var(--xp-blue); color: #fff; border-color: #003399; }
 .timer-set-row { display: flex; gap: 4px; align-items: center; width: 100%; }
 .timer-set-inp {
   flex: 1; padding: 6px 8px; border-radius: 8px;
@@ -1212,7 +1226,7 @@ select.calc-inp { cursor: pointer; }
   .side-panel {
     position: fixed; top: 0; left: 0; bottom: 0;
     width: var(--side-panel-width); max-width: 90vw;
-    background: var(--bg); border-radius: 0; border: none;
+    background: var(--window-bg); border-radius: 0; border: none;
     border-right: 1px solid var(--border-h); z-index: 70;
     padding: 20px; overflow-y: auto;
     transform: translateX(-100%); opacity: 1;
@@ -1420,20 +1434,10 @@ select.calc-inp { cursor: pointer; }
           <button class="timer-mode-btn" onclick="switchClock('sw')">Секундомер</button>
         </div>
         <div id="panel-timer" style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%">
-          <div class="timer-ring-wrap">
-            <svg width="130" height="130" viewBox="0 0 130 130">
-              <circle class="tr-bg" cx="65" cy="65" r="55"/>
-              <circle class="tr-fill" id="timer-ring" cx="65" cy="65" r="55"
-                stroke-dasharray="345.6" stroke-dashoffset="0"/>
-            </svg>
-            <div class="timer-center">
-              <div class="timer-digits" id="timer-display">01:00</div>
-              <div class="timer-label">отдых</div>
-            </div>
-          </div>
+          <div class="xp-timer-display" id="timer-display">01:00</div>
           <div class="timer-controls">
-            <button class="t-btn primary" id="timer-btn" onclick="toggleTimer()">Старт</button>
-            <button class="t-btn" onclick="resetTimer()">Сброс</button>
+            <button class="t-btn primary" id="timer-btn" onclick="toggleTimer()">START</button>
+            <button class="t-btn" onclick="resetTimer()">RESET</button>
           </div>
           <div class="timer-presets" id="timerPresets">
             <button class="timer-preset-btn" onclick="setTimer(30)">0:30</button>
