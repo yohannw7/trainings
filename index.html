@@ -1271,6 +1271,14 @@ select.calc-inp { cursor: pointer; }
   .card-timer { grid-column: 1 / -1; grid-row: 2; flex-direction: column; align-items: center; display: none; }
   .card-exercises { grid-column: 1 / -1; flex: 1 1 0; min-height: 0; max-height: none; }
   .card-exercises .exercise-list { overflow-y: auto; flex: 1 1 0; }
+  .card { padding-top: 28px !important; }
+  .card::before { height: 20px; font-size: 10px; }
+  .card-progress::before, .card-timer::before, .card-exercises::before { font-size: 10px; }
+  .prog-ring-wrap { display: none; }
+  .prog-stats { gap: 8px; }
+  .prog-stat { font-size: 10px; }
+  .streak-mini:last-child { display: none; }
+  .streak-mini .num { font-size: 16px; }
   .bottom-row { flex-direction: column; align-items: stretch; gap: 6px; }
   .bottom-left { flex-direction: column; align-items: stretch; gap: 6px; }
   .bottom-left > *, .reset-pill, .save-preset-btn, .complete-day-btn { width: 100%; text-align: center; }
