@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, Reorder, useDragControls } from "framer-motion";
 import { useState } from "react";
 import { setKey, weightKey } from "@/lib/defaults";
 import { useWorkout } from "./WorkoutContext";
@@ -8,6 +8,8 @@ import { useModal } from "./ModalProvider";
 import { useToast } from "./ToastProvider";
 import { ExerciseDrawer } from "./ExerciseDrawer";
 import { DayEditorModal } from "./DayEditorModal";
+import { ProgramsModal } from "./ProgramsModal";
+import type { Exercise } from "@/lib/types";
 
 export function TrainingSection() {
   const {
@@ -19,6 +21,7 @@ export function TrainingSection() {
     addDay,
     deleteDay,
     saveDayEdit,
+    reorderExercises,
     resetDay,
     completeDay,
     setWeight,
@@ -26,6 +29,9 @@ export function TrainingSection() {
     loadPreset,
     deletePreset,
     presets,
+    loadProgram,
+    isPR,
+    getLastWeight,
   } = useWorkout();
   const { open, close } = useModal();
   const { toast } = useToast();
@@ -215,80 +221,32 @@ export function TrainingSection() {
           </div>
 
           {/* Exercise list */}
-          <div data-tour="exercises" className="grid gap-3 sm:grid-cols-2">
+          <Reorder.Group
+            data-tour="exercises"
+            axis="y"
+            values={day.exercises}
+            onReorder={(next) => reorderExercises(currentDay, next)}
+            className="grid gap-3 sm:grid-cols-2"
+          >
             {day.exercises.map((ex, ei) => {
               const state = setStates[setKey(currentDay, ei)] ?? [];
-              const exDone = state.filter(Boolean).length;
-              const exPct = ex.sets > 0 ? Math.round((exDone / ex.sets) * 100) : 0;
-              const allDone = exDone >= ex.sets;
               const weight = weights[weightKey(currentDay, ei)] || "";
-
               return (
-                <motion.button
-                  key={ei}
-                  layout
-                  whileHover={{ y: -2 }}
-                  onClick={() => setDrawerEx({ di: currentDay, ei })}
-                  {...(ei === 0 ? { "data-tour": "exercise-card" } : {})}
-                  className={`group relative overflow-hidden rounded-2xl border p-4 text-left transition-all ${
-                    allDone
-                      ? "border-success/30 bg-success/5"
-                      : "border-border/60 bg-surface/30 hover:border-accent/40"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <h4
-                        className={`text-base font-medium leading-tight ${
-                          allDone ? "text-muted line-through" : ""
-                        }`}
-                      >
-                        {ex.name}
-                      </h4>
-                      <span className="mt-1 inline-block rounded-full border border-border/60 bg-surface/40 px-2 py-0.5 text-[11px] text-muted">
-                        {ex.target}
-                      </span>
-                    </div>
-                    <div
-                      className="flex items-center gap-1.5"
-                      onClick={(e) => e.stopPropagation()}
-                      {...(ei === 0 ? { "data-tour": "weight-input" } : {})}
-                    >
-                      <input
-                        className="h-8 w-14 rounded-lg border border-border/60 bg-surface/40 px-2 text-center text-xs text-text outline-none focus:border-accent/60"
-                        type="number"
-                        placeholder="0"
-                        min={0}
-                        step={0.5}
-                        value={weight}
-                        onChange={(e) => setWeight(currentDay, ei, e.target.value)}
-                      />
-                      <span className="text-[10px] text-muted">кг</span>
-                    </div>
-                  </div>
-
-                  {/* set dots */}
-                  <div className="mt-3 flex gap-1">
-                    {Array.from({ length: ex.sets }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`h-2 flex-1 rounded-full transition-all ${
-                          state[i] ? "bg-accent-gradient" : "bg-border/60"
-                        }`}
-                      />
-                    ))}
-                  </div>
-
-                  <div className="mt-2 flex items-center justify-between text-[11px] text-muted">
-                    <span>
-                      {exDone}/{ex.sets}
-                    </span>
-                    <span className="font-medium text-accent2">{exPct}%</span>
-                  </div>
-                </motion.button>
+                <ExerciseCard
+                  key={ex.name + "-" + ei}
+                  ex={ex}
+                  ei={ei}
+                  di={currentDay}
+                  state={state}
+                  weight={weight}
+                  isPR={isPR(ex.name, parseFloat(weight))}
+                  lastWeight={getLastWeight(ex.name)}
+                  onOpen={() => setDrawerEx({ di: currentDay, ei })}
+                  onWeightChange={(v) => setWeight(currentDay, ei, v)}
+                />
               );
             })}
-          </div>
+          </Reorder.Group>
 
           {/* Actions */}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
@@ -298,6 +256,23 @@ export function TrainingSection() {
               </button>
               <button onClick={askSavePreset} className="btn">
                 💾 Сохранить пресет
+              </button>
+              <button
+                onClick={() => {
+                  open(
+                    <ProgramsModal
+                      onPick={(p) => {
+                        loadProgram(p);
+                        close();
+                        toast("Программа загружена");
+                      }}
+                      onClose={close}
+                    />,
+                  );
+                }}
+                className="btn"
+              >
+                📚 Программы
               </button>
               <PresetSelect
                 presets={Object.keys(presets)}
@@ -332,6 +307,149 @@ export function TrainingSection() {
         onClose={() => setDrawerEx(null)}
       />
     </section>
+  );
+}
+
+function ExerciseCard({
+  ex,
+  ei,
+  di,
+  state,
+  weight,
+  isPR,
+  lastWeight,
+  onOpen,
+  onWeightChange,
+}: {
+  ex: Exercise;
+  ei: number;
+  di: number;
+  state: boolean[];
+  weight: string;
+  isPR: boolean;
+  lastWeight: string | null;
+  onOpen: () => void;
+  onWeightChange: (v: string) => void;
+}) {
+  const dragControls = useDragControls();
+  const exDone = state.filter(Boolean).length;
+  const exPct = ex.sets > 0 ? Math.round((exDone / ex.sets) * 100) : 0;
+  const allDone = exDone >= ex.sets;
+  const showLastHint = !weight && lastWeight && !allDone;
+
+  return (
+    <Reorder.Item
+      value={ex}
+      dragListener={false}
+      dragControls={dragControls}
+      whileDrag={{ scale: 1.02, zIndex: 5, boxShadow: "0 18px 40px rgba(0,0,0,0.35)" }}
+      transition={{ type: "spring", damping: 24, stiffness: 320 }}
+      className="list-none"
+    >
+      <button
+        onClick={onOpen}
+        {...(ei === 0 ? { "data-tour": "exercise-card" } : {})}
+        className={`group relative w-full overflow-hidden rounded-2xl border p-4 text-left transition-all ${
+          allDone
+            ? "border-success/30 bg-success/5"
+            : "border-border/60 bg-surface/30 hover:border-accent/40"
+        }`}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-1 items-start gap-2">
+            {/* Drag handle */}
+            <span
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                dragControls.start(e);
+              }}
+              onClick={(e) => e.stopPropagation()}
+              className="-ml-1 mt-0.5 grid h-7 w-5 cursor-grab touch-none place-items-center text-muted/60 hover:text-muted active:cursor-grabbing"
+              aria-label="Перетащить"
+            >
+              <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+                <circle cx="2" cy="3" r="1.2" />
+                <circle cx="2" cy="7" r="1.2" />
+                <circle cx="2" cy="11" r="1.2" />
+                <circle cx="8" cy="3" r="1.2" />
+                <circle cx="8" cy="7" r="1.2" />
+                <circle cx="8" cy="11" r="1.2" />
+              </svg>
+            </span>
+            <div className="min-w-0 flex-1">
+              <h4
+                className={`flex items-center gap-1.5 text-base font-medium leading-tight ${
+                  allDone ? "text-muted line-through" : ""
+                }`}
+              >
+                <span className="truncate">{ex.name}</span>
+                {isPR && (
+                  <span
+                    className="shrink-0 rounded-full border border-amber-400/40 bg-amber-400/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-300"
+                    title="Личный рекорд"
+                  >
+                    🏆 PR
+                  </span>
+                )}
+              </h4>
+              <span className="mt-1 inline-block rounded-full border border-border/60 bg-surface/40 px-2 py-0.5 text-[11px] text-muted">
+                {ex.target}
+              </span>
+            </div>
+          </div>
+          <div
+            className="flex flex-col items-end gap-1"
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            {...(ei === 0 ? { "data-tour": "weight-input" } : {})}
+          >
+            <div className="flex items-center gap-1.5">
+              <input
+                className="h-8 w-14 rounded-lg border border-border/60 bg-surface/40 px-2 text-center text-xs text-text outline-none focus:border-accent/60"
+                type="number"
+                placeholder={lastWeight || "0"}
+                min={0}
+                step={0.5}
+                value={weight}
+                onChange={(e) => onWeightChange(e.target.value)}
+              />
+              <span className="text-[10px] text-muted">кг</span>
+            </div>
+            {showLastHint && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onWeightChange(lastWeight!);
+                }}
+                className="text-[9px] uppercase tracking-wider text-accent2/80 transition-colors hover:text-accent2"
+              >
+                ← {lastWeight} кг
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* set dots */}
+        <div className="mt-3 flex gap-1">
+          {Array.from({ length: ex.sets }).map((_, i) => (
+            <div
+              key={i}
+              className={`h-2 flex-1 rounded-full transition-all ${
+                state[i] ? "bg-accent-gradient" : "bg-border/60"
+              }`}
+            />
+          ))}
+        </div>
+
+        <div className="mt-2 flex items-center justify-between text-[11px] text-muted">
+          <span>
+            {exDone}/{ex.sets}
+          </span>
+          <span className="font-medium text-accent2">{exPct}%</span>
+        </div>
+      </button>
+    </Reorder.Item>
   );
 }
 

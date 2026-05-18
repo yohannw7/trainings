@@ -41,3 +41,10 @@ export type CalcProfile = {
 };
 
 export type ThemeName = "midnight" | "dawn" | "ocean" | "forest" | "violet";
+
+export type PersonalRecord = {
+  weight: number;
+  date: string; // ISO date
+};
+
+export type PersonalRecords = Record<string, PersonalRecord>;

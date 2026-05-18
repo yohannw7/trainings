@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { setKey } from "@/lib/defaults";
 import { formatTime, playBeep, vibrate } from "@/lib/utils";
+import { useWakeLock } from "@/lib/wakeLock";
 import { useWorkout } from "./WorkoutContext";
 
 type Props = {
@@ -30,6 +31,9 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
   const state = di !== null && ei !== null ? setStates[setKey(di, ei)] ?? [] : [];
   const doneCount = state.filter(Boolean).length;
   const allDone = ex ? doneCount >= ex.sets : false;
+
+  // Keep screen awake while drawer is open and there's any active timer/countdown
+  useWakeLock(open && (approachRunning || resting || countdown !== null));
 
   useEffect(() => {
     // Reset transient state when changing exercise or closing
