@@ -95,11 +95,17 @@ function StatCard({
   const glint = useAnimationControls();
 
   const playGlint = () => {
-    glint.set({ x: "-140%" });
+    glint.set({ x: "-140%", opacity: 1 });
     glint.start({
       x: "140%",
       transition: { duration: 1.4, ease: [0.25, 0.46, 0.45, 0.94] },
     });
+  };
+
+  const stopGlint = () => {
+    // Snap the sweep off-canvas the moment the cursor leaves so nothing lingers.
+    glint.stop();
+    glint.set({ x: "140%", opacity: 0 });
   };
 
   return (
@@ -112,20 +118,19 @@ function StatCard({
       }}
       whileTap={{ scale: 0.98, rotate: -1 }}
       onHoverStart={playGlint}
+      onHoverEnd={stopGlint}
       onTapStart={playGlint}
       className="group card relative cursor-default overflow-hidden p-4 transition-shadow duration-300 hover:shadow-glow sm:p-5"
     >
-      {/* ── Glass surface highlights (always on, very subtle) ── */}
-      {/* Top edge specular */}
+      {/* ── Glass highlights (only while hovered) ── */}
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-px"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px opacity-0 transition-opacity duration-500 group-hover:opacity-100"
         style={{
           background:
             "linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent)",
         }}
       />
-      {/* Inner glass border */}
       <span
         aria-hidden
         className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
@@ -139,7 +144,7 @@ function StatCard({
       <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
         <motion.div
           aria-hidden
-          initial={{ x: "-140%" }}
+          initial={{ x: "140%", opacity: 0 }}
           animate={glint}
           className="absolute -top-1/2 left-0 h-[200%] w-[55%]"
           style={{ transform: "skewX(28deg)", filter: "blur(8px)" }}
@@ -153,7 +158,7 @@ function StatCard({
               mixBlendMode: "screen",
             }}
           />
-          {/* Bright core (a thinner, sharper white streak) */}
+          {/* Bright core */}
           <span
             className="absolute inset-y-0 left-1/2 -translate-x-1/2"
             style={{
@@ -164,7 +169,7 @@ function StatCard({
               mixBlendMode: "screen",
             }}
           />
-          {/* Chromatic dispersion — subtle prism */}
+          {/* Chromatic dispersion */}
           <span
             className="absolute inset-y-0 left-[40%]"
             style={{
