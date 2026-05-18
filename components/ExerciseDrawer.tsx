@@ -133,17 +133,18 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-sm sm:flex sm:items-center sm:justify-center"
             onClick={onClose}
-          />
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 28, stiffness: 280 }}
-            className="fixed inset-x-0 bottom-0 z-[90] flex max-h-[92vh] flex-col rounded-t-3xl border-t border-border/60 bg-bg p-5 shadow-soft sm:inset-x-4 sm:bottom-4 sm:max-w-md sm:rounded-3xl sm:border"
-            data-lenis-prevent
           >
+            <motion.div
+              initial={{ y: "100%", opacity: 1, scale: 1 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: "100%", opacity: 1, scale: 1 }}
+              transition={{ type: "spring", damping: 28, stiffness: 280 }}
+              onClick={(e) => e.stopPropagation()}
+              className="fixed inset-x-0 bottom-0 z-[90] flex max-h-[92vh] flex-col rounded-t-3xl border-t border-border/60 bg-bg p-5 shadow-soft sm:relative sm:inset-auto sm:bottom-auto sm:m-auto sm:max-h-[88vh] sm:w-full sm:max-w-md sm:rounded-3xl sm:border sm:p-6 sm:shadow-glow"
+              data-lenis-prevent
+            >
             <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-border sm:hidden" />
 
             <div className="mb-1 flex items-start justify-between gap-3">
@@ -284,6 +285,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
                 </div>
               )}
             </div>
+            </motion.div>
           </motion.div>
         </>
       )}
