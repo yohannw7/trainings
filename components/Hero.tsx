@@ -95,11 +95,10 @@ function StatCard({
   const glint = useAnimationControls();
 
   const playGlint = () => {
-    glint.set({ x: "-130%", opacity: 0 });
+    glint.set({ x: "-140%" });
     glint.start({
-      x: "130%",
-      opacity: [0, 1, 1, 0],
-      transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1], times: [0, 0.15, 0.85, 1] },
+      x: "140%",
+      transition: { duration: 1.4, ease: [0.25, 0.46, 0.45, 0.94] },
     });
   };
 
@@ -116,20 +115,78 @@ function StatCard({
       onTapStart={playGlint}
       className="group card relative cursor-default overflow-hidden p-4 transition-shadow duration-300 hover:shadow-glow sm:p-5"
     >
-      {/* Glint sweep — plays once on hover/tap */}
-      <motion.span
+      {/* ── Glass surface highlights (always on, very subtle) ── */}
+      {/* Top edge specular */}
+      <span
         aria-hidden
-        initial={{ x: "-130%", opacity: 0 }}
-        animate={glint}
-        className="pointer-events-none absolute -top-1/2 left-0 h-[200%] w-1/2"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px"
         style={{
           background:
-            "linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.05) 35%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0.05) 65%, transparent 80%)",
-          filter: "blur(1px)",
-          mixBlendMode: "screen",
-          transform: "skewX(-18deg)",
+            "linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent)",
         }}
       />
+      {/* Inner glass border */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        style={{
+          boxShadow:
+            "inset 0 1px 0 rgba(255,255,255,0.18), inset 0 0 0 1px rgba(255,255,255,0.06)",
+        }}
+      />
+
+      {/* ── Sweeping glass glint, plays once on hover ── */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
+        <motion.div
+          aria-hidden
+          initial={{ x: "-140%" }}
+          animate={glint}
+          className="absolute -top-1/2 left-0 h-[200%] w-[55%]"
+          style={{ transform: "skewX(-22deg)", filter: "blur(8px)" }}
+        >
+          {/* Soft wide halo */}
+          <span
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 30%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.04) 70%, transparent 100%)",
+              mixBlendMode: "screen",
+            }}
+          />
+          {/* Bright core (a thinner, sharper white streak) */}
+          <span
+            className="absolute inset-y-0 left-1/2 -translate-x-1/2"
+            style={{
+              width: "22%",
+              background:
+                "linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent)",
+              filter: "blur(2px)",
+              mixBlendMode: "screen",
+            }}
+          />
+          {/* Chromatic dispersion — subtle prism */}
+          <span
+            className="absolute inset-y-0 left-[40%]"
+            style={{
+              width: "8%",
+              background:
+                "linear-gradient(90deg, transparent, rgba(120,170,255,0.45), transparent)",
+              mixBlendMode: "screen",
+              filter: "blur(3px)",
+            }}
+          />
+          <span
+            className="absolute inset-y-0 left-[52%]"
+            style={{
+              width: "8%",
+              background:
+                "linear-gradient(90deg, transparent, rgba(255,170,210,0.40), transparent)",
+              mixBlendMode: "screen",
+              filter: "blur(3px)",
+            }}
+          />
+        </motion.div>
+      </div>
 
       <div className="relative flex items-start justify-between">
         <span className="text-xs uppercase tracking-wider text-muted">{label}</span>
