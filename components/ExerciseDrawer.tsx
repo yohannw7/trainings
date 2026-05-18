@@ -20,9 +20,11 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
   const [approachResult, setApproachResult] = useState<number | null>(null);
   const [restRemaining, setRestRemaining] = useState(0);
   const [resting, setResting] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
   const approachStartRef = useRef<number | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const restRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const ex = di !== null && ei !== null ? plan[di]?.exercises[ei] : null;
   const state = di !== null && ei !== null ? setStates[setKey(di, ei)] ?? [] : [];
@@ -36,6 +38,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
     setApproachResult(null);
     setRestRemaining(0);
     setResting(false);
+    setCountdown(null);
     if (tickRef.current) {
       clearInterval(tickRef.current);
       tickRef.current = null;
@@ -44,15 +47,20 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
       clearInterval(restRef.current);
       restRef.current = null;
     }
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
   }, [di, ei, open]);
 
   useEffect(() => () => {
     if (tickRef.current) clearInterval(tickRef.current);
     if (restRef.current) clearInterval(restRef.current);
+    if (countdownRef.current) clearInterval(countdownRef.current);
   }, []);
 
-  const startApproach = () => {
-    if (resting || !ex) return;
+  const beginApproachTimer = () => {
+    if (!ex) return;
     setApproachResult(null);
     setApproachElapsed(0);
     setApproachRunning(true);
@@ -63,6 +71,41 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
         setApproachElapsed(Math.floor((Date.now() - approachStartRef.current) / 1000));
       }
     }, 100);
+    playBeep();
+    vibrate(120);
+  };
+
+  const startApproach = () => {
+    if (resting || !ex || countdown !== null || approachRunning) return;
+    // 3-2-1 countdown
+    setCountdown(3);
+    playBeep();
+    vibrate(60);
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    countdownRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === null) return null;
+        if (prev <= 1) {
+          if (countdownRef.current) {
+            clearInterval(countdownRef.current);
+            countdownRef.current = null;
+          }
+          beginApproachTimer();
+          return null;
+        }
+        playBeep();
+        vibrate(60);
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const cancelCountdown = () => {
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
+    setCountdown(null);
   };
 
   const finishApproach = () => {
@@ -116,6 +159,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
     if (di === null || ei === null) return;
     undoLastSet(di, ei);
     cancelRest();
+    cancelCountdown();
     if (tickRef.current) {
       clearInterval(tickRef.current);
       tickRef.current = null;
@@ -191,7 +235,31 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
             {/* Stopwatch / result */}
             <div className="mt-4 min-h-[80px]">
               <AnimatePresence mode="wait">
-                {approachRunning && (
+                {countdown !== null && (
+                  <motion.div
+                    key={`countdown-${countdown}`}
+                    initial={{ opacity: 0, scale: 0.6 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.4 }}
+                    transition={{ type: "spring", damping: 18, stiffness: 260 }}
+                    className="relative rounded-2xl border border-accent/40 bg-accent/10 px-5 py-4 text-center"
+                  >
+                    <button
+                      onClick={cancelCountdown}
+                      className="absolute right-3 top-3 grid h-7 w-7 place-items-center rounded-full text-muted transition-colors hover:bg-surface hover:text-danger"
+                      aria-label="Отменить"
+                    >
+                      ✕
+                    </button>
+                    <div className="text-xs uppercase tracking-wider text-muted">
+                      Приготовься
+                    </div>
+                    <div className="heading-display mt-1 bg-accent-gradient bg-clip-text text-7xl font-bold leading-none text-transparent">
+                      {countdown}
+                    </div>
+                  </motion.div>
+                )}
+                {countdown === null && approachRunning && (
                   <motion.div
                     key="running"
                     initial={{ opacity: 0, y: 10 }}
@@ -207,7 +275,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
                     </div>
                   </motion.div>
                 )}
-                {!approachRunning && approachResult !== null && (
+                {countdown === null && !approachRunning && approachResult !== null && (
                   <motion.div
                     key="result"
                     initial={{ opacity: 0, scale: 0.85 }}
@@ -221,7 +289,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
                     </span>
                   </motion.div>
                 )}
-                {resting && (
+                {countdown === null && resting && (
                   <motion.div
                     key="rest"
                     initial={{ opacity: 0, y: 10 }}
@@ -270,10 +338,10 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
                 <div className="flex gap-2">
                   <button
                     onClick={startApproach}
-                    disabled={approachRunning || resting}
+                    disabled={approachRunning || resting || countdown !== null}
                     className="btn btn-primary flex-1"
                   >
-                    ▶ Начать подход
+                    {countdown !== null ? `Старт через ${countdown}…` : "▶ Начать подход"}
                   </button>
                   <button
                     onClick={finishApproach}
