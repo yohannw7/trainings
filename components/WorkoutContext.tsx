@@ -12,8 +12,10 @@ import {
 import { DEFAULT_PLAN, STORAGE_KEYS, setKey, weightKey } from "@/lib/defaults";
 import { readJSON, readString, removeKey, writeJSON, writeString } from "@/lib/storage";
 import type { Plan, PersonalRecords, StreakData, WorkoutHistoryEntry } from "@/lib/types";
-import { formatDuration, getWeekId, playBeep, vibrate } from "@/lib/utils";
+import { getWeekId, playBeep, vibrate } from "@/lib/utils";
+import { formatDurationLocalized } from "@/lib/i18n";
 import { useToast } from "./ToastProvider";
+import { useLocale } from "./LocaleProvider";
 
 type SetStates = Record<string, boolean[]>;
 type Weights = Record<string, string>;
@@ -58,6 +60,7 @@ const WorkoutContext = createContext<Ctx | null>(null);
 
 export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
+  const { t, locale } = useLocale();
   const [hydrated, setHydrated] = useState(false);
   const [plan, setPlan] = useState<Plan>(DEFAULT_PLAN);
   const [currentDay, setCurrentDay] = useState(0);
@@ -176,7 +179,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
 
   const addDay = useCallback((name: string, short: string) => {
     if (plan.length >= 7) {
-      toast("Максимум 7 дней");
+      toast(t("training.maxDays"));
       return;
     }
     const next: Plan = [
@@ -190,18 +193,18 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     setPlan(next);
     persistPlan(next);
     setCurrentDay(next.length - 1);
-  }, [plan, persistPlan, toast]);
+  }, [plan, persistPlan, toast, t]);
 
   const deleteDay = useCallback((di: number) => {
     if (plan.length <= 1) {
-      toast("Минимум 1 день");
+      toast(t("training.minDays"));
       return;
     }
     const next = plan.filter((_, i) => i !== di);
     setPlan(next);
     persistPlan(next);
     if (currentDay >= next.length) setCurrentDay(next.length - 1);
-  }, [plan, persistPlan, currentDay, toast]);
+  }, [plan, persistPlan, currentDay, toast, t]);
 
   const saveDayEdit = useCallback((di: number, day: Plan[number]) => {
     const next = plan.map((d, i) => (i === di ? day : d));
@@ -296,7 +299,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   const completeDay = useCallback(() => {
     const today = getWeekId(new Date());
     if (streak.lastWeek === today) {
-      toast("На этой неделе уже отмечал! 🔥");
+      toast(t("toast.alreadyMarked"));
       return;
     }
     const prevWeek = new Date();
@@ -363,21 +366,26 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     setHistory(nextHistory);
     writeJSON(STORAGE_KEYS.HISTORY, nextHistory);
 
-    const prMsg = newPrCount > 0 ? ` · 🏆 ${newPrCount} ${newPrCount === 1 ? "рекорд" : "рекорда"}` : "";
-    toast(
-      `День засчитан! Стрик: ${newStreak.streak} нед.${duration ? ` · ⏱ ${formatDuration(duration)}` : ""}${prMsg}`,
-      4000,
-    );
+    const prMsg =
+      newPrCount > 0
+        ? ` · ${
+            newPrCount === 1
+              ? t("toast.recordSingle", { n: newPrCount })
+              : t("toast.records", { n: newPrCount })
+          }`
+        : "";
+    const durMsg = duration ? ` · ${t("toast.duration", { value: formatDurationLocalized(duration, locale) })}` : "";
+    toast(t("toast.dayDone", { streak: newStreak.streak }) + durMsg + prMsg, 4000);
     playBeep();
     vibrate([100, 50, 100]);
-  }, [streak, plan, currentDay, setStates, weights, history, prs, toast]);
+  }, [streak, plan, currentDay, setStates, weights, history, prs, toast, t, locale]);
 
   const savePreset = useCallback((name: string) => {
     const next = { ...presets, [name]: JSON.parse(JSON.stringify(plan)) as Plan };
     setPresets(next);
     writeJSON(STORAGE_KEYS.PRESETS, next);
-    toast(`Пресет «${name}» сохранён!`);
-  }, [presets, plan, toast]);
+    toast(t("training.preset.saved", { name }));
+  }, [presets, plan, toast, t]);
 
   const loadPreset = useCallback((name: string) => {
     const p = presets[name];
@@ -397,8 +405,8 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
       });
       return ss;
     });
-    toast(`Загружено: «${name}»`);
-  }, [presets, persistPlan, toast]);
+    toast(t("training.preset.loaded", { name }));
+  }, [presets, persistPlan, toast, t]);
 
   const deletePreset = useCallback((name: string) => {
     const next = { ...presets };

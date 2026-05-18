@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import type { WorkoutHistoryEntry } from "@/lib/types";
+import { useLocale } from "./LocaleProvider";
+import type { Locale } from "@/lib/i18n";
 
 type Props = {
   history: WorkoutHistoryEntry[];
@@ -34,6 +36,7 @@ function isoWeekToDate(isoWeek: string): Date | null {
 }
 
 export function Heatmap({ history }: Props) {
+  const { t, locale } = useLocale();
   const [tooltip, setTooltip] = useState<{ date: string; count: number; x: number; y: number } | null>(null);
 
   // Map day -> count (each history entry covers a whole week visually)
@@ -48,26 +51,6 @@ export function Heatmap({ history }: Props) {
     });
     return map;
   }, [history]);
-
-  const totalsByMonth = useMemo(() => {
-    const today = new Date();
-    const start = new Date(today);
-    start.setDate(today.getDate() - WEEKS * 7);
-    const months: Array<{ label: string; col: number }> = [];
-    for (let w = 0; w < WEEKS; w++) {
-      const d = new Date(start);
-      d.setDate(start.getDate() + w * 7);
-      const monthIdx = d.getMonth();
-      const lastMonth = months[months.length - 1];
-      if (!lastMonth || lastMonth.col === w - 1 || lastMonth.label !== monthAbbrev(monthIdx)) {
-        // place month label on first week of month
-        if (d.getDate() <= 7) {
-          months.push({ label: monthAbbrev(monthIdx), col: w });
-        }
-      }
-    }
-    return months;
-  }, []);
 
   const cells = useMemo(() => {
     const today = new Date();
@@ -110,21 +93,21 @@ export function Heatmap({ history }: Props) {
     <div className="card relative p-5 sm:p-6">
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
         <div>
-          <h3 className="heading-display text-xl font-bold">Активность</h3>
-          <p className="text-xs text-muted">Последние 6 месяцев</p>
+          <h3 className="heading-display text-xl font-bold">{t("heatmap.title")}</h3>
+          <p className="text-xs text-muted">{t("heatmap.subtitle")}</p>
         </div>
         <div className="flex gap-4 text-xs text-muted">
           <span>
             <span className="heading-display mr-1 text-base font-bold text-text">
               {totalWorkouts}
             </span>
-            всего
+            {t("heatmap.total")}
           </span>
           <span>
             <span className="heading-display mr-1 text-base font-bold text-text">
               {last30Days}
             </span>
-            за 30 дней
+            {t("heatmap.last30")}
           </span>
         </div>
       </div>
@@ -149,18 +132,18 @@ export function Heatmap({ history }: Props) {
                   });
                 }}
                 className={`h-[14px] w-[14px] rounded-[3px] transition-colors ${cellColor(cell.count, cell.future)}`}
-                title={`${cell.date}: ${cell.count} тренировка(и)`}
+                title={`${cell.date}: ${cell.count}`}
               />
             ))}
           </div>
           <div className="mt-2 flex items-center gap-2 text-[10px] text-muted">
-            <span>Меньше</span>
+            <span>{t("heatmap.legend.less")}</span>
             <div className="flex gap-[3px]">
               <div className={`h-[10px] w-[10px] rounded-[2px] ${cellColor(0, false)}`} />
               <div className={`h-[10px] w-[10px] rounded-[2px] ${cellColor(1, false)}`} />
               <div className={`h-[10px] w-[10px] rounded-[2px] ${cellColor(2, false)}`} />
             </div>
-            <span>Больше</span>
+            <span>{t("heatmap.legend.more")}</span>
           </div>
         </div>
       </div>
@@ -170,11 +153,21 @@ export function Heatmap({ history }: Props) {
           className="pointer-events-none fixed z-[150] -translate-x-1/2 -translate-y-full rounded-lg border border-border/60 bg-bg px-2.5 py-1.5 text-xs text-text shadow-soft"
           style={{ left: tooltip.x, top: tooltip.y - 8 }}
         >
-          {tooltip.date.replace(/-/g, ".")} · {tooltip.count} тренировка(и)
+          {formatHeatmapDate(tooltip.date, locale)} · {tooltip.count}
         </div>
       )}
     </div>
   );
+}
+
+function formatHeatmapDate(date: string, locale: Locale): string {
+  // input "YYYY-MM-DD"
+  if (locale === "ru") return date.replace(/-/g, ".");
+  // English: "Mar 14"
+  const [y, m, d] = date.split("-");
+  const monthIdx = parseInt(m, 10) - 1;
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${months[monthIdx] ?? m} ${parseInt(d, 10)}, ${y}`;
 }
 
 function cellColor(count: number, future: boolean): string {
@@ -183,8 +176,4 @@ function cellColor(count: number, future: boolean): string {
   if (count === 1) return "bg-accent/40";
   if (count === 2) return "bg-accent/70";
   return "bg-accent";
-}
-
-function monthAbbrev(m: number): string {
-  return ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"][m];
 }

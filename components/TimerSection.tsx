@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { formatStopwatch, formatTime, playBeep, vibrate } from "@/lib/utils";
+import { useLocale } from "./LocaleProvider";
 
 const PRESETS = [30, 60, 120, 180, 240, 300, 600];
 
@@ -10,28 +11,27 @@ type Mode = "timer" | "sw";
 
 export function TimerSection() {
   const [mode, setMode] = useState<Mode>("timer");
+  const { t } = useLocale();
 
   return (
     <section id="timer" className="mx-auto w-full max-w-6xl px-4 sm:px-6">
       <div className="mb-6">
         <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent2">
-          02 — Время
+          {t("timer.eyebrow")}
         </span>
         <h2 className="heading-display mt-2 text-3xl font-bold sm:text-4xl">
-          Таймер и секундомер
+          {t("timer.title")}
         </h2>
-        <p className="mt-2 max-w-2xl text-sm text-muted">
-          Контролируй интервалы отдыха и точно измеряй любые активности.
-        </p>
+        <p className="mt-2 max-w-2xl text-sm text-muted">{t("timer.description")}</p>
       </div>
 
       <div className="card overflow-hidden p-5 sm:p-7">
         <div className="mb-5 inline-flex rounded-full border border-border/60 bg-surface/40 p-1">
           <ModeButton active={mode === "timer"} onClick={() => setMode("timer")}>
-            ⏲ Таймер
+            {t("timer.modeTimer")}
           </ModeButton>
           <ModeButton active={mode === "sw"} onClick={() => setMode("sw")}>
-            ⏱ Секундомер
+            {t("timer.modeStopwatch")}
           </ModeButton>
         </div>
 
@@ -72,6 +72,7 @@ function ModeButton({
 function Timer() {
   const [total, setTotal] = useState(60);
   const [left, setLeft] = useState(60);
+  const { t } = useLocale();
   const [running, setRunning] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -124,16 +125,16 @@ function Timer() {
           {formatTime(left)}
         </div>
         <div className="mt-1 text-xs uppercase tracking-wider text-muted">
-          {running ? "Идёт" : left === 0 ? "Готово" : "Готов"}
+          {running ? t("timer.running") : left === 0 ? t("common.done") : t("timer.ready")}
         </div>
       </ProgressRing>
 
       <div className="mt-6 flex w-full max-w-xs gap-2">
         <button onClick={toggle} className="btn btn-primary flex-1">
-          {running ? "Пауза" : "Старт"}
+          {running ? t("common.pause") : t("common.start")}
         </button>
         <button onClick={reset} className="btn flex-1">
-          Сброс
+          {t("common.reset")}
         </button>
       </div>
 
@@ -159,6 +160,7 @@ function Timer() {
 function Stopwatch() {
   const [ms, setMs] = useState(0);
   const [running, setRunning] = useState(false);
+  const { t } = useLocale();
   const [laps, setLaps] = useState<Array<{ n: number; total: string; lap: string }>>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startRef = useRef<number>(0);
@@ -207,18 +209,18 @@ function Stopwatch() {
         <div className="heading-display text-4xl font-bold tabular-nums sm:text-5xl">
           {formatStopwatch(ms)}
         </div>
-        <div className="mt-1 text-xs uppercase tracking-wider text-muted">Секундомер</div>
+        <div className="mt-1 text-xs uppercase tracking-wider text-muted">{t("timer.stopwatch")}</div>
       </ProgressRing>
 
       <div className="mt-6 flex w-full max-w-sm gap-2">
         <button onClick={toggle} className="btn btn-primary flex-1">
-          {running ? "Пауза" : ms > 0 ? "Продолжить" : "Старт"}
+          {running ? t("common.pause") : ms > 0 ? t("common.resume") : t("common.start")}
         </button>
         <button onClick={lap} className="btn flex-1" disabled={!running && ms === 0}>
-          Круг
+          {t("common.lap")}
         </button>
         <button onClick={reset} className="btn flex-1" disabled={ms === 0}>
-          Сброс
+          {t("common.reset")}
         </button>
       </div>
 
@@ -229,7 +231,7 @@ function Stopwatch() {
               key={l.n}
               className="flex items-center justify-between rounded-xl border border-border/60 bg-surface/30 px-3 py-2 text-xs"
             >
-              <span className="text-muted">Круг {l.n}</span>
+              <span className="text-muted">{t("common.lap")} {l.n}</span>
               <span className="text-accent2 tabular-nums">{l.lap}</span>
               <span className="text-muted tabular-nums">{l.total}</span>
             </div>

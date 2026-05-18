@@ -4,18 +4,21 @@ import { motion } from "framer-motion";
 import { useWorkout } from "./WorkoutContext";
 import { useTheme } from "./ThemeProvider";
 import { useModal } from "./ModalProvider";
+import { useLocale } from "./LocaleProvider";
 import { ThemeName } from "@/lib/types";
-
-const SECTIONS = [
-  { id: "training", label: "Тренировка", icon: "🏋️" },
-  { id: "calculators", label: "Калькуляторы", icon: "🧮" },
-  { id: "progress", label: "Прогресс", icon: "📈" },
-];
+import type { Locale } from "@/lib/i18n";
 
 export function Header() {
   const { streak } = useWorkout();
   const { open, close } = useModal();
   const { theme, setTheme, themes } = useTheme();
+  const { locale, setLocale, locales, t } = useLocale();
+
+  const SECTIONS = [
+    { id: "training", label: t("nav.training"), icon: "🏋️" },
+    { id: "calculators", label: t("nav.calculators"), icon: "🧮" },
+    { id: "progress", label: t("nav.progress"), icon: "📈" },
+  ];
 
   const openSettings = () => {
     open(
@@ -23,6 +26,9 @@ export function Header() {
         theme={theme}
         themes={themes}
         setTheme={setTheme}
+        locale={locale}
+        locales={locales}
+        setLocale={setLocale}
         onClose={close}
       />,
     );
@@ -76,13 +82,13 @@ export function Header() {
           >
             <span className="text-base">🔥</span>
             <span className="heading-display text-sm font-bold">{streak.streak}</span>
-            <span className="hidden text-xs text-muted sm:inline">нед.</span>
+            <span className="hidden text-xs text-muted sm:inline">{t("common.weeks")}</span>
           </motion.div>
           <button
             onClick={openSettings}
             data-tour="settings"
             className="grid h-10 w-10 place-items-center rounded-xl border border-border/60 bg-surface/40 text-muted transition-all hover:border-accent/50 hover:text-text"
-            aria-label="Настройки"
+            aria-label={t("header.settings")}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3" />
@@ -99,13 +105,20 @@ function SettingsModal({
   theme,
   themes,
   setTheme,
+  locale,
+  locales,
+  setLocale,
   onClose,
 }: {
   theme: ThemeName;
   themes: ThemeName[];
   setTheme: (t: ThemeName) => void;
+  locale: Locale;
+  locales: Locale[];
+  setLocale: (l: Locale) => void;
   onClose: () => void;
 }) {
+  const { t } = useLocale();
   const themeMeta: Record<ThemeName, { label: string; gradient: string }> = {
     midnight: { label: "Midnight", gradient: "linear-gradient(135deg, #6366f1, #a855f7)" },
     dawn: { label: "Dawn", gradient: "linear-gradient(135deg, #ff7a59, #ffb86c)" },
@@ -114,31 +127,58 @@ function SettingsModal({
     violet: { label: "Violet", gradient: "linear-gradient(135deg, #a855f7, #ec4899)" },
   };
 
+  const langMeta: Record<Locale, { label: string; flag: string }> = {
+    ru: { label: t("settings.langRu"), flag: "🇷🇺" },
+    en: { label: t("settings.langEn"), flag: "🇬🇧" },
+  };
+
   return (
     <div>
-      <h3 className="heading-display mb-1 text-2xl font-bold">Настройки</h3>
-      <p className="mb-5 text-sm text-muted">ASH Train Tracker v2.0</p>
+      <h3 className="heading-display mb-1 text-2xl font-bold">{t("settings.title")}</h3>
+      <p className="mb-5 text-sm text-muted">{t("settings.subtitle")}</p>
 
+      {/* Language */}
       <div className="mb-5">
-        <span className="label">Тема оформления</span>
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-          {themes.map((t) => (
+        <span className="label">{t("settings.language")}</span>
+        <div className="grid grid-cols-2 gap-2">
+          {locales.map((l) => (
             <button
-              key={t}
-              onClick={() => setTheme(t)}
-              className={`group relative aspect-square rounded-2xl border-2 transition-all ${
-                t === theme ? "border-accent shadow-glow" : "border-border/40 hover:border-accent/50"
+              key={l}
+              onClick={() => setLocale(l)}
+              className={`flex items-center justify-center gap-2 rounded-2xl border-2 px-4 py-3 text-sm font-medium transition-all ${
+                l === locale
+                  ? "border-accent bg-accent/10 text-text"
+                  : "border-border/40 bg-surface/30 text-muted hover:border-accent/50"
               }`}
-              style={{ background: themeMeta[t].gradient }}
-              aria-label={themeMeta[t].label}
             >
-              {t === theme && (
+              <span className="text-base">{langMeta[l].flag}</span>
+              <span>{langMeta[l].label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Theme */}
+      <div className="mb-5">
+        <span className="label">{t("settings.theme")}</span>
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+          {themes.map((th) => (
+            <button
+              key={th}
+              onClick={() => setTheme(th)}
+              className={`group relative aspect-square rounded-2xl border-2 transition-all ${
+                th === theme ? "border-accent shadow-glow" : "border-border/40 hover:border-accent/50"
+              }`}
+              style={{ background: themeMeta[th].gradient }}
+              aria-label={themeMeta[th].label}
+            >
+              {th === theme && (
                 <span className="absolute inset-0 grid place-items-center text-xl text-white drop-shadow">
                   ✓
                 </span>
               )}
               <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] uppercase tracking-wider text-muted">
-                {themeMeta[t].label}
+                {themeMeta[th].label}
               </span>
             </button>
           ))}
@@ -147,7 +187,7 @@ function SettingsModal({
 
       <div className="mt-12 flex justify-end">
         <button onClick={onClose} className="btn btn-primary">
-          Готово
+          {t("settings.ok")}
         </button>
       </div>
     </div>

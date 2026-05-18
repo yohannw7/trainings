@@ -6,6 +6,7 @@ import { setKey } from "@/lib/defaults";
 import { formatTime, playBeep, vibrate } from "@/lib/utils";
 import { useWakeLock } from "@/lib/wakeLock";
 import { useWorkout } from "./WorkoutContext";
+import { useLocale } from "./LocaleProvider";
 
 type Props = {
   open: boolean;
@@ -16,6 +17,7 @@ type Props = {
 
 export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
   const { plan, setStates, restTime, setRestTime, toggleSet, undoLastSet } = useWorkout();
+  const { t } = useLocale();
   const [approachElapsed, setApproachElapsed] = useState(0);
   const [approachRunning, setApproachRunning] = useState(false);
   const [approachResult, setApproachResult] = useState<number | null>(null);
@@ -199,13 +201,13 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
               <div>
                 <h3 className="heading-display text-2xl font-bold leading-tight">{ex.name}</h3>
                 <p className="mt-1 text-sm text-muted">
-                  {ex.target} · {doneCount}/{ex.sets} подходов
+                  {t("drawer.target", { target: ex.target, done: doneCount, total: ex.sets })}
                 </p>
               </div>
               <button
                 onClick={onClose}
                 className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border/60 text-muted transition-colors hover:border-danger/50 hover:text-danger"
-                aria-label="Закрыть"
+                aria-label={t("common.close")}
               >
                 ✕
               </button>
@@ -232,7 +234,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
                 onClick={handleUndo}
                 className="mt-3 self-start rounded-full border border-border/60 px-3 py-1.5 text-xs text-muted transition-colors hover:border-danger/50 hover:text-danger"
               >
-                ↩ Отменить последний
+                {t("drawer.undoLast")}
               </button>
             )}
 
@@ -251,12 +253,12 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
                     <button
                       onClick={cancelCountdown}
                       className="absolute right-3 top-3 grid h-7 w-7 place-items-center rounded-full text-muted transition-colors hover:bg-surface hover:text-danger"
-                      aria-label="Отменить"
+                      aria-label={t("common.cancel")}
                     >
                       ✕
                     </button>
                     <div className="text-xs uppercase tracking-wider text-muted">
-                      Приготовься
+                      {t("drawer.getReady")}
                     </div>
                     <div className="relative mt-1 flex h-20 items-center justify-center">
                       <AnimatePresence mode="popLayout">
@@ -286,7 +288,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
                       {formatTime(approachElapsed)}
                     </div>
                     <div className="mt-1 text-xs uppercase tracking-wider text-muted">
-                      Время подхода
+                      {t("drawer.setTime")}
                     </div>
                   </motion.div>
                 )}
@@ -318,7 +320,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
                     >
                       ✕
                     </button>
-                    <div className="text-xs uppercase tracking-wider text-muted">Отдых</div>
+                    <div className="text-xs uppercase tracking-wider text-muted">{t("drawer.rest")}</div>
                     <div className="heading-display mt-1 text-4xl font-bold tabular-nums text-accent2">
                       {formatTime(restRemaining)}
                     </div>
@@ -330,7 +332,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
             {/* Rest setup */}
             {!allDone && !resting && (
               <div className="mt-4 rounded-2xl border border-border/60 bg-surface/30 p-4">
-                <span className="label">Отдых перед подходом (сек)</span>
+                <span className="label">{t("drawer.restSetup")}</span>
                 <input
                   type="number"
                   className="input mt-1 max-w-[140px]"
@@ -347,7 +349,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
             <div className="mt-5">
               {allDone ? (
                 <div className="rounded-2xl border border-success/30 bg-success/10 px-4 py-4 text-center text-sm font-medium text-success">
-                  ✅ Все подходы выполнены!
+                  {t("drawer.allDone")}
                 </div>
               ) : (
                 <div className="flex gap-2">
@@ -356,14 +358,16 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
                     disabled={approachRunning || resting || countdown !== null}
                     className="btn btn-primary flex-1"
                   >
-                    {countdown !== null ? `Старт через ${countdown}…` : "▶ Начать подход"}
+                    {countdown !== null
+                      ? t("drawer.startCountdown", { n: countdown })
+                      : t("drawer.startApproach")}
                   </button>
                   <button
                     onClick={finishApproach}
                     disabled={!approachRunning}
                     className="btn btn-success flex-1"
                   >
-                    ✓ Завершить
+                    {t("drawer.finish")}
                   </button>
                 </div>
               )}

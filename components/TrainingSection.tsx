@@ -6,6 +6,7 @@ import { setKey, weightKey } from "@/lib/defaults";
 import { useWorkout } from "./WorkoutContext";
 import { useModal } from "./ModalProvider";
 import { useToast } from "./ToastProvider";
+import { useLocale } from "./LocaleProvider";
 import { ExerciseDrawer } from "./ExerciseDrawer";
 import { DayEditorModal } from "./DayEditorModal";
 import { ProgramsModal } from "./ProgramsModal";
@@ -35,6 +36,7 @@ export function TrainingSection() {
   } = useWorkout();
   const { open, close } = useModal();
   const { toast } = useToast();
+  const { t } = useLocale();
 
   const [drawerEx, setDrawerEx] = useState<{ di: number; ei: number } | null>(null);
 
@@ -64,9 +66,9 @@ export function TrainingSection() {
   const askDeleteDay = (di: number) => {
     open(
       <ConfirmModal
-        title={`Удалить «${plan[di].name}»?`}
-        description="Действие нельзя отменить."
-        confirmLabel="Удалить"
+        title={t("training.deleteDay.title", { name: plan[di].name })}
+        description={t("training.deleteDay.desc")}
+        confirmLabel={t("common.delete")}
         confirmVariant="danger"
         onConfirm={() => {
           deleteDay(di);
@@ -93,14 +95,14 @@ export function TrainingSection() {
   const askResetDay = () => {
     open(
       <ConfirmModal
-        title="Сбросить прогресс этого дня?"
-        description="Все отмеченные подходы и таймер будут обнулены."
-        confirmLabel="Сбросить"
+        title={t("training.reset.title")}
+        description={t("training.reset.desc")}
+        confirmLabel={t("training.reset.confirm")}
         confirmVariant="danger"
         onConfirm={() => {
           resetDay();
           close();
-          toast("Прогресс дня сброшен");
+          toast(t("training.reset.toast"));
         }}
         onCancel={close}
       />,
@@ -123,9 +125,9 @@ export function TrainingSection() {
     if (!name) return;
     open(
       <ConfirmModal
-        title={`Загрузить «${name}»?`}
-        description="Текущий план будет заменён. Прогресс сохранится."
-        confirmLabel="Загрузить"
+        title={t("training.preset.load.title", { name })}
+        description={t("training.preset.load.desc")}
+        confirmLabel={t("programs.replace.confirm")}
         onConfirm={() => {
           loadPreset(name);
           close();
@@ -138,9 +140,9 @@ export function TrainingSection() {
   return (
     <section id="training" className="mx-auto w-full max-w-6xl px-4 sm:px-6">
       <SectionHeader
-        eyebrow="01 — Тренировка"
-        title="Сегодняшний план"
-        description="Выбери день, отметь подходы, отдохни и переходи дальше. Всё сохраняется автоматически."
+        eyebrow={t("training.eyebrow")}
+        title={t("training.title")}
+        description={t("training.description")}
       />
 
       {/* Day pills */}
@@ -165,7 +167,7 @@ export function TrainingSection() {
                 className={`grid h-4 w-4 cursor-pointer place-items-center rounded-full text-[10px] transition-opacity ${
                   i === currentDay ? "opacity-70 hover:opacity-100" : "opacity-0 group-hover:opacity-100"
                 }`}
-                aria-label="Удалить день"
+                aria-label={t("common.delete")}
               >
                 ✕
               </span>
@@ -176,7 +178,7 @@ export function TrainingSection() {
           <button
             onClick={askAddDay}
             className="grid h-9 w-9 place-items-center rounded-full border border-dashed border-border text-muted transition-all hover:border-accent hover:text-accent"
-            aria-label="Добавить день"
+            aria-label={t("training.addDay")}
           >
             +
           </button>
@@ -196,7 +198,8 @@ export function TrainingSection() {
             <div>
               <h3 className="heading-display text-2xl font-bold sm:text-3xl">{day.name}</h3>
               <p className="mt-1 text-sm text-muted">
-                {day.exercises.length} упр. · {done}/{total} подходов
+                {day.exercises.length} {t("training.exercisesShort")} · {done}/{total}{" "}
+                {t("training.setsTotal")}
               </p>
             </div>
             <button
@@ -204,7 +207,7 @@ export function TrainingSection() {
               className="btn"
               data-tour="edit-day"
             >
-              ✎ Редактировать
+              {t("training.editDay")}
             </button>
           </div>
 
@@ -252,10 +255,10 @@ export function TrainingSection() {
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <div data-tour="presets" className="flex flex-wrap items-center gap-2">
               <button data-tour="complete-day" onClick={completeDay} className="btn btn-success">
-                ✓ Завершить день
+                {t("training.completeDay")}
               </button>
               <button onClick={askSavePreset} className="btn">
-                💾 Сохранить пресет
+                {t("training.savePreset")}
               </button>
               <button
                 onClick={() => {
@@ -264,7 +267,7 @@ export function TrainingSection() {
                       onPick={(p) => {
                         loadProgram(p);
                         close();
-                        toast("Программа загружена");
+                        toast(t("programs.loaded"));
                       }}
                       onClose={close}
                     />,
@@ -272,7 +275,7 @@ export function TrainingSection() {
                 }}
                 className="btn"
               >
-                📚 Программы
+                {t("training.programs")}
               </button>
               <PresetSelect
                 presets={Object.keys(presets)}
@@ -294,7 +297,7 @@ export function TrainingSection() {
               />
             </div>
             <button onClick={askResetDay} className="btn btn-danger">
-              Сбросить день
+              {t("training.resetDay")}
             </button>
           </div>
         </motion.div>
@@ -332,6 +335,7 @@ function ExerciseCard({
   onWeightChange: (v: string) => void;
 }) {
   const dragControls = useDragControls();
+  const { t } = useLocale();
   const exDone = state.filter(Boolean).length;
   const exPct = ex.sets > 0 ? Math.round((exDone / ex.sets) * 100) : 0;
   const allDone = exDone >= ex.sets;
@@ -365,7 +369,7 @@ function ExerciseCard({
               }}
               onClick={(e) => e.stopPropagation()}
               className="-ml-1 mt-0.5 grid h-7 w-5 cursor-grab touch-none place-items-center text-muted/60 hover:text-muted active:cursor-grabbing"
-              aria-label="Перетащить"
+              aria-label="Drag"
             >
               <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
                 <circle cx="2" cy="3" r="1.2" />
@@ -386,7 +390,7 @@ function ExerciseCard({
                 {isPR && (
                   <span
                     className="shrink-0 rounded-full border border-amber-400/40 bg-amber-400/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-300"
-                    title="Личный рекорд"
+                    title={t("progress.prs.title")}
                   >
                     🏆 PR
                   </span>
@@ -413,7 +417,7 @@ function ExerciseCard({
                 value={weight}
                 onChange={(e) => onWeightChange(e.target.value)}
               />
-              <span className="text-[10px] text-muted">кг</span>
+              <span className="text-[10px] text-muted">{t("common.kg")}</span>
             </div>
             {showLastHint && (
               <button
@@ -424,7 +428,7 @@ function ExerciseCard({
                 }}
                 className="text-[9px] uppercase tracking-wider text-accent2/80 transition-colors hover:text-accent2"
               >
-                ← {lastWeight} кг
+                ← {lastWeight} {t("common.kg")}
               </button>
             )}
           </div>
@@ -483,11 +487,12 @@ function PresetSelect({
   onDelete: (name: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const { t } = useLocale();
   if (presets.length === 0) return null;
   return (
     <div className="relative">
       <button onClick={() => setOpen((v) => !v)} className="btn">
-        ▾ Пресеты ({presets.length})
+        {t("training.presetsCount")} ({presets.length})
       </button>
       <AnimatePresence>
         {open && (
@@ -517,7 +522,7 @@ function PresetSelect({
                     onDelete(p);
                   }}
                   className="grid h-6 w-6 place-items-center rounded-lg text-xs text-muted hover:bg-danger/10 hover:text-danger"
-                  aria-label="Удалить пресет"
+                  aria-label={t("common.delete")}
                 >
                   ✕
                 </button>
@@ -540,11 +545,12 @@ function AddDayModal({
   const [name, setName] = useState("");
   const [short, setShort] = useState("");
   const { toast } = useToast();
+  const { t } = useLocale();
   return (
     <div>
-      <h3 className="heading-display mb-4 text-2xl font-bold">Новый день</h3>
+      <h3 className="heading-display mb-4 text-2xl font-bold">{t("training.addDay.title")}</h3>
       <div className="mb-3">
-        <span className="label">Название</span>
+        <span className="label">{t("training.addDay.name")}</span>
         <input
           autoFocus
           className="input"
@@ -554,7 +560,7 @@ function AddDayModal({
         />
       </div>
       <div className="mb-5">
-        <span className="label">Короткое имя</span>
+        <span className="label">{t("training.addDay.short")}</span>
         <input
           className="input"
           placeholder="Грудь"
@@ -564,19 +570,19 @@ function AddDayModal({
       </div>
       <div className="flex justify-end gap-2">
         <button onClick={onCancel} className="btn">
-          Отмена
+          {t("common.cancel")}
         </button>
         <button
           onClick={() => {
             if (!name.trim() || !short.trim()) {
-              toast("Заполни оба поля");
+              toast(t("training.addDay.fillBoth"));
               return;
             }
             onConfirm(name.trim(), short.trim());
           }}
           className="btn btn-primary"
         >
-          Добавить
+          {t("training.addDay.confirm")}
         </button>
       </div>
     </div>
@@ -592,32 +598,33 @@ function PresetSaveModal({
 }) {
   const [name, setName] = useState("");
   const { toast } = useToast();
+  const { t } = useLocale();
   return (
     <div>
-      <h3 className="heading-display mb-4 text-2xl font-bold">Сохранить пресет</h3>
-      <span className="label">Название</span>
+      <h3 className="heading-display mb-4 text-2xl font-bold">{t("training.preset.save.title")}</h3>
+      <span className="label">{t("training.addDay.name")}</span>
       <input
         autoFocus
         className="input"
-        placeholder="Моя программа"
+        placeholder={t("training.preset.placeholder")}
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
       <div className="mt-5 flex justify-end gap-2">
         <button onClick={onCancel} className="btn">
-          Отмена
+          {t("common.cancel")}
         </button>
         <button
           onClick={() => {
             if (!name.trim()) {
-              toast("Введи название");
+              toast(t("training.preset.enterName"));
               return;
             }
             onConfirm(name.trim());
           }}
           className="btn btn-primary"
         >
-          Сохранить
+          {t("common.save")}
         </button>
       </div>
     </div>
@@ -639,13 +646,14 @@ function ConfirmModal({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const { t } = useLocale();
   return (
     <div>
       <h3 className="heading-display mb-2 text-2xl font-bold">{title}</h3>
       {description && <p className="mb-4 text-sm text-muted">{description}</p>}
       <div className="mt-4 flex justify-end gap-2">
         <button onClick={onCancel} className="btn">
-          Отмена
+          {t("common.cancel")}
         </button>
         <button
           onClick={onConfirm}

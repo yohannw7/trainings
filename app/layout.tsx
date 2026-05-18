@@ -6,6 +6,7 @@ import { ToastProvider } from "@/components/ToastProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ModalProvider } from "@/components/ModalProvider";
 import { BackgroundDecor } from "@/components/BackgroundDecor";
+import { LocaleProvider } from "@/components/LocaleProvider";
 
 const inter = Inter({
   subsets: ["latin", "cyrillic"],
@@ -39,14 +40,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru" className={`${inter.variable} ${spaceGrotesk.variable}`} suppressHydrationWarning>
       <body>
-        <ThemeProvider>
-          <ToastProvider>
-            <ModalProvider>
-              <BackgroundDecor />
-              <SmoothScroll>{children}</SmoothScroll>
-            </ModalProvider>
-          </ToastProvider>
-        </ThemeProvider>
+        <LocaleProvider>
+          <ThemeProvider>
+            <ToastProvider>
+              <ModalProvider>
+                <BackgroundDecor />
+                <SmoothScroll>{children}</SmoothScroll>
+              </ModalProvider>
+            </ToastProvider>
+          </ThemeProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { STORAGE_KEYS } from "@/lib/defaults";
 import { readJSON, writeJSON } from "@/lib/storage";
 import { useModal } from "./ModalProvider";
+import { useLocale } from "./LocaleProvider";
 import type { CalcProfile } from "@/lib/types";
 
 const DEFAULT_PROFILE: CalcProfile = {
@@ -17,6 +18,7 @@ const DEFAULT_PROFILE: CalcProfile = {
 
 export function CalculatorsSection() {
   const { open, close } = useModal();
+  const { t } = useLocale();
   const [profile, setProfile] = useState<CalcProfile>(DEFAULT_PROFILE);
   const [hydrated, setHydrated] = useState(false);
 
@@ -49,20 +51,20 @@ export function CalculatorsSection() {
   const w = parseFloat(profile.weight) || 0;
   const h = parseFloat(profile.height) || 0;
   const bmi = w && h ? w / Math.pow(h / 100, 2) : 0;
-  const bmiCategory =
+  const bmiCategoryKey =
     bmi < 16
-      ? "Выраженный дефицит"
+      ? "calc.bmi.cat.severe"
       : bmi < 18.5
-        ? "Недостаточный"
+        ? "calc.bmi.cat.under"
         : bmi < 25
-          ? "Норма"
+          ? "calc.bmi.cat.normal"
           : bmi < 30
-            ? "Избыточный"
+            ? "calc.bmi.cat.over"
             : bmi < 35
-              ? "Ожирение I"
+              ? "calc.bmi.cat.ob1"
               : bmi < 40
-                ? "Ожирение II"
-                : "Ожирение III";
+                ? "calc.bmi.cat.ob2"
+                : "calc.bmi.cat.ob3";
 
   // TDEE
   const a = parseFloat(profile.age) || 25;
@@ -87,36 +89,45 @@ export function CalculatorsSection() {
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent2">
-            03 — Калькуляторы
+            {t("calc.eyebrow")}
           </span>
-          <h2 className="heading-display mt-2 text-3xl font-bold sm:text-4xl">Метрики тела</h2>
-          <p className="mt-2 max-w-2xl text-sm text-muted">
-            Введи данные один раз — расчёты обновятся автоматически.
-          </p>
+          <h2 className="heading-display mt-2 text-3xl font-bold sm:text-4xl">{t("calc.title")}</h2>
+          <p className="mt-2 max-w-2xl text-sm text-muted">{t("calc.description")}</p>
         </div>
         <button onClick={editProfile} className="btn">
-          ✎ Изменить данные
+          {t("calc.editProfile")}
         </button>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
-        <CalcCard title="ИМТ" desc="Индекс массы тела">
+        <CalcCard title={t("calc.bmi.title")} desc={t("calc.bmi.desc")}>
           <div className="heading-display text-4xl font-bold">
             {bmi > 0 ? bmi.toFixed(1) : "—"}
           </div>
-          <div className="mt-1 text-sm text-muted">{bmi > 0 ? bmiCategory : "Нет данных"}</div>
+          <div className="mt-1 text-sm text-muted">
+            {bmi > 0 ? t(bmiCategoryKey as Parameters<typeof t>[0]) : t("calc.bmi.noData")}
+          </div>
         </CalcCard>
 
-        <CalcCard title="TDEE" desc="Суточная норма калорий">
-          <div className="heading-display text-4xl font-bold">{tdee} ккал</div>
-          <div className="mt-1 text-sm text-muted">BMR: {Math.round(bmr)} ккал</div>
+        <CalcCard title={t("calc.tdee.title")} desc={t("calc.tdee.desc")}>
+          <div className="heading-display text-4xl font-bold">
+            {tdee} {t("calc.tdee.kcal")}
+          </div>
+          <div className="mt-1 text-sm text-muted">
+            {t("calc.tdee.bmr", { value: Math.round(bmr) })}
+          </div>
         </CalcCard>
 
-        <CalcCard title="БЖУ" desc={`Цель: ${{ cut: "сушка", maintain: "поддержание", bulk: "масса" }[profile.goal]}`}>
+        <CalcCard
+          title={t("calc.macro.title")}
+          desc={t("calc.macro.goalLabel", {
+            goal: t(`calc.macro.goal.${profile.goal}` as Parameters<typeof t>[0]),
+          })}
+        >
           <div className="grid grid-cols-3 gap-2">
-            <Macro label="Б" value={macroP} accent />
-            <Macro label="Ж" value={macroF} />
-            <Macro label="У" value={macroC} accent />
+            <Macro label={t("calc.macro.p")} value={macroP} grams={t("calc.macro.gramsShort")} accent />
+            <Macro label={t("calc.macro.f")} value={macroF} grams={t("calc.macro.gramsShort")} />
+            <Macro label={t("calc.macro.c")} value={macroC} grams={t("calc.macro.gramsShort")} accent />
           </div>
         </CalcCard>
 
@@ -146,11 +157,28 @@ function CalcCard({
   );
 }
 
-function Macro({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
+function Macro({
+  label,
+  value,
+  grams,
+  accent,
+}: {
+  label: string;
+  value: number;
+  grams: string;
+  accent?: boolean;
+}) {
   return (
-    <div className={`rounded-xl border p-3 text-center ${accent ? "border-accent/30 bg-accent/5" : "border-border/60 bg-surface/30"}`}>
+    <div
+      className={`rounded-xl border p-3 text-center ${
+        accent ? "border-accent/30 bg-accent/5" : "border-border/60 bg-surface/30"
+      }`}
+    >
       <div className="text-xs uppercase tracking-wider text-muted">{label}</div>
-      <div className="heading-display mt-1 text-2xl font-bold">{value}<span className="ml-0.5 text-sm font-normal text-muted">г</span></div>
+      <div className="heading-display mt-1 text-2xl font-bold">
+        {value}
+        <span className="ml-0.5 text-sm font-normal text-muted">{grams}</span>
+      </div>
     </div>
   );
 }
@@ -158,6 +186,7 @@ function Macro({ label, value, accent }: { label: string; value: number; accent?
 function RM1Card() {
   const [w, setW] = useState("80");
   const [reps, setReps] = useState("8");
+  const { t } = useLocale();
   const weight = parseFloat(w) || 0;
   const r = parseInt(reps) || 1;
   const rm = weight > 0 && r > 0 ? Math.round(weight * (1 + r / 30)) : 0;
@@ -165,12 +194,12 @@ function RM1Card() {
   return (
     <div className="card p-5 sm:p-6">
       <div className="mb-3">
-        <h3 className="heading-display text-xl font-bold">1 RM</h3>
-        <p className="text-xs text-muted">Максимум на 1 раз (формула Эпли)</p>
+        <h3 className="heading-display text-xl font-bold">{t("calc.rm.title")}</h3>
+        <p className="text-xs text-muted">{t("calc.rm.desc")}</p>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <span className="label">Вес (кг)</span>
+          <span className="label">{t("calc.rm.weight")}</span>
           <input
             className="input"
             type="number"
@@ -181,7 +210,7 @@ function RM1Card() {
           />
         </div>
         <div>
-          <span className="label">Повторы</span>
+          <span className="label">{t("calc.rm.reps")}</span>
           <input
             className="input"
             type="number"
@@ -193,7 +222,9 @@ function RM1Card() {
         </div>
       </div>
       <div className="mt-4">
-        <div className="heading-display text-3xl font-bold">{rm > 0 ? `${rm} кг` : "—"}</div>
+        <div className="heading-display text-3xl font-bold">
+          {rm > 0 ? `${rm} ${t("common.kg")}` : "—"}
+        </div>
       </div>
     </div>
   );
@@ -209,27 +240,28 @@ function ProfileModal({
   onClose: () => void;
 }) {
   const [form, setForm] = useState<CalcProfile>(initial);
+  const { t } = useLocale();
 
   return (
     <div>
-      <h3 className="heading-display mb-1 text-2xl font-bold">Ваши данные</h3>
-      <p className="mb-4 text-sm text-muted">Подставится во все калькуляторы</p>
+      <h3 className="heading-display mb-1 text-2xl font-bold">{t("calc.profile.title")}</h3>
+      <p className="mb-4 text-sm text-muted">{t("calc.profile.desc")}</p>
 
       <div className="space-y-3">
         <div>
-          <span className="label">Пол</span>
+          <span className="label">{t("calc.profile.gender")}</span>
           <select
             className="input"
             value={form.gender}
             onChange={(e) => setForm({ ...form, gender: e.target.value as "male" | "female" })}
           >
-            <option value="male">Мужской</option>
-            <option value="female">Женский</option>
+            <option value="male">{t("calc.profile.male")}</option>
+            <option value="female">{t("calc.profile.female")}</option>
           </select>
         </div>
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <span className="label">Возраст</span>
+            <span className="label">{t("calc.profile.age")}</span>
             <input
               className="input"
               type="number"
@@ -238,7 +270,7 @@ function ProfileModal({
             />
           </div>
           <div>
-            <span className="label">Вес (кг)</span>
+            <span className="label">{t("calc.profile.weight")}</span>
             <input
               className="input"
               type="number"
@@ -248,7 +280,7 @@ function ProfileModal({
             />
           </div>
           <div>
-            <span className="label">Рост (см)</span>
+            <span className="label">{t("calc.profile.height")}</span>
             <input
               className="input"
               type="number"
@@ -258,39 +290,39 @@ function ProfileModal({
           </div>
         </div>
         <div>
-          <span className="label">Активность</span>
+          <span className="label">{t("calc.profile.activity")}</span>
           <select
             className="input"
             value={form.activity}
             onChange={(e) => setForm({ ...form, activity: e.target.value })}
           >
-            <option value="1.2">Сидячий образ жизни</option>
-            <option value="1.375">Лёгкая (1-3 дня)</option>
-            <option value="1.55">Умеренная (3-5 дней)</option>
-            <option value="1.725">Высокая (6-7 дней)</option>
-            <option value="1.9">Экстремальная</option>
+            <option value="1.2">{t("calc.profile.act.sedentary")}</option>
+            <option value="1.375">{t("calc.profile.act.light")}</option>
+            <option value="1.55">{t("calc.profile.act.moderate")}</option>
+            <option value="1.725">{t("calc.profile.act.high")}</option>
+            <option value="1.9">{t("calc.profile.act.extreme")}</option>
           </select>
         </div>
         <div>
-          <span className="label">Цель</span>
+          <span className="label">{t("calc.profile.goal")}</span>
           <select
             className="input"
             value={form.goal}
             onChange={(e) => setForm({ ...form, goal: e.target.value as CalcProfile["goal"] })}
           >
-            <option value="cut">Сушка</option>
-            <option value="maintain">Поддержание</option>
-            <option value="bulk">Набор массы</option>
+            <option value="cut">{t("calc.profile.goal.cut")}</option>
+            <option value="maintain">{t("calc.profile.goal.maintain")}</option>
+            <option value="bulk">{t("calc.profile.goal.bulk")}</option>
           </select>
         </div>
       </div>
 
       <div className="mt-6 flex justify-end gap-2">
         <button onClick={onClose} className="btn">
-          Отмена
+          {t("common.cancel")}
         </button>
         <button onClick={() => onSave(form)} className="btn btn-primary">
-          Сохранить
+          {t("common.save")}
         </button>
       </div>
     </div>

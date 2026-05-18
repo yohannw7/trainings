@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Day, Exercise } from "@/lib/types";
 import { useToast } from "./ToastProvider";
+import { useLocale } from "./LocaleProvider";
 
 type Props = {
   initial: Day;
@@ -12,6 +13,7 @@ type Props = {
 
 export function DayEditorModal({ initial, onSave, onClose }: Props) {
   const { toast } = useToast();
+  const { t } = useLocale();
   const [name, setName] = useState(initial.name);
   const [short, setShort] = useState(initial.short);
   const [exercises, setExercises] = useState<Exercise[]>(initial.exercises);
@@ -32,18 +34,18 @@ export function DayEditorModal({ initial, onSave, onClose }: Props) {
     const trimmedName = name.trim();
     const trimmedShort = short.trim();
     if (!trimmedName || !trimmedShort) {
-      toast("Заполни названия!");
+      toast(t("editor.fillNames"));
       return;
     }
     const cleaned = exercises
       .map((ex) => ({
         name: ex.name.trim(),
         sets: Math.max(1, Math.min(20, Math.floor(ex.sets) || 3)),
-        target: ex.target.trim() || "повт.",
+        target: ex.target.trim() || t("editor.target.default"),
       }))
       .filter((ex) => ex.name.length > 0);
     if (cleaned.length === 0) {
-      toast("Минимум 1 упражнение!");
+      toast(t("editor.minOne"));
       return;
     }
     onSave({ name: trimmedName, short: trimmedShort, exercises: cleaned });
@@ -51,31 +53,31 @@ export function DayEditorModal({ initial, onSave, onClose }: Props) {
 
   return (
     <div>
-      <h3 className="heading-display mb-4 text-2xl font-bold">Редактирование дня</h3>
+      <h3 className="heading-display mb-4 text-2xl font-bold">{t("editor.title")}</h3>
       <div className="mb-3">
-        <span className="label">Название</span>
+        <span className="label">{t("training.addDay.name")}</span>
         <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
       </div>
       <div className="mb-4">
-        <span className="label">Короткое имя</span>
+        <span className="label">{t("training.addDay.short")}</span>
         <input className="input" value={short} onChange={(e) => setShort(e.target.value)} />
       </div>
 
       <div className="mb-4">
-        <span className="label">Упражнения</span>
+        <span className="label">{t("editor.exercises")}</span>
         <div className="space-y-2">
           {exercises.map((ex, i) => (
             <div key={i} className="flex flex-wrap items-center gap-2">
               <input
                 className="input flex-1 min-w-[140px]"
-                placeholder="Название"
+                placeholder={t("editor.exName")}
                 value={ex.name}
                 onChange={(e) => updateEx(i, { name: e.target.value })}
               />
               <input
                 className="input w-20"
                 type="number"
-                placeholder="Подх."
+                placeholder={t("editor.exSets")}
                 min={1}
                 max={20}
                 value={ex.sets}
@@ -83,14 +85,14 @@ export function DayEditorModal({ initial, onSave, onClose }: Props) {
               />
               <input
                 className="input w-24"
-                placeholder="Цель"
+                placeholder={t("editor.exTarget")}
                 value={ex.target}
                 onChange={(e) => updateEx(i, { target: e.target.value })}
               />
               <button
                 onClick={() => removeEx(i)}
                 className="btn btn-danger px-3 py-2"
-                aria-label="Удалить"
+                aria-label={t("common.delete")}
               >
                 ✕
               </button>
@@ -98,16 +100,16 @@ export function DayEditorModal({ initial, onSave, onClose }: Props) {
           ))}
         </div>
         <button onClick={addEx} className="btn btn-success mt-3 w-full sm:w-auto">
-          + Упражнение
+          {t("editor.addEx")}
         </button>
       </div>
 
       <div className="mt-6 flex flex-wrap justify-end gap-2">
         <button onClick={onClose} className="btn">
-          Отмена
+          {t("common.cancel")}
         </button>
         <button onClick={handleSave} className="btn btn-primary">
-          Сохранить
+          {t("common.save")}
         </button>
       </div>
     </div>

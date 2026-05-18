@@ -2,10 +2,12 @@
 
 import { motion } from "framer-motion";
 import { useWorkout } from "./WorkoutContext";
+import { useLocale } from "./LocaleProvider";
 import { formatTime } from "@/lib/utils";
 
 export function Hero() {
   const { streak, workoutSeconds, plan, currentDay, setStates } = useWorkout();
+  const { t } = useLocale();
   const day = plan[currentDay];
 
   let total = 0;
@@ -28,16 +30,19 @@ export function Hero() {
       >
         <div className="chip mb-5 inline-flex">
           <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-success" />
-          <span>Активная сессия · {formatTime(workoutSeconds)}</span>
+          <span>
+            {t("hero.activeSession")} · {formatTime(workoutSeconds)}
+          </span>
         </div>
         <h1 className="heading-display mx-auto max-w-3xl text-balance text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl">
-          Тренируйся{" "}
-          <span className="bg-accent-gradient bg-clip-text text-transparent">осознанно</span>,
-          а не на автомате
+          {t("hero.title.before")}
+          <span className="bg-accent-gradient bg-clip-text text-transparent">
+            {t("hero.title.accent")}
+          </span>
+          {t("hero.title.after")}
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-base text-muted sm:text-lg">
-          Простой трекер с подходами, секундомером, отдыхом, статистикой и калькуляторами.
-          Всё, что нужно — на одном экране.
+          {t("hero.description")}
         </p>
       </motion.div>
 
@@ -47,10 +52,30 @@ export function Hero() {
         transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
         className="mt-10 grid grid-cols-2 gap-3 sm:mt-14 sm:grid-cols-4 sm:gap-4"
       >
-        <StatCard label="Стрик" value={`${streak.streak}`} hint="недель подряд" emoji="🔥" />
-        <StatCard label="Тренировок" value={`${streak.total}`} hint="всего" emoji="💪" />
-        <StatCard label="Прогресс" value={`${pct}%`} hint={day ? day.short : "—"} emoji="📊" />
-        <StatCard label="Время" value={formatTime(workoutSeconds)} hint="в сессии" emoji="⏱" />
+        <StatCard
+          label={t("hero.stat.streak")}
+          value={`${streak.streak}`}
+          hint={t("hero.stat.streak.hint")}
+          emoji="🔥"
+        />
+        <StatCard
+          label={t("hero.stat.workouts")}
+          value={`${streak.total}`}
+          hint={t("hero.stat.workouts.hint")}
+          emoji="💪"
+        />
+        <StatCard
+          label={t("hero.stat.progress")}
+          value={`${pct}%`}
+          hint={day ? day.short : "—"}
+          emoji="📊"
+        />
+        <StatCard
+          label={t("hero.stat.time")}
+          value={formatTime(workoutSeconds)}
+          hint={t("hero.stat.time.hint")}
+          emoji="⏱"
+        />
       </motion.div>
     </section>
   );

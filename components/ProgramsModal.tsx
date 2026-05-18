@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { BUILTIN_PROGRAMS } from "@/lib/defaults";
 import type { Plan } from "@/lib/types";
+import { useLocale } from "./LocaleProvider";
 
 type Props = {
   onPick: (plan: Plan) => void;
@@ -12,26 +13,19 @@ type Props = {
 export function ProgramsModal({ onPick, onClose }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const { t } = useLocale();
 
   if (confirming && selected) {
     return (
       <div>
-        <h3 className="heading-display mb-2 text-2xl font-bold">
-          Заменить текущий план?
-        </h3>
-        <p className="mb-4 text-sm text-muted">
-          Текущий план будет заменён на «{selected}». Прогресс этого дня сбросится.
-          Если жалко — сначала сохрани текущий как пресет.
-        </p>
+        <h3 className="heading-display mb-2 text-2xl font-bold">{t("programs.replace.title")}</h3>
+        <p className="mb-4 text-sm text-muted">{t("programs.replace.desc")}</p>
         <div className="mt-4 flex justify-end gap-2">
           <button onClick={() => setConfirming(false)} className="btn">
-            ← Назад
+            {t("common.back")}
           </button>
-          <button
-            onClick={() => onPick(BUILTIN_PROGRAMS[selected])}
-            className="btn btn-primary"
-          >
-            Загрузить
+          <button onClick={() => onPick(BUILTIN_PROGRAMS[selected])} className="btn btn-primary">
+            {t("programs.replace.confirm")}
           </button>
         </div>
       </div>
@@ -43,10 +37,8 @@ export function ProgramsModal({ onPick, onClose }: Props) {
 
   return (
     <div>
-      <h3 className="heading-display mb-1 text-2xl font-bold">Готовые программы</h3>
-      <p className="mb-4 text-sm text-muted">
-        Проверенные шаблоны на разные цели. Выбери и нажми «Загрузить».
-      </p>
+      <h3 className="heading-display mb-1 text-2xl font-bold">{t("programs.title")}</h3>
+      <p className="mb-4 text-sm text-muted">{t("programs.description")}</p>
 
       <div className="space-y-2">
         {programs.map(([name, plan]) => {
@@ -63,7 +55,7 @@ export function ProgramsModal({ onPick, onClose }: Props) {
             >
               <div className="flex items-baseline justify-between gap-3">
                 <h4 className="heading-display text-base font-bold">{name}</h4>
-                <span className="text-xs text-muted">{plan.length} дн.</span>
+                <span className="text-xs text-muted">{t("programs.daysShort", { n: plan.length })}</span>
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {plan.map((d, i) => (
@@ -82,7 +74,7 @@ export function ProgramsModal({ onPick, onClose }: Props) {
 
       {current && (
         <div className="mt-4 rounded-2xl border border-border/60 bg-surface/30 p-4">
-          <p className="mb-2 text-xs uppercase tracking-wider text-muted">Превью</p>
+          <p className="mb-2 text-xs uppercase tracking-wider text-muted">{t("programs.preview")}</p>
           <div className="space-y-3">
             {current.map((d, i) => (
               <div key={i}>
@@ -102,14 +94,14 @@ export function ProgramsModal({ onPick, onClose }: Props) {
 
       <div className="mt-6 flex justify-between gap-2">
         <button onClick={onClose} className="btn">
-          Закрыть
+          {t("common.close")}
         </button>
         <button
           onClick={() => selected && setConfirming(true)}
           disabled={!selected}
           className="btn btn-primary"
         >
-          Загрузить выбранную
+          {t("programs.load")}
         </button>
       </div>
     </div>

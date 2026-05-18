@@ -2,92 +2,29 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
+import { useLocale } from "./LocaleProvider";
 
 const STORAGE_KEY = "onboarding_done_v2";
 
 type Step = {
-  title: string;
-  description: string;
+  titleKey: string;
+  descKey: string;
   icon: string;
   target?: string;
 };
 
 const STEPS: Step[] = [
-  {
-    title: "Добро пожаловать! 👋",
-    description:
-      "ASH TRAIN — твой персональный трекер тренировок. Давай быстро покажу, как тут всё устроено.",
-    icon: "🏋️",
-  },
-  {
-    title: "Дни тренировок",
-    description:
-      "Это кнопки дней. Нажми на день, чтобы переключиться. «+» добавляет новый день, «✕» удаляет.",
-    icon: "📅",
-    target: "[data-tour='day-pills']",
-  },
-  {
-    title: "Упражнения",
-    description:
-      "Каждая карточка — упражнение. Нажми на неё, чтобы открыть панель подхода с секундомером и таймером отдыха.",
-    icon: "💪",
-    target: "[data-tour='exercise-card']",
-  },
-  {
-    title: "Вес",
-    description:
-      "Поле «кг» справа — твой рабочий вес. Он сохраняется автоматически и попадёт в историю.",
-    icon: "⚖️",
-    target: "[data-tour='weight-input']",
-  },
-  {
-    title: "Редактирование дня",
-    description:
-      "Кнопка «Редактировать» — меняй названия, количество подходов и цели для каждого упражнения.",
-    icon: "✎",
-    target: "[data-tour='edit-day']",
-  },
-  {
-    title: "Таймер и секундомер",
-    description:
-      "Глобальный таймер с пресетами (30с, 1мин, 2мин…) и секундомер с кругами. Для отдыха или замера времени.",
-    icon: "⏱",
-    target: "#timer",
-  },
-  {
-    title: "Калькуляторы",
-    description:
-      "ИМТ, суточная норма калорий (TDEE), БЖУ и максимум на 1 повтор. Заполни профиль один раз — всё подставится.",
-    icon: "🧮",
-    target: "#calculators",
-  },
-  {
-    title: "Завершить день",
-    description:
-      "Когда закончишь — нажми эту кнопку. Тренировка попадёт в историю, а стрик 🔥 увеличится.",
-    icon: "🔥",
-    target: "[data-tour='complete-day']",
-  },
-  {
-    title: "Пресеты и сброс",
-    description:
-      "«Сохранить пресет» — запоминает план. «Сбросить день» — обнуляет все подходы текущего дня.",
-    icon: "💾",
-    target: "[data-tour='presets']",
-  },
-  {
-    title: "Настройки и темы",
-    description:
-      "Шестерёнка — настройки. Там можно выбрать тему: тёмную, светлую, океан, лес или фиолетовую.",
-    icon: "🎨",
-    target: "[data-tour='settings']",
-  },
-  {
-    title: "Готово! 🚀",
-    description:
-      "Всё сохраняется в браузере автоматически. Нажми на первое упражнение и начинай. Удачи!",
-    icon: "✅",
-  },
+  { titleKey: "ob.0.title", descKey: "ob.0.desc", icon: "🏋️" },
+  { titleKey: "ob.1.title", descKey: "ob.1.desc", icon: "📅", target: "[data-tour='day-pills']" },
+  { titleKey: "ob.2.title", descKey: "ob.2.desc", icon: "💪", target: "[data-tour='exercise-card']" },
+  { titleKey: "ob.3.title", descKey: "ob.3.desc", icon: "⚖️", target: "[data-tour='weight-input']" },
+  { titleKey: "ob.4.title", descKey: "ob.4.desc", icon: "✎", target: "[data-tour='edit-day']" },
+  { titleKey: "ob.5.title", descKey: "ob.5.desc", icon: "⏱", target: "#timer" },
+  { titleKey: "ob.6.title", descKey: "ob.6.desc", icon: "🧮", target: "#calculators" },
+  { titleKey: "ob.7.title", descKey: "ob.7.desc", icon: "🔥", target: "[data-tour='complete-day']" },
+  { titleKey: "ob.8.title", descKey: "ob.8.desc", icon: "💾", target: "[data-tour='presets']" },
+  { titleKey: "ob.9.title", descKey: "ob.9.desc", icon: "🎨", target: "[data-tour='settings']" },
+  { titleKey: "ob.10.title", descKey: "ob.10.desc", icon: "✅" },
 ];
 
 type ViewportRect = { x: number; y: number; w: number; h: number };
@@ -95,6 +32,7 @@ type ViewportRect = { x: number; y: number; w: number; h: number };
 export function Onboarding() {
   const [show, setShow] = useState(false);
   const [step, setStep] = useState(0);
+  const { t } = useLocale();
   const [spot, setSpot] = useState<ViewportRect | null>(null);
   const [tooltipSide, setTooltipSide] = useState<"below" | "above">("below");
 
@@ -301,10 +239,10 @@ export function Onboarding() {
 
             <div className="mb-1 text-center text-3xl">{current.icon}</div>
             <h2 className="heading-display mb-2 text-center text-xl font-bold">
-              {current.title}
+              {t(current.titleKey as Parameters<typeof t>[0])}
             </h2>
             <p className="mb-5 text-center text-sm leading-relaxed text-muted">
-              {current.description}
+              {t(current.descKey as Parameters<typeof t>[0])}
             </p>
 
             <div className="flex items-center justify-between gap-3">
@@ -312,7 +250,7 @@ export function Onboarding() {
                 onClick={finish}
                 className="text-xs text-muted transition-colors hover:text-text"
               >
-                Пропустить
+                {t("common.skip")}
               </button>
               <div className="flex items-center gap-2">
                 {step > 0 && (
@@ -321,7 +259,7 @@ export function Onboarding() {
                   </button>
                 )}
                 <button onClick={next} className="btn btn-primary px-4 py-2 text-sm">
-                  {step === STEPS.length - 1 ? "Начать!" : "Далее →"}
+                  {step === STEPS.length - 1 ? t("ob.start") : t("common.next")}
                 </button>
               </div>
             </div>
