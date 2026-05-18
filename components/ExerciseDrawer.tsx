@@ -237,11 +237,11 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
               <AnimatePresence mode="wait">
                 {countdown !== null && (
                   <motion.div
-                    key={`countdown-${countdown}`}
-                    initial={{ opacity: 0, scale: 0.6 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 1.4 }}
-                    transition={{ type: "spring", damping: 18, stiffness: 260 }}
+                    key="countdown"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
                     className="relative rounded-2xl border border-accent/40 bg-accent/10 px-5 py-4 text-center"
                   >
                     <button
@@ -254,8 +254,19 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
                     <div className="text-xs uppercase tracking-wider text-muted">
                       Приготовься
                     </div>
-                    <div className="heading-display mt-1 bg-accent-gradient bg-clip-text text-7xl font-bold leading-none text-transparent">
-                      {countdown}
+                    <div className="relative mt-1 flex h-20 items-center justify-center">
+                      <AnimatePresence mode="popLayout">
+                        <motion.span
+                          key={countdown}
+                          initial={{ opacity: 0, scale: 0.5 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 1.6 }}
+                          transition={{ duration: 0.25, ease: "easeOut" }}
+                          className="heading-display absolute bg-accent-gradient bg-clip-text text-7xl font-bold leading-none text-transparent tabular-nums"
+                        >
+                          {countdown}
+                        </motion.span>
+                      </AnimatePresence>
                     </div>
                   </motion.div>
                 )}
