@@ -1,11 +1,18 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const STORAGE_KEY = "onboarding_done_v2";
 
-const STEPS = [
+type Step = {
+  title: string;
+  description: string;
+  icon: string;
+  target?: string; // CSS selector for the element to highlight
+};
+
+const STEPS: Step[] = [
   {
     title: "Добро пожаловать! 👋",
     description:
@@ -15,69 +22,134 @@ const STEPS = [
   {
     title: "Дни тренировок",
     description:
-      "Наверху — кнопки с днями (Грудь, Спина, Ноги…). Нажми на день, чтобы переключиться. Можешь добавлять свои дни кнопкой «+» и удалять крестиком.",
+      "Это кнопки дней. Нажми на день, чтобы переключиться. «+» добавляет новый день, «✕» удаляет.",
     icon: "📅",
+    target: "[data-tour='day-pills']",
   },
   {
-    title: "Упражнения и подходы",
+    title: "Упражнения",
     description:
-      "Каждая карточка — упражнение. Нажми на неё, чтобы открыть панель подхода. Там ты запускаешь секундомер, завершаешь подход, и автоматически включается таймер отдыха.",
+      "Каждая карточка — упражнение. Нажми на неё, чтобы открыть панель подхода с секундомером и таймером отдыха.",
     icon: "💪",
+    target: "[data-tour='exercises']",
   },
   {
     title: "Вес",
     description:
-      "Справа от каждого упражнения — поле «кг». Вводи рабочий вес — он сохранится автоматически и попадёт в историю.",
+      "Поле «кг» справа — твой рабочий вес. Он сохраняется автоматически и попадёт в историю.",
     icon: "⚖️",
+    target: "[data-tour='weight-input']",
+  },
+  {
+    title: "Редактирование дня",
+    description:
+      "Кнопка «Редактировать» — меняй названия, количество подходов и цели для каждого упражнения.",
+    icon: "✎",
+    target: "[data-tour='edit-day']",
   },
   {
     title: "Таймер и секундомер",
     description:
-      "Ниже — глобальный таймер с пресетами (30 сек, 1 мин, 2 мин…) и секундомер с кругами. Используй для отдыха между упражнениями или для замера времени.",
+      "Глобальный таймер с пресетами (30с, 1мин, 2мин…) и секундомер с кругами. Для отдыха или замера времени.",
     icon: "⏱",
+    target: "#timer",
   },
   {
     title: "Калькуляторы",
     description:
-      "Раздел «Метрики тела» считает ИМТ, суточную норму калорий (TDEE), БЖУ и максимум на 1 повтор (1RM). Заполни профиль один раз — всё подставится автоматически.",
+      "ИМТ, суточная норма калорий (TDEE), БЖУ и максимум на 1 повтор. Заполни профиль один раз — всё подставится.",
     icon: "🧮",
+    target: "#calculators",
   },
   {
-    title: "Завершение дня и стрик",
+    title: "Завершить день",
     description:
-      "Когда закончишь — нажми «Завершить день». Тренировка попадёт в историю, а стрик (🔥) увеличится. Стрик считается по неделям: тренируйся хотя бы раз в неделю, чтобы не потерять серию.",
+      "Когда закончишь — нажми эту кнопку. Тренировка попадёт в историю, а стрик 🔥 увеличится.",
     icon: "🔥",
+    target: "[data-tour='complete-day']",
   },
   {
     title: "Пресеты и сброс",
     description:
-      "«Сохранить пресет» — сохраняет текущий план тренировок. «Пресеты» — загружает сохранённый. «Сбросить день» — обнуляет все подходы текущего дня. «Редактировать» — меняет упражнения, подходы и цели.",
+      "«Сохранить пресет» — запоминает план. «Сбросить день» — обнуляет все подходы текущего дня.",
     icon: "💾",
+    target: "[data-tour='presets']",
   },
   {
-    title: "Темы оформления",
+    title: "Настройки и темы",
     description:
-      "Нажми шестерёнку ⚙ в правом верхнем углу — там можно выбрать тему: тёмную, светлую, океан, лес или фиолетовую.",
+      "Шестерёнка — настройки. Там можно выбрать тему: тёмную, светлую, океан, лес или фиолетовую.",
     icon: "🎨",
+    target: "[data-tour='settings']",
   },
   {
     title: "Готово! 🚀",
     description:
-      "Всё сохраняется в браузере автоматически. Просто начни тренировку — нажми на первое упражнение. Удачи!",
+      "Всё сохраняется в браузере автоматически. Нажми на первое упражнение и начинай. Удачи!",
     icon: "✅",
   },
 ];
 
+type Rect = { top: number; left: number; width: number; height: number };
+
 export function Onboarding() {
   const [show, setShow] = useState(false);
   const [step, setStep] = useState(0);
+  const [targetRect, setTargetRect] = useState<Rect | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<"bottom" | "top">("bottom");
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const done = localStorage.getItem(STORAGE_KEY);
-    if (!done) {
-      setShow(true);
-    }
+    if (!done) setShow(true);
   }, []);
+
+  const measureTarget = useCallback((selector?: string) => {
+    if (!selector) {
+      setTargetRect(null);
+      return;
+    }
+    const el = document.querySelector(selector);
+    if (!el) {
+      setTargetRect(null);
+      return;
+    }
+    const rect = el.getBoundingClientRect();
+    setTargetRect({
+      top: rect.top + window.scrollY,
+      left: rect.left + window.scrollX,
+      width: rect.width,
+      height: rect.height,
+    });
+
+    // Decide tooltip position
+    const viewH = window.innerHeight;
+    const elCenter = rect.top + rect.height / 2;
+    setTooltipPos(elCenter < viewH / 2 ? "bottom" : "top");
+
+    // Scroll element into view
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, []);
+
+  useEffect(() => {
+    if (!show) return;
+    const timer = setTimeout(() => {
+      measureTarget(STEPS[step].target);
+    }, 350); // wait for scroll/animation
+    return () => clearTimeout(timer);
+  }, [step, show, measureTarget]);
+
+  // Recalculate on resize
+  useEffect(() => {
+    if (!show) return;
+    const handler = () => measureTarget(STEPS[step].target);
+    window.addEventListener("resize", handler);
+    window.addEventListener("scroll", handler);
+    return () => {
+      window.removeEventListener("resize", handler);
+      window.removeEventListener("scroll", handler);
+    };
+  }, [show, step, measureTarget]);
 
   const finish = () => {
     localStorage.setItem(STORAGE_KEY, "1");
@@ -85,97 +157,189 @@ export function Onboarding() {
   };
 
   const next = () => {
-    if (step < STEPS.length - 1) {
-      setStep(step + 1);
-    } else {
-      finish();
-    }
+    if (step < STEPS.length - 1) setStep(step + 1);
+    else finish();
   };
 
   const prev = () => {
     if (step > 0) setStep(step - 1);
   };
 
-  const skip = () => {
-    finish();
-  };
-
   const current = STEPS[step];
+
+  if (!show) return null;
+
+  // Spotlight cutout for SVG mask
+  const pad = 8;
+  const spotRect = targetRect
+    ? {
+        x: targetRect.left - window.scrollX - pad,
+        y: targetRect.top - window.scrollY - pad,
+        w: targetRect.width + pad * 2,
+        h: targetRect.height + pad * 2,
+        rx: 16,
+      }
+    : null;
+
+  // Tooltip position relative to viewport
+  const getTooltipStyle = (): React.CSSProperties => {
+    if (!spotRect) {
+      return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
+    }
+    const gap = 16;
+    if (tooltipPos === "bottom") {
+      return {
+        top: spotRect.y + spotRect.h + gap,
+        left: "50%",
+        transform: "translateX(-50%)",
+        maxWidth: "min(420px, calc(100vw - 32px))",
+      };
+    }
+    return {
+      bottom: `calc(100vh - ${spotRect.y}px + ${gap}px)`,
+      left: "50%",
+      transform: "translateX(-50%)",
+      maxWidth: "min(420px, calc(100vw - 32px))",
+    };
+  };
 
   return (
     <AnimatePresence>
-      {show && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[300] flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(12px)" }}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[300]"
+        style={{ pointerEvents: "auto" }}
+      >
+        {/* Dark overlay with spotlight cutout */}
+        <svg
+          className="absolute inset-0 h-full w-full"
+          style={{ pointerEvents: "none" }}
         >
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ type: "spring", damping: 24, stiffness: 300 }}
-            className="relative w-full max-w-md overflow-hidden rounded-3xl border border-border/60 bg-bg p-6 shadow-glow sm:p-8"
-          >
-            {/* Progress dots */}
-            <div className="mb-6 flex items-center justify-center gap-1.5">
-              {STEPS.map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    i === step
-                      ? "w-6 bg-accent-gradient"
-                      : i < step
-                        ? "w-1.5 bg-accent/50"
-                        : "w-1.5 bg-border"
-                  }`}
+          <defs>
+            <mask id="spotlight-mask">
+              <rect width="100%" height="100%" fill="white" />
+              {spotRect && (
+                <rect
+                  x={spotRect.x}
+                  y={spotRect.y}
+                  width={spotRect.w}
+                  height={spotRect.h}
+                  rx={spotRect.rx}
+                  fill="black"
                 />
-              ))}
-            </div>
+              )}
+            </mask>
+          </defs>
+          <rect
+            width="100%"
+            height="100%"
+            fill="rgba(0,0,0,0.75)"
+            mask="url(#spotlight-mask)"
+          />
+        </svg>
 
-            {/* Icon */}
-            <div className="mb-4 text-center text-5xl">{current.icon}</div>
+        {/* Spotlight border glow */}
+        {spotRect && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: "spring", damping: 20, stiffness: 200 }}
+            className="pointer-events-none absolute rounded-2xl border-2 border-accent shadow-glow"
+            style={{
+              top: spotRect.y,
+              left: spotRect.x,
+              width: spotRect.w,
+              height: spotRect.h,
+            }}
+          />
+        )}
 
-            {/* Content */}
-            <h2 className="heading-display mb-3 text-center text-2xl font-bold">
-              {current.title}
-            </h2>
-            <p className="mb-8 text-center text-sm leading-relaxed text-muted">
-              {current.description}
-            </p>
-
-            {/* Buttons */}
-            <div className="flex items-center justify-between gap-3">
-              <button
-                onClick={skip}
-                className="text-xs text-muted transition-colors hover:text-text"
-              >
-                Пропустить
-              </button>
-
-              <div className="flex items-center gap-2">
-                {step > 0 && (
-                  <button onClick={prev} className="btn px-4 py-2 text-sm">
-                    ←
-                  </button>
-                )}
-                <button onClick={next} className="btn btn-primary px-5 py-2.5 text-sm">
-                  {step === STEPS.length - 1 ? "Начать!" : "Далее →"}
-                </button>
-              </div>
-            </div>
-
-            {/* Step counter */}
-            <div className="mt-4 text-center text-[11px] text-muted/60">
-              {step + 1} / {STEPS.length}
-            </div>
+        {/* Arrow pointing to target */}
+        {spotRect && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="pointer-events-none absolute"
+            style={{
+              left: spotRect.x + spotRect.w / 2 - 8,
+              ...(tooltipPos === "bottom"
+                ? { top: spotRect.y + spotRect.h + 2 }
+                : { top: spotRect.y - 18 }),
+            }}
+          >
+            <svg width="16" height="12" viewBox="0 0 16 12">
+              {tooltipPos === "bottom" ? (
+                <path d="M8 0L16 12H0L8 0Z" fill="rgb(var(--accent))" />
+              ) : (
+                <path d="M8 12L0 0H16L8 12Z" fill="rgb(var(--accent))" />
+              )}
+            </svg>
           </motion.div>
+        )}
+
+        {/* Tooltip card */}
+        <motion.div
+          ref={tooltipRef}
+          key={step}
+          initial={{ opacity: 0, y: tooltipPos === "bottom" ? 15 : -15 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: tooltipPos === "bottom" ? 15 : -15 }}
+          transition={{ type: "spring", damping: 24, stiffness: 300 }}
+          className="absolute z-10 w-full rounded-3xl border border-border/60 bg-bg p-5 shadow-glow sm:p-6"
+          style={getTooltipStyle()}
+        >
+          {/* Progress dots */}
+          <div className="mb-4 flex items-center justify-center gap-1.5">
+            {STEPS.map((_, i) => (
+              <div
+                key={i}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === step
+                    ? "w-5 bg-accent-gradient"
+                    : i < step
+                      ? "w-1.5 bg-accent/50"
+                      : "w-1.5 bg-border"
+                }`}
+              />
+            ))}
+          </div>
+
+          {/* Icon + content */}
+          <div className="mb-1 text-center text-3xl">{current.icon}</div>
+          <h2 className="heading-display mb-2 text-center text-xl font-bold">
+            {current.title}
+          </h2>
+          <p className="mb-5 text-center text-sm leading-relaxed text-muted">
+            {current.description}
+          </p>
+
+          {/* Buttons */}
+          <div className="flex items-center justify-between gap-3">
+            <button
+              onClick={finish}
+              className="text-xs text-muted transition-colors hover:text-text"
+            >
+              Пропустить
+            </button>
+            <div className="flex items-center gap-2">
+              {step > 0 && (
+                <button onClick={prev} className="btn px-3 py-2 text-sm">
+                  ←
+                </button>
+              )}
+              <button onClick={next} className="btn btn-primary px-4 py-2 text-sm">
+                {step === STEPS.length - 1 ? "Начать!" : "Далее →"}
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-3 text-center text-[10px] text-muted/50">
+            {step + 1} / {STEPS.length}
+          </div>
         </motion.div>
-      )}
+      </motion.div>
     </AnimatePresence>
   );
 }

@@ -138,7 +138,7 @@ export function TrainingSection() {
       />
 
       {/* Day pills */}
-      <div className="card mb-5 flex flex-wrap items-center gap-2 p-3">
+      <div data-tour="day-pills" className="card mb-5 flex flex-wrap items-center gap-2 p-3">
         {plan.map((d, i) => (
           <button
             key={i}
@@ -196,6 +196,7 @@ export function TrainingSection() {
             <button
               onClick={() => editDay(currentDay)}
               className="btn"
+              data-tour="edit-day"
             >
               ✎ Редактировать
             </button>
@@ -214,7 +215,7 @@ export function TrainingSection() {
           </div>
 
           {/* Exercise list */}
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div data-tour="exercises" className="grid gap-3 sm:grid-cols-2">
             {day.exercises.map((ex, ei) => {
               const state = setStates[setKey(currentDay, ei)] ?? [];
               const exDone = state.filter(Boolean).length;
@@ -250,6 +251,7 @@ export function TrainingSection() {
                     <div
                       className="flex items-center gap-1.5"
                       onClick={(e) => e.stopPropagation()}
+                      {...(ei === 0 ? { "data-tour": "weight-input" } : {})}
                     >
                       <input
                         className="h-8 w-14 rounded-lg border border-border/60 bg-surface/40 px-2 text-center text-xs text-text outline-none focus:border-accent/60"
@@ -289,8 +291,8 @@ export function TrainingSection() {
 
           {/* Actions */}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <button onClick={completeDay} className="btn btn-success">
+            <div data-tour="presets" className="flex flex-wrap items-center gap-2">
+              <button data-tour="complete-day" onClick={completeDay} className="btn btn-success">
                 ✓ Завершить день
               </button>
               <button onClick={askSavePreset} className="btn">

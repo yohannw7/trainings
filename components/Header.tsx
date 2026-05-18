@@ -80,6 +80,7 @@ export function Header() {
           </motion.div>
           <button
             onClick={openSettings}
+            data-tour="settings"
             className="grid h-10 w-10 place-items-center rounded-xl border border-border/60 bg-surface/40 text-muted transition-all hover:border-accent/50 hover:text-text"
             aria-label="Настройки"
           >
