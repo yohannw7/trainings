@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const STORAGE_KEY = "onboarding_done_v2";
 
@@ -9,7 +9,7 @@ type Step = {
   title: string;
   description: string;
   icon: string;
-  target?: string; // CSS selector for the element to highlight
+  target?: string;
 };
 
 const STEPS: Step[] = [
@@ -90,66 +90,67 @@ const STEPS: Step[] = [
   },
 ];
 
-type Rect = { top: number; left: number; width: number; height: number };
+type ViewportRect = { x: number; y: number; w: number; h: number };
 
 export function Onboarding() {
   const [show, setShow] = useState(false);
   const [step, setStep] = useState(0);
-  const [targetRect, setTargetRect] = useState<Rect | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<"bottom" | "top">("bottom");
-  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [spot, setSpot] = useState<ViewportRect | null>(null);
+  const [tooltipSide, setTooltipSide] = useState<"below" | "above">("below");
 
   useEffect(() => {
     const done = localStorage.getItem(STORAGE_KEY);
     if (!done) setShow(true);
   }, []);
 
-  const measureTarget = useCallback((selector?: string) => {
+  const measure = useCallback(() => {
+    const selector = STEPS[step]?.target;
     if (!selector) {
-      setTargetRect(null);
+      setSpot(null);
       return;
     }
     const el = document.querySelector(selector);
     if (!el) {
-      setTargetRect(null);
+      setSpot(null);
       return;
     }
-    const rect = el.getBoundingClientRect();
-    setTargetRect({
-      top: rect.top + window.scrollY,
-      left: rect.left + window.scrollX,
-      width: rect.width,
-      height: rect.height,
+    const r = el.getBoundingClientRect();
+    const pad = 10;
+    setSpot({
+      x: r.left - pad,
+      y: r.top - pad,
+      w: r.width + pad * 2,
+      h: r.height + pad * 2,
     });
+    // Tooltip goes below if element is in top half, above otherwise
+    setTooltipSide(r.top + r.height / 2 < window.innerHeight * 0.55 ? "below" : "above");
+  }, [step]);
 
-    // Decide tooltip position
-    const viewH = window.innerHeight;
-    const elCenter = rect.top + rect.height / 2;
-    setTooltipPos(elCenter < viewH / 2 ? "bottom" : "top");
-
-    // Scroll element into view
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, []);
-
+  // Scroll to target and measure
   useEffect(() => {
     if (!show) return;
-    const timer = setTimeout(() => {
-      measureTarget(STEPS[step].target);
-    }, 350); // wait for scroll/animation
-    return () => clearTimeout(timer);
-  }, [step, show, measureTarget]);
+    const selector = STEPS[step]?.target;
+    if (selector) {
+      const el = document.querySelector(selector);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+    // Measure after scroll settles
+    const t = setTimeout(measure, 400);
+    return () => clearTimeout(t);
+  }, [step, show, measure]);
 
-  // Recalculate on resize
+  // Re-measure on scroll/resize
   useEffect(() => {
     if (!show) return;
-    const handler = () => measureTarget(STEPS[step].target);
-    window.addEventListener("resize", handler);
-    window.addEventListener("scroll", handler);
+    window.addEventListener("scroll", measure, true);
+    window.addEventListener("resize", measure);
     return () => {
-      window.removeEventListener("resize", handler);
-      window.removeEventListener("scroll", handler);
+      window.removeEventListener("scroll", measure, true);
+      window.removeEventListener("resize", measure);
     };
-  }, [show, step, measureTarget]);
+  }, [show, measure]);
 
   const finish = () => {
     localStorage.setItem(STORAGE_KEY, "1");
@@ -165,43 +166,10 @@ export function Onboarding() {
     if (step > 0) setStep(step - 1);
   };
 
-  const current = STEPS[step];
-
   if (!show) return null;
 
-  // Spotlight cutout for SVG mask
-  const pad = 8;
-  const spotRect = targetRect
-    ? {
-        x: targetRect.left - window.scrollX - pad,
-        y: targetRect.top - window.scrollY - pad,
-        w: targetRect.width + pad * 2,
-        h: targetRect.height + pad * 2,
-        rx: 16,
-      }
-    : null;
-
-  // Tooltip position relative to viewport
-  const getTooltipStyle = (): React.CSSProperties => {
-    if (!spotRect) {
-      return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
-    }
-    const gap = 16;
-    if (tooltipPos === "bottom") {
-      return {
-        top: spotRect.y + spotRect.h + gap,
-        left: "50%",
-        transform: "translateX(-50%)",
-        maxWidth: "min(420px, calc(100vw - 32px))",
-      };
-    }
-    return {
-      bottom: `calc(100vh - ${spotRect.y}px + ${gap}px)`,
-      left: "50%",
-      transform: "translateX(-50%)",
-      maxWidth: "min(420px, calc(100vw - 32px))",
-    };
-  };
+  const current = STEPS[step];
+  const hasTarget = !!current.target && !!spot;
 
   return (
     <AnimatePresence>
@@ -209,24 +177,20 @@ export function Onboarding() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[300]"
-        style={{ pointerEvents: "auto" }}
+        className="fixed inset-0 z-[300] overflow-hidden"
       >
-        {/* Dark overlay with spotlight cutout */}
-        <svg
-          className="absolute inset-0 h-full w-full"
-          style={{ pointerEvents: "none" }}
-        >
+        {/* Overlay with spotlight hole */}
+        <svg className="pointer-events-none absolute inset-0 h-full w-full">
           <defs>
-            <mask id="spotlight-mask">
+            <mask id="onboarding-mask">
               <rect width="100%" height="100%" fill="white" />
-              {spotRect && (
+              {spot && (
                 <rect
-                  x={spotRect.x}
-                  y={spotRect.y}
-                  width={spotRect.w}
-                  height={spotRect.h}
-                  rx={spotRect.rx}
+                  x={spot.x}
+                  y={spot.y}
+                  width={spot.w}
+                  height={spot.h}
+                  rx={14}
                   fill="black"
                 />
               )}
@@ -235,110 +199,122 @@ export function Onboarding() {
           <rect
             width="100%"
             height="100%"
-            fill="rgba(0,0,0,0.75)"
-            mask="url(#spotlight-mask)"
+            fill="rgba(0,0,0,0.78)"
+            mask="url(#onboarding-mask)"
           />
         </svg>
 
-        {/* Spotlight border glow */}
-        {spotRect && (
+        {/* Glow border around target */}
+        {spot && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            key={`border-${step}`}
+            initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: "spring", damping: 20, stiffness: 200 }}
-            className="pointer-events-none absolute rounded-2xl border-2 border-accent shadow-glow"
+            transition={{ type: "spring", damping: 22, stiffness: 240 }}
+            className="pointer-events-none absolute rounded-2xl ring-2 ring-accent/80 shadow-glow"
             style={{
-              top: spotRect.y,
-              left: spotRect.x,
-              width: spotRect.w,
-              height: spotRect.h,
+              top: spot.y,
+              left: spot.x,
+              width: spot.w,
+              height: spot.h,
             }}
           />
         )}
 
-        {/* Arrow pointing to target */}
-        {spotRect && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="pointer-events-none absolute"
-            style={{
-              left: spotRect.x + spotRect.w / 2 - 8,
-              ...(tooltipPos === "bottom"
-                ? { top: spotRect.y + spotRect.h + 2 }
-                : { top: spotRect.y - 18 }),
-            }}
-          >
-            <svg width="16" height="12" viewBox="0 0 16 12">
-              {tooltipPos === "bottom" ? (
-                <path d="M8 0L16 12H0L8 0Z" fill="rgb(var(--accent))" />
-              ) : (
-                <path d="M8 12L0 0H16L8 12Z" fill="rgb(var(--accent))" />
-              )}
-            </svg>
-          </motion.div>
-        )}
-
-        {/* Tooltip card */}
-        <motion.div
-          ref={tooltipRef}
-          key={step}
-          initial={{ opacity: 0, y: tooltipPos === "bottom" ? 15 : -15 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: tooltipPos === "bottom" ? 15 : -15 }}
-          transition={{ type: "spring", damping: 24, stiffness: 300 }}
-          className="absolute z-10 w-full rounded-3xl border border-border/60 bg-bg p-5 shadow-glow sm:p-6"
-          style={getTooltipStyle()}
+        {/* Tooltip */}
+        <div
+          className="pointer-events-none absolute inset-0 flex"
+          style={{
+            alignItems: !hasTarget
+              ? "center"
+              : tooltipSide === "below"
+                ? "flex-start"
+                : "flex-end",
+            justifyContent: "center",
+            padding: 16,
+            paddingTop: hasTarget && tooltipSide === "below" && spot
+              ? spot.y + spot.h + 20
+              : 16,
+            paddingBottom: hasTarget && tooltipSide === "above" && spot
+              ? window.innerHeight - spot.y + 20
+              : 16,
+          }}
         >
-          {/* Progress dots */}
-          <div className="mb-4 flex items-center justify-center gap-1.5">
-            {STEPS.map((_, i) => (
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, y: tooltipSide === "below" ? 16 : -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", damping: 24, stiffness: 300 }}
+            className="pointer-events-auto w-full max-w-[400px] rounded-3xl border border-border/60 bg-bg p-5 shadow-glow sm:p-6"
+          >
+            {/* Arrow pointing to target */}
+            {hasTarget && spot && (
               <div
-                key={i}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i === step
-                    ? "w-5 bg-accent-gradient"
-                    : i < step
-                      ? "w-1.5 bg-accent/50"
-                      : "w-1.5 bg-border"
-                }`}
-              />
-            ))}
-          </div>
+                className="absolute left-1/2 -translate-x-1/2"
+                style={
+                  tooltipSide === "below"
+                    ? { top: -10 }
+                    : { bottom: -10 }
+                }
+              >
+                <svg width="20" height="10" viewBox="0 0 20 10">
+                  {tooltipSide === "below" ? (
+                    <path d="M10 0L20 10H0L10 0Z" fill="rgb(var(--accent))" />
+                  ) : (
+                    <path d="M10 10L0 0H20L10 10Z" fill="rgb(var(--accent))" />
+                  )}
+                </svg>
+              </div>
+            )}
 
-          {/* Icon + content */}
-          <div className="mb-1 text-center text-3xl">{current.icon}</div>
-          <h2 className="heading-display mb-2 text-center text-xl font-bold">
-            {current.title}
-          </h2>
-          <p className="mb-5 text-center text-sm leading-relaxed text-muted">
-            {current.description}
-          </p>
-
-          {/* Buttons */}
-          <div className="flex items-center justify-between gap-3">
-            <button
-              onClick={finish}
-              className="text-xs text-muted transition-colors hover:text-text"
-            >
-              Пропустить
-            </button>
-            <div className="flex items-center gap-2">
-              {step > 0 && (
-                <button onClick={prev} className="btn px-3 py-2 text-sm">
-                  ←
-                </button>
-              )}
-              <button onClick={next} className="btn btn-primary px-4 py-2 text-sm">
-                {step === STEPS.length - 1 ? "Начать!" : "Далее →"}
-              </button>
+            {/* Progress dots */}
+            <div className="mb-4 flex items-center justify-center gap-1.5">
+              {STEPS.map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    i === step
+                      ? "w-5 bg-accent-gradient"
+                      : i < step
+                        ? "w-1.5 bg-accent/50"
+                        : "w-1.5 bg-border"
+                  }`}
+                />
+              ))}
             </div>
-          </div>
 
-          <div className="mt-3 text-center text-[10px] text-muted/50">
-            {step + 1} / {STEPS.length}
-          </div>
-        </motion.div>
+            <div className="mb-1 text-center text-3xl">{current.icon}</div>
+            <h2 className="heading-display mb-2 text-center text-xl font-bold">
+              {current.title}
+            </h2>
+            <p className="mb-5 text-center text-sm leading-relaxed text-muted">
+              {current.description}
+            </p>
+
+            <div className="flex items-center justify-between gap-3">
+              <button
+                onClick={finish}
+                className="text-xs text-muted transition-colors hover:text-text"
+              >
+                Пропустить
+              </button>
+              <div className="flex items-center gap-2">
+                {step > 0 && (
+                  <button onClick={prev} className="btn px-3 py-2 text-sm">
+                    ←
+                  </button>
+                )}
+                <button onClick={next} className="btn btn-primary px-4 py-2 text-sm">
+                  {step === STEPS.length - 1 ? "Начать!" : "Далее →"}
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-3 text-center text-[10px] text-muted/50">
+              {step + 1} / {STEPS.length}
+            </div>
+          </motion.div>
+        </div>
       </motion.div>
     </AnimatePresence>
   );
