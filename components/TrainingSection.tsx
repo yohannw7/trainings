@@ -229,7 +229,7 @@ export function TrainingSection() {
             axis="y"
             values={day.exercises}
             onReorder={(next) => reorderExercises(currentDay, next)}
-            className="grid gap-3 sm:grid-cols-2"
+            className="flex flex-col gap-3"
           >
             {day.exercises.map((ex, ei) => {
               const state = setStates[setKey(currentDay, ei)] ?? [];
@@ -346,8 +346,13 @@ function ExerciseCard({
       value={ex}
       dragListener={false}
       dragControls={dragControls}
-      whileDrag={{ scale: 1.02, zIndex: 5, boxShadow: "0 18px 40px rgba(0,0,0,0.35)" }}
-      transition={{ type: "spring", damping: 24, stiffness: 320 }}
+      whileDrag={{
+        scale: 1.03,
+        zIndex: 10,
+        boxShadow: "0 24px 50px rgba(0,0,0,0.45)",
+        cursor: "grabbing",
+      }}
+      transition={{ type: "spring", damping: 28, stiffness: 400 }}
       className="list-none"
     >
       <button
@@ -360,7 +365,7 @@ function ExerciseCard({
         }`}
       >
         <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-1 items-start gap-2">
+          <div className="flex min-w-0 flex-1 items-start gap-2.5">
             {/* Drag handle */}
             <span
               onPointerDown={(e) => {
@@ -368,16 +373,17 @@ function ExerciseCard({
                 dragControls.start(e);
               }}
               onClick={(e) => e.stopPropagation()}
-              className="-ml-1 mt-0.5 grid h-7 w-5 cursor-grab touch-none place-items-center text-muted/60 hover:text-muted active:cursor-grabbing"
+              className="-ml-1 mt-0.5 grid h-9 w-7 shrink-0 cursor-grab touch-none place-items-center rounded-lg text-muted/70 transition-colors hover:bg-surface/60 hover:text-text active:cursor-grabbing active:bg-surface"
               aria-label="Drag"
+              title="Перетащить"
             >
-              <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
-                <circle cx="2" cy="3" r="1.2" />
-                <circle cx="2" cy="7" r="1.2" />
-                <circle cx="2" cy="11" r="1.2" />
-                <circle cx="8" cy="3" r="1.2" />
-                <circle cx="8" cy="7" r="1.2" />
-                <circle cx="8" cy="11" r="1.2" />
+              <svg width="14" height="18" viewBox="0 0 14 18" fill="currentColor">
+                <circle cx="3" cy="3" r="1.6" />
+                <circle cx="3" cy="9" r="1.6" />
+                <circle cx="3" cy="15" r="1.6" />
+                <circle cx="11" cy="3" r="1.6" />
+                <circle cx="11" cy="9" r="1.6" />
+                <circle cx="11" cy="15" r="1.6" />
               </svg>
             </span>
             <div className="min-w-0 flex-1">

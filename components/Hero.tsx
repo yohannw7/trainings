@@ -93,13 +93,40 @@ function StatCard({
   emoji: string;
 }) {
   return (
-    <div className="card relative overflow-hidden p-4 sm:p-5">
-      <div className="flex items-start justify-between">
+    <motion.div
+      whileHover={{
+        rotate: -2.5,
+        y: -6,
+        scale: 1.03,
+        transition: { type: "spring", damping: 14, stiffness: 280 },
+      }}
+      whileTap={{ scale: 0.98, rotate: -1 }}
+      className="group card relative cursor-default overflow-hidden p-4 transition-shadow duration-300 hover:shadow-glow sm:p-5"
+      style={{ transformStyle: "preserve-3d", transformOrigin: "center" }}
+    >
+      {/* Glint sweep */}
+      <span
+        className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
+        style={{ transform: "skewX(-20deg) translateX(-150%)" }}
+        aria-hidden
+      />
+      <span
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        style={{
+          background:
+            "linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.08) 55%, transparent 70%)",
+          mixBlendMode: "screen",
+        }}
+        aria-hidden
+      />
+      <div className="relative flex items-start justify-between">
         <span className="text-xs uppercase tracking-wider text-muted">{label}</span>
-        <span className="text-lg opacity-70">{emoji}</span>
+        <span className="text-lg opacity-70 transition-transform duration-300 group-hover:scale-110">
+          {emoji}
+        </span>
       </div>
-      <div className="heading-display mt-2 text-3xl font-bold sm:text-4xl">{value}</div>
-      <div className="mt-1 text-xs text-muted">{hint}</div>
-    </div>
+      <div className="heading-display relative mt-2 text-3xl font-bold sm:text-4xl">{value}</div>
+      <div className="relative mt-1 text-xs text-muted">{hint}</div>
+    </motion.div>
   );
 }
