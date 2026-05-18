@@ -31,7 +31,7 @@ const STEPS: Step[] = [
     description:
       "Каждая карточка — упражнение. Нажми на неё, чтобы открыть панель подхода с секундомером и таймером отдыха.",
     icon: "💪",
-    target: "[data-tour='exercises']",
+    target: "[data-tour='exercise-card']",
   },
   {
     title: "Вес",
@@ -116,14 +116,24 @@ export function Onboarding() {
     }
     const r = el.getBoundingClientRect();
     const pad = 10;
+    const viewH = window.innerHeight;
+    const tooltipBudget = 280; // approx tooltip height incl. gap
+
+    // If the highlighted element doesn't leave enough room either above or below, drop the spotlight
+    const spaceBelow = viewH - (r.bottom + pad);
+    const spaceAbove = r.top - pad;
+    if (spaceBelow < tooltipBudget && spaceAbove < tooltipBudget) {
+      setSpot(null);
+      return;
+    }
+
     setSpot({
       x: r.left - pad,
       y: r.top - pad,
       w: r.width + pad * 2,
       h: r.height + pad * 2,
     });
-    // Tooltip goes below if element is in top half, above otherwise
-    setTooltipSide(r.top + r.height / 2 < window.innerHeight * 0.55 ? "below" : "above");
+    setTooltipSide(spaceBelow >= tooltipBudget ? "below" : "above");
   }, [step]);
 
   // Scroll to target and measure
@@ -133,11 +143,17 @@ export function Onboarding() {
     if (selector) {
       const el = document.querySelector(selector);
       if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        const r = el.getBoundingClientRect();
+        const viewH = window.innerHeight;
+        const tooltipBudget = 280;
+        // Scroll so target sits in upper third when possible (so tooltip fits below)
+        const desiredTop = Math.max(80, (viewH - tooltipBudget - r.height) / 2);
+        const delta = r.top - desiredTop;
+        window.scrollBy({ top: delta, behavior: "smooth" });
       }
     }
     // Measure after scroll settles
-    const t = setTimeout(measure, 400);
+    const t = setTimeout(measure, 450);
     return () => clearTimeout(t);
   }, [step, show, measure]);
 

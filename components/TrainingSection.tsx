@@ -229,6 +229,7 @@ export function TrainingSection() {
                   layout
                   whileHover={{ y: -2 }}
                   onClick={() => setDrawerEx({ di: currentDay, ei })}
+                  {...(ei === 0 ? { "data-tour": "exercise-card" } : {})}
                   className={`group relative overflow-hidden rounded-2xl border p-4 text-left transition-all ${
                     allDone
                       ? "border-success/30 bg-success/5"
