@@ -1,0 +1,43 @@
+export type Exercise = {
+  name: string;
+  sets: number;
+  target: string;
+};
+
+export type Day = {
+  name: string;
+  short: string;
+  exercises: Exercise[];
+};
+
+export type Plan = Day[];
+
+export type StreakData = {
+  streak: number;
+  lastWeek: string | null;
+  total: number;
+};
+
+export type WorkoutHistoryEntry = {
+  date: string;
+  dayName: string;
+  short: string;
+  duration: number;
+  exercises: Array<{
+    name: string;
+    sets: number;
+    done: number;
+    weight: string;
+  }>;
+};
+
+export type CalcProfile = {
+  gender: "male" | "female";
+  age: string;
+  weight: string;
+  height: string;
+  activity: string;
+  goal: "cut" | "maintain" | "bulk";
+};
+
+export type ThemeName = "midnight" | "dawn" | "ocean" | "forest" | "violet";

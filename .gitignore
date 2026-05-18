@@ -1,6 +1,7 @@
-*
-!index.html
-!bear.png
-!bear2.png
-!bear3.png
-!.gitignore
+node_modules/
+.next/
+out/
+.DS_Store
+*.log
+.env*.local
+next-env.d.ts
