@@ -142,7 +142,7 @@ function StatCard({
           initial={{ x: "-140%" }}
           animate={glint}
           className="absolute -top-1/2 left-0 h-[200%] w-[55%]"
-          style={{ transform: "skewX(-22deg)", filter: "blur(8px)" }}
+          style={{ transform: "skewX(28deg)", filter: "blur(8px)" }}
         >
           {/* Soft wide halo */}
           <span
