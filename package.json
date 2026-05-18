@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "next build && touch out/.nojekyll && gh-pages -d out -t true -m \"Deploy\""
+    "deploy": "next build && touch out/.nojekyll && gh-pages -d out --dotfiles -m Deploy"
   },
   "dependencies": {
     "clsx": "2.1.1",
