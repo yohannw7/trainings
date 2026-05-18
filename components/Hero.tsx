@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useAnimationControls } from "framer-motion";
 import { useWorkout } from "./WorkoutContext";
 import { useLocale } from "./LocaleProvider";
 import { formatTime } from "@/lib/utils";
@@ -92,6 +92,17 @@ function StatCard({
   hint: string;
   emoji: string;
 }) {
+  const glint = useAnimationControls();
+
+  const playGlint = () => {
+    glint.set({ x: "-130%", opacity: 0 });
+    glint.start({
+      x: "130%",
+      opacity: [0, 1, 1, 0],
+      transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1], times: [0, 0.15, 0.85, 1] },
+    });
+  };
+
   return (
     <motion.div
       whileHover={{
@@ -101,24 +112,25 @@ function StatCard({
         transition: { type: "spring", damping: 14, stiffness: 280 },
       }}
       whileTap={{ scale: 0.98, rotate: -1 }}
+      onHoverStart={playGlint}
+      onTapStart={playGlint}
       className="group card relative cursor-default overflow-hidden p-4 transition-shadow duration-300 hover:shadow-glow sm:p-5"
-      style={{ transformStyle: "preserve-3d", transformOrigin: "center" }}
     >
-      {/* Glint sweep */}
-      <span
-        className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
-        style={{ transform: "skewX(-20deg) translateX(-150%)" }}
+      {/* Glint sweep — plays once on hover/tap */}
+      <motion.span
         aria-hidden
-      />
-      <span
-        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        initial={{ x: "-130%", opacity: 0 }}
+        animate={glint}
+        className="pointer-events-none absolute -top-1/2 left-0 h-[200%] w-1/2"
         style={{
           background:
-            "linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.08) 55%, transparent 70%)",
+            "linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.05) 35%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0.05) 65%, transparent 80%)",
+          filter: "blur(1px)",
           mixBlendMode: "screen",
+          transform: "skewX(-18deg)",
         }}
-        aria-hidden
       />
+
       <div className="relative flex items-start justify-between">
         <span className="text-xs uppercase tracking-wider text-muted">{label}</span>
         <span className="text-lg opacity-70 transition-transform duration-300 group-hover:scale-110">
