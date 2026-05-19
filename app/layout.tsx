@@ -8,6 +8,7 @@ import { ModalProvider } from "@/components/ModalProvider";
 import { BackgroundDecor } from "@/components/BackgroundDecor";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { PWARegister } from "@/components/PWARegister";
+import { WorkoutProvider } from "@/components/WorkoutContext";
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -62,11 +63,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LocaleProvider>
           <ThemeProvider>
             <ToastProvider>
-              <ModalProvider>
-                <PWARegister />
-                <BackgroundDecor />
-                <SmoothScroll>{children}</SmoothScroll>
-              </ModalProvider>
+              <WorkoutProvider>
+                <ModalProvider>
+                  <PWARegister />
+                  <BackgroundDecor />
+                  <SmoothScroll>{children}</SmoothScroll>
+                </ModalProvider>
+              </WorkoutProvider>
             </ToastProvider>
           </ThemeProvider>
         </LocaleProvider>
