@@ -10,6 +10,7 @@ import { useLocale } from "./LocaleProvider";
 import { ExerciseDrawer } from "./ExerciseDrawer";
 import { DayEditorModal } from "./DayEditorModal";
 import { ProgramsModal } from "./ProgramsModal";
+import { formatPlan, shareOrCopy } from "@/lib/share";
 import type { Exercise } from "@/lib/types";
 
 export function TrainingSection() {
@@ -37,7 +38,7 @@ export function TrainingSection() {
   } = useWorkout();
   const { open, close } = useModal();
   const { toast } = useToast();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
 
   const [drawerEx, setDrawerEx] = useState<{ di: number; ei: number } | null>(null);
 
@@ -261,6 +262,17 @@ export function TrainingSection() {
               </button>
               <button onClick={askSavePreset} className="btn">
                 {t("training.savePreset")}
+              </button>
+              <button
+                onClick={async () => {
+                  const text = formatPlan(plan, locale);
+                  const result = await shareOrCopy(text, t("training.title"));
+                  if (result === "copied") toast(t("toast.copied"));
+                  else if (result === "failed") toast(t("toast.shareFailed"));
+                }}
+                className="btn"
+              >
+                {t("training.share")}
               </button>
               <button
                 onClick={() => {

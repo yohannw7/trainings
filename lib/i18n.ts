@@ -66,6 +66,7 @@ const dict = {
   "training.editDay": { ru: "✎ Редактировать", en: "✎ Edit" },
   "training.completeDay": { ru: "✓ Завершить день", en: "✓ Complete day" },
   "training.savePreset": { ru: "💾 Сохранить пресет", en: "💾 Save preset" },
+  "training.share": { ru: "🔗 Поделиться", en: "🔗 Share" },
   "training.programs": { ru: "📚 Программы", en: "📚 Programs" },
   "training.resetDay": { ru: "Сбросить день", en: "Reset day" },
   "training.presetsCount": { ru: "▾ Пресеты", en: "▾ Presets" },
@@ -125,6 +126,7 @@ const dict = {
   "drawer.setTime": { ru: "Время подхода", en: "Set time" },
   "drawer.rest": { ru: "Отдых", en: "Rest" },
   "drawer.restSetup": { ru: "Отдых перед подходом (сек)", en: "Rest before set (sec)" },
+  "drawer.restAdjust": { ru: "от RPE", en: "from RPE" },
   "drawer.undoLast": { ru: "↩ Отменить последний", en: "↩ Undo last" },
 
   // Timer
@@ -329,6 +331,12 @@ const dict = {
   "toast.alreadyMarked": {
     ru: "На этой неделе уже отмечал! 🔥",
     en: "Already logged this week! 🔥",
+  },
+  "toast.copied": { ru: "Скопировано в буфер 📋", en: "Copied to clipboard 📋" },
+  "toast.shared": { ru: "Готово 🔗", en: "Shared 🔗" },
+  "toast.shareFailed": {
+    ru: "Не удалось скопировать",
+    en: "Couldn't copy",
   },
   "toast.dayDone": {
     ru: "День засчитан! Стрик: {streak} нед.",

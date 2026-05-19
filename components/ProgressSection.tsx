@@ -4,12 +4,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useWorkout } from "./WorkoutContext";
 import { useLocale } from "./LocaleProvider";
+import { useToast } from "./ToastProvider";
 import { formatDurationLocalized } from "@/lib/i18n";
+import { formatHistoryEntry, shareOrCopy } from "@/lib/share";
 import { Heatmap } from "./Heatmap";
 
 export function ProgressSection() {
   const { history, prs } = useWorkout();
   const { t, locale } = useLocale();
+  const { toast } = useToast();
   const [openIdx, setOpenIdx] = useState<number | null>(null);
   const prList = Object.entries(prs).sort((a, b) => b[1].weight - a[1].weight);
 
@@ -91,6 +94,26 @@ export function ProgressSection() {
                     {doneSets}/{totalSets} · {pct}%
                     {entry.duration ? ` · ⏱ ${formatDurationLocalized(entry.duration, locale)}` : ""}
                   </span>
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      const text = formatHistoryEntry(entry, locale);
+                      const result = await shareOrCopy(text, entry.dayName);
+                      if (result === "copied") toast(t("toast.copied"));
+                      else if (result === "failed") toast(t("toast.shareFailed"));
+                    }}
+                    className="grid h-7 w-7 place-items-center rounded-full border border-border/60 text-muted transition-colors hover:border-accent/50 hover:text-text"
+                    aria-label={t("training.share")}
+                    title={t("training.share")}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="18" cy="5" r="3" />
+                      <circle cx="6" cy="12" r="3" />
+                      <circle cx="18" cy="19" r="3" />
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                    </svg>
+                  </button>
                   <motion.span animate={{ rotate: isOpen ? 90 : 0 }} className="text-muted">
                     ›
                   </motion.span>

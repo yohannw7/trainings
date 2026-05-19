@@ -26,6 +26,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
   const [resting, setResting] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [pendingRpeIdx, setPendingRpeIdx] = useState<number | null>(null);
+  const [restAdjust, setRestAdjust] = useState<number>(0); // +/- seconds for current rest, for UI
   const approachStartRef = useRef<number | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const restRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -48,6 +49,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
     setResting(false);
     setCountdown(null);
     setPendingRpeIdx(null);
+    setRestAdjust(0);
     if (tickRef.current) {
       clearInterval(tickRef.current);
       tickRef.current = null;
@@ -143,17 +145,27 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
     if (di === null || ei === null || pendingRpeIdx === null) return;
     setRpe(di, ei, pendingRpeIdx, value);
     setPendingRpeIdx(null);
-    // Start the rest timer after RPE selection (only if more sets are pending)
+
+    // Adapt rest based on the just-rated set: +30 if 9-10, -15 if <=6
+    let adjust = 0;
+    if (typeof value === "number") {
+      if (value >= 9) adjust = 30;
+      else if (value <= 6) adjust = -15;
+    }
+    setRestAdjust(adjust);
+
     const updatedState = setStates[setKey(di, ei)] ?? [];
     const updatedDone = updatedState.filter(Boolean).length;
     if (ex && updatedDone < ex.sets) {
-      startRest();
+      const adjusted = Math.max(30, restTime + adjust);
+      startRest(adjusted);
     }
   };
 
-  const startRest = () => {
+  const startRest = (override?: number) => {
+    const duration = override ?? restTime;
     setResting(true);
-    setRestRemaining(restTime);
+    setRestRemaining(duration);
     if (restRef.current) clearInterval(restRef.current);
     restRef.current = setInterval(() => {
       setRestRemaining((prev) => {
@@ -163,6 +175,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
             restRef.current = null;
           }
           setResting(false);
+          setRestAdjust(0);
           playBeep();
           vibrate([200, 100, 200]);
           return 0;
@@ -179,6 +192,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
     }
     setResting(false);
     setRestRemaining(0);
+    setRestAdjust(0);
   };
 
   const handleUndo = () => {
@@ -358,6 +372,18 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
                     <div className="heading-display mt-1 text-4xl font-bold tabular-nums text-accent2">
                       {formatTime(restRemaining)}
                     </div>
+                    {restAdjust !== 0 && (
+                      <span
+                        className={`mt-1 inline-block rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                          restAdjust > 0
+                            ? "border-danger/40 bg-danger/10 text-danger"
+                            : "border-success/40 bg-success/10 text-success"
+                        }`}
+                      >
+                        {restAdjust > 0 ? "+" : ""}
+                        {restAdjust} {t("common.sec")} · {t("drawer.restAdjust")}
+                      </span>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
