@@ -1,0 +1,53 @@
+{
+  "name": "ASH Train — Workout Tracker",
+  "short_name": "ASH Train",
+  "description": "Personal workout tracker with timers, calculators and progress history",
+  "id": "/trainings/",
+  "start_url": "/trainings/",
+  "scope": "/trainings/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0c16",
+  "theme_color": "#0a0c16",
+  "lang": "ru",
+  "dir": "ltr",
+  "categories": ["fitness", "health", "lifestyle", "productivity"],
+  "icons": [
+    {
+      "src": "/trainings/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/trainings/icons/icon-256.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/trainings/icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/trainings/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/trainings/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/trainings/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
