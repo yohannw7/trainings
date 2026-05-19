@@ -14,7 +14,8 @@ type Bear = {
   rotation: number;
 };
 
-const BEAR_IMAGES = ["/bear.png", "/bear2.png", "/bear3.png"];
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const BEAR_IMAGES = ["/bear.png", "/bear2.png", "/bear3.png"].map((p) => `${BASE_PATH}${p}`);
 
 export function BackgroundDecor() {
   const [bears, setBears] = useState<Bear[]>([]);
