@@ -162,32 +162,33 @@ function SettingsModal({
       {/* Theme */}
       <div className="mb-5">
         <span className="label">{t("settings.theme")}</span>
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+        <div className="grid grid-cols-3 gap-x-3 gap-y-4 sm:grid-cols-5">
           {themes.map((th) => (
-            <button
-              key={th}
-              onClick={() => setTheme(th)}
-              className={`group relative aspect-square rounded-2xl border-2 transition-all ${
-                th === theme ? "border-accent shadow-glow" : "border-border/40 hover:border-accent/50"
-              }`}
-              style={{ background: themeMeta[th].gradient }}
-              aria-label={themeMeta[th].label}
-            >
-              {th === theme && (
-                <span className="absolute inset-0 grid place-items-center text-xl text-white drop-shadow">
-                  ✓
-                </span>
-              )}
-              <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] uppercase tracking-wider text-muted">
+            <div key={th} className="flex flex-col items-center gap-1.5">
+              <button
+                onClick={() => setTheme(th)}
+                className={`group relative aspect-square w-full rounded-2xl border-2 transition-all ${
+                  th === theme ? "border-accent shadow-glow" : "border-border/40 hover:border-accent/50"
+                }`}
+                style={{ background: themeMeta[th].gradient }}
+                aria-label={themeMeta[th].label}
+              >
+                {th === theme && (
+                  <span className="absolute inset-0 grid place-items-center text-xl text-white drop-shadow">
+                    ✓
+                  </span>
+                )}
+              </button>
+              <span className="whitespace-nowrap text-[10px] uppercase tracking-wider text-muted">
                 {themeMeta[th].label}
               </span>
-            </button>
+            </div>
           ))}
         </div>
       </div>
 
       {/* Install (PWA) */}
-      <div className="mb-1 mt-10">
+      <div className="mb-1 mt-6">
         <InstallButton />
       </div>
 

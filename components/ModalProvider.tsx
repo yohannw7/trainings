@@ -36,19 +36,27 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center"
             onClick={(e) => {
               if (e.target === e.currentTarget) close();
             }}
-            style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}
+            style={{
+              background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(8px)",
+              paddingTop: "max(16px, env(safe-area-inset-top))",
+              paddingBottom: "max(16px, env(safe-area-inset-bottom))",
+              paddingLeft: "max(16px, env(safe-area-inset-left))",
+              paddingRight: "max(16px, env(safe-area-inset-right))",
+            }}
           >
             <motion.div
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ type: "spring", damping: 22, stiffness: 280 }}
-              className="card relative w-full max-w-lg overflow-y-auto rounded-3xl p-6 shadow-glow"
-              style={{ maxHeight: "90vh" }}
+              className="card relative w-full max-w-lg overflow-y-auto overscroll-contain rounded-3xl p-6 shadow-glow"
+              style={{ maxHeight: "min(90dvh, 100%)" }}
+              data-lenis-prevent
             >
               {content}
             </motion.div>
