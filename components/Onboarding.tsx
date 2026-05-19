@@ -387,15 +387,30 @@ function TooltipPositioner({
   side: "below" | "above";
   children: React.ReactNode;
 }) {
+  const TOOLTIP_MIN_H = 200; // approximate minimum tooltip height
+
   const paddingTop = useTransform([sy, sh], (vals) => {
     const [y, h] = vals as [number, number];
     if (!hasTarget) return 16;
-    return side === "below" ? y + h + TOOLTIP_GAP : 16;
+    if (side === "below") {
+      const desired = y + h + TOOLTIP_GAP;
+      const viewH = typeof window !== "undefined" ? window.innerHeight : 800;
+      // Clamp so tooltip has at least TOOLTIP_MIN_H space below
+      return Math.min(desired, viewH - TOOLTIP_MIN_H - 16);
+    }
+    return 16;
   });
+
   const paddingBottom = useTransform([sy, sh], (vals) => {
     const [y] = vals as [number, number];
     if (!hasTarget || typeof window === "undefined") return 16;
-    return side === "above" ? window.innerHeight - y + TOOLTIP_GAP : 16;
+    if (side === "above") {
+      const viewH = window.innerHeight;
+      const desired = viewH - y + TOOLTIP_GAP;
+      // Clamp so tooltip has at least TOOLTIP_MIN_H space above
+      return Math.min(desired, viewH - TOOLTIP_MIN_H - 16);
+    }
+    return 16;
   });
 
   return (
