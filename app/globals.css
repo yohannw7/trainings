@@ -217,11 +217,13 @@ body::after {
 
 /* iOS Safari / PWA: prevent auto-zoom when focusing inputs.
    Anything below 16px triggers the zoom on iOS; force >= 16px on
-   touch devices. */
+   touch devices.
+   We bump specificity with html so this beats Tailwind utility
+   classes like text-sm / text-xs that are applied directly on inputs. */
 @media (pointer: coarse) {
-  input,
-  select,
-  textarea {
+  html input,
+  html select,
+  html textarea {
     font-size: 16px !important;
   }
 }
