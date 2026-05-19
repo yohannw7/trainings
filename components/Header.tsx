@@ -5,6 +5,7 @@ import { useWorkout } from "./WorkoutContext";
 import { useTheme } from "./ThemeProvider";
 import { useModal } from "./ModalProvider";
 import { useLocale } from "./LocaleProvider";
+import { InstallButton } from "./InstallButton";
 import { ThemeName } from "@/lib/types";
 import type { Locale } from "@/lib/i18n";
 
@@ -185,7 +186,12 @@ function SettingsModal({
         </div>
       </div>
 
-      <div className="mt-12 flex justify-end">
+      {/* Install (PWA) */}
+      <div className="mb-1 mt-10">
+        <InstallButton />
+      </div>
+
+      <div className="mt-8 flex justify-end">
         <button onClick={onClose} className="btn btn-primary">
           {t("settings.ok")}
         </button>

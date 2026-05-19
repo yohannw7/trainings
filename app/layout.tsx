@@ -7,6 +7,9 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ModalProvider } from "@/components/ModalProvider";
 import { BackgroundDecor } from "@/components/BackgroundDecor";
 import { LocaleProvider } from "@/components/LocaleProvider";
+import { PWARegister } from "@/components/PWARegister";
+
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 const inter = Inter({
   subsets: ["latin", "cyrillic"],
@@ -27,6 +30,21 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "ASH TRAIN — Workout tracker",
   description: "Personal workout tracker with timers, calculators and progress history",
+  applicationName: "ASH Train",
+  manifest: `${BASE_PATH}/manifest.webmanifest`,
+  appleWebApp: {
+    capable: true,
+    title: "ASH Train",
+    statusBarStyle: "black-translucent",
+  },
+  icons: {
+    icon: [
+      { url: `${BASE_PATH}/favicon-32.png`, sizes: "32x32", type: "image/png" },
+      { url: `${BASE_PATH}/favicon-16.png`, sizes: "16x16", type: "image/png" },
+      { url: `${BASE_PATH}/icon.svg`, type: "image/svg+xml" },
+    ],
+    apple: [{ url: `${BASE_PATH}/apple-touch-icon.png`, sizes: "180x180" }],
+  },
 };
 
 export const viewport: Viewport = {
@@ -34,6 +52,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   themeColor: "#0a0c16",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -44,6 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ThemeProvider>
             <ToastProvider>
               <ModalProvider>
+                <PWARegister />
                 <BackgroundDecor />
                 <SmoothScroll>{children}</SmoothScroll>
               </ModalProvider>
