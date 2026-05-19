@@ -1,7 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useState } from "react";
+import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale } from "./LocaleProvider";
 
 const STORAGE_KEY = "onboarding_done_v2";
@@ -27,84 +27,166 @@ const STEPS: Step[] = [
   { titleKey: "ob.10.title", descKey: "ob.10.desc", icon: "✅" },
 ];
 
-type ViewportRect = { x: number; y: number; w: number; h: number };
+const TOOLTIP_GAP = 18;
+const PAD = 10;
+// Spring: enough damping to avoid bounce on big jumps, fast enough to feel snappy
+const SPRING = { type: "spring" as const, damping: 30, stiffness: 220, mass: 0.6 };
 
 export function Onboarding() {
   const [show, setShow] = useState(false);
   const [step, setStep] = useState(0);
-  const { t } = useLocale();
-  const [spot, setSpot] = useState<ViewportRect | null>(null);
+  const [hasTarget, setHasTarget] = useState(false);
   const [tooltipSide, setTooltipSide] = useState<"below" | "above">("below");
+  const [tooltipShift, setTooltipShift] = useState(0); // for arrow alignment when tooltip is clamped
+  const { t } = useLocale();
+  const initialised = useRef(false);
+
+  // Motion values for spotlight rect — these animate smoothly via springs
+  const sx = useSpring(0, SPRING);
+  const sy = useSpring(0, SPRING);
+  const sw = useSpring(0, SPRING);
+  const sh = useSpring(0, SPRING);
+  // Border radius slightly smaller than rectangle's smallest dimension
+  const sr = useTransform([sw, sh], ([w, h]) => Math.min(16, Math.max(8, Math.min(w as number, h as number) / 4)));
+
+  // SVG mask is driven by raw motion values with `useMotionValue` -> we use plain refs through animate
+  // We need a way to render the cutout; easiest is to mirror MV into state at low frequency via a tracker.
+  // Instead, we just use motion's <rect> with motion values directly via framer-motion's motion-svg.
 
   useEffect(() => {
+    if (initialised.current) return;
+    initialised.current = true;
     const done = localStorage.getItem(STORAGE_KEY);
     if (!done) setShow(true);
   }, []);
 
-  const measure = useCallback(() => {
+  // Block page scroll while onboarding is open
+  useEffect(() => {
+    if (!show) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [show]);
+
+  const measureAndPlace = useCallback(
+    (selector?: string) => {
+      if (!selector) {
+        setHasTarget(false);
+        return;
+      }
+      const el = document.querySelector(selector);
+      if (!el) {
+        setHasTarget(false);
+        return;
+      }
+      const r = el.getBoundingClientRect();
+      const viewH = window.innerHeight;
+      const viewW = window.innerWidth;
+
+      // Clamp target rect to viewport so spotlight never spills off-screen
+      const top = Math.max(8, r.top - PAD);
+      const left = Math.max(8, r.left - PAD);
+      const right = Math.min(viewW - 8, r.right + PAD);
+      const bottom = Math.min(viewH - 8, r.bottom + PAD);
+      const w = Math.max(20, right - left);
+      const h = Math.max(20, bottom - top);
+
+      sx.set(left);
+      sy.set(top);
+      sw.set(w);
+      sh.set(h);
+      setHasTarget(true);
+
+      // Decide tooltip side
+      const tooltipBudget = 260;
+      const spaceBelow = viewH - (top + h);
+      const side: "below" | "above" =
+        spaceBelow >= tooltipBudget ? "below" : "above";
+      setTooltipSide(side);
+
+      // Tooltip horizontal position (we'll place tooltip via flex, but compute arrow offset)
+      const targetCenterX = left + w / 2;
+      const tooltipMaxWidth = Math.min(360, viewW - 32);
+      const tooltipHalf = tooltipMaxWidth / 2;
+      const desiredLeft = Math.max(16, Math.min(viewW - 16 - tooltipMaxWidth, targetCenterX - tooltipHalf));
+      const tooltipCenter = desiredLeft + tooltipHalf;
+      // Arrow offset relative to tooltip center
+      setTooltipShift(targetCenterX - tooltipCenter);
+    },
+    [sx, sy, sw, sh],
+  );
+
+  // When target changes, scroll smoothly via Lenis (or browser smooth fallback) and measure once it's done
+  useEffect(() => {
+    if (!show) return;
     const selector = STEPS[step]?.target;
+
     if (!selector) {
-      setSpot(null);
+      setHasTarget(false);
       return;
     }
+
     const el = document.querySelector(selector);
     if (!el) {
-      setSpot(null);
+      setHasTarget(false);
       return;
     }
+
     const r = el.getBoundingClientRect();
-    const pad = 10;
     const viewH = window.innerHeight;
-    const tooltipBudget = 280; // approx tooltip height incl. gap
+    const tooltipBudget = 260;
+    const desiredTop = Math.max(64, (viewH - tooltipBudget - r.height) / 2);
+    const delta = r.top - desiredTop;
 
-    // If the highlighted element doesn't leave enough room either above or below, drop the spotlight
-    const spaceBelow = viewH - (r.bottom + pad);
-    const spaceAbove = r.top - pad;
-    if (spaceBelow < tooltipBudget && spaceAbove < tooltipBudget) {
-      setSpot(null);
-      return;
+    let cancelled = false;
+
+    const lenis = window.__lenis;
+    if (lenis && Math.abs(delta) > 4) {
+      lenis.scrollTo(window.scrollY + delta, {
+        duration: 0.9,
+        easing: (x) => 1 - Math.pow(1 - x, 3),
+        onComplete: () => {
+          if (cancelled) return;
+          measureAndPlace(selector);
+        },
+      });
+    } else if (Math.abs(delta) > 4) {
+      window.scrollTo({ top: window.scrollY + delta, behavior: "smooth" });
+      const settle = setTimeout(() => {
+        if (!cancelled) measureAndPlace(selector);
+      }, 600);
+      return () => {
+        cancelled = true;
+        clearTimeout(settle);
+      };
+    } else {
+      // Already in view
+      measureAndPlace(selector);
     }
 
-    setSpot({
-      x: r.left - pad,
-      y: r.top - pad,
-      w: r.width + pad * 2,
-      h: r.height + pad * 2,
-    });
-    setTooltipSide(spaceBelow >= tooltipBudget ? "below" : "above");
-  }, [step]);
-
-  // Scroll to target and measure
-  useEffect(() => {
-    if (!show) return;
-    const selector = STEPS[step]?.target;
-    if (selector) {
-      const el = document.querySelector(selector);
-      if (el) {
-        const r = el.getBoundingClientRect();
-        const viewH = window.innerHeight;
-        const tooltipBudget = 280;
-        // Scroll so target sits in upper third when possible (so tooltip fits below)
-        const desiredTop = Math.max(80, (viewH - tooltipBudget - r.height) / 2);
-        const delta = r.top - desiredTop;
-        window.scrollBy({ top: delta, behavior: "smooth" });
-      }
-    }
-    // Measure after scroll settles
-    const t = setTimeout(measure, 450);
-    return () => clearTimeout(t);
-  }, [step, show, measure]);
-
-  // Re-measure on scroll/resize
-  useEffect(() => {
-    if (!show) return;
-    window.addEventListener("scroll", measure, true);
-    window.addEventListener("resize", measure);
     return () => {
-      window.removeEventListener("scroll", measure, true);
-      window.removeEventListener("resize", measure);
+      cancelled = true;
     };
-  }, [show, measure]);
+  }, [step, show, measureAndPlace]);
+
+  // Re-measure on resize / orientation change (debounced)
+  useEffect(() => {
+    if (!show) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const handler = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => measureAndPlace(STEPS[step]?.target), 120);
+    };
+    window.addEventListener("resize", handler);
+    window.addEventListener("orientationchange", handler);
+    return () => {
+      if (timer) clearTimeout(timer);
+      window.removeEventListener("resize", handler);
+      window.removeEventListener("orientationchange", handler);
+    };
+  }, [show, step, measureAndPlace]);
 
   const finish = () => {
     localStorage.setItem(STORAGE_KEY, "1");
@@ -112,18 +194,16 @@ export function Onboarding() {
   };
 
   const next = () => {
-    if (step < STEPS.length - 1) setStep(step + 1);
+    if (step < STEPS.length - 1) setStep((s) => s + 1);
     else finish();
   };
 
   const prev = () => {
-    if (step > 0) setStep(step - 1);
+    if (step > 0) setStep((s) => s - 1);
   };
 
   if (!show) return null;
-
   const current = STEPS[step];
-  const hasTarget = !!current.target && !!spot;
 
   return (
     <AnimatePresence>
@@ -131,20 +211,18 @@ export function Onboarding() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
         className="fixed inset-0 z-[300] overflow-hidden"
+        style={{ touchAction: "none" }}
       >
-        {/* Overlay with spotlight hole */}
-        <svg className="pointer-events-none absolute inset-0 h-full w-full">
+        {/* Overlay with smooth animated cutout */}
+        <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
           <defs>
             <mask id="onboarding-mask">
               <rect width="100%" height="100%" fill="white" />
-              {spot && (
-                <rect
-                  x={spot.x}
-                  y={spot.y}
-                  width={spot.w}
-                  height={spot.h}
-                  rx={14}
+              {hasTarget && (
+                <motion.rect
+                  style={{ x: sx, y: sy, width: sw, height: sh, rx: sr, ry: sr }}
                   fill="black"
                 />
               )}
@@ -159,57 +237,45 @@ export function Onboarding() {
         </svg>
 
         {/* Glow border around target */}
-        {spot && (
+        {hasTarget && (
           <motion.div
-            key={`border-${step}`}
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: "spring", damping: 22, stiffness: 240 }}
             className="pointer-events-none absolute rounded-2xl ring-2 ring-accent/80 shadow-glow"
             style={{
-              top: spot.y,
-              left: spot.x,
-              width: spot.w,
-              height: spot.h,
+              top: sy,
+              left: sx,
+              width: sw,
+              height: sh,
             }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
           />
         )}
 
         {/* Tooltip */}
-        <div
-          className="pointer-events-none absolute inset-0 flex"
-          style={{
-            alignItems: !hasTarget
-              ? "center"
-              : tooltipSide === "below"
-                ? "flex-start"
-                : "flex-end",
-            justifyContent: "center",
-            padding: 16,
-            paddingTop: hasTarget && tooltipSide === "below" && spot
-              ? spot.y + spot.h + 20
-              : 16,
-            paddingBottom: hasTarget && tooltipSide === "above" && spot
-              ? window.innerHeight - spot.y + 20
-              : 16,
-          }}
+        <TooltipPositioner
+          sy={sy}
+          sh={sh}
+          hasTarget={hasTarget}
+          side={tooltipSide}
         >
           <motion.div
+            data-lenis-prevent
             key={step}
-            initial={{ opacity: 0, y: tooltipSide === "below" ? 16 : -16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", damping: 24, stiffness: 300 }}
-            className="pointer-events-auto w-full max-w-[400px] rounded-3xl border border-border/60 bg-bg p-5 shadow-glow sm:p-6"
+            initial={{ opacity: 0, y: tooltipSide === "below" ? 10 : -10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: "spring", damping: 26, stiffness: 320 }}
+            className="pointer-events-auto relative w-[min(360px,calc(100vw-32px))] rounded-3xl border border-border/60 bg-bg p-5 shadow-glow"
+            style={{ touchAction: "auto" }}
           >
             {/* Arrow pointing to target */}
-            {hasTarget && spot && (
+            {hasTarget && (
               <div
-                className="absolute left-1/2 -translate-x-1/2"
-                style={
-                  tooltipSide === "below"
-                    ? { top: -10 }
-                    : { bottom: -10 }
-                }
+                className="absolute"
+                style={{
+                  left: `calc(50% + ${tooltipShift}px - 10px)`,
+                  ...(tooltipSide === "below" ? { top: -10 } : { bottom: -10 }),
+                }}
               >
                 <svg width="20" height="10" viewBox="0 0 20 10">
                   {tooltipSide === "below" ? (
@@ -268,8 +334,51 @@ export function Onboarding() {
               {step + 1} / {STEPS.length}
             </div>
           </motion.div>
-        </div>
+        </TooltipPositioner>
       </motion.div>
     </AnimatePresence>
+  );
+}
+
+/** Positions the tooltip vertically relative to the (animated) spotlight rect. */
+function TooltipPositioner({
+  sy,
+  sh,
+  hasTarget,
+  side,
+  children,
+}: {
+  sy: ReturnType<typeof useSpring>;
+  sh: ReturnType<typeof useSpring>;
+  hasTarget: boolean;
+  side: "below" | "above";
+  children: React.ReactNode;
+}) {
+  // padding-top / padding-bottom drive the flex alignment; tooltip is centered horizontally by flex
+  const paddingTop = useTransform([sy, sh], (vals) => {
+    const [y, h] = vals as [number, number];
+    if (!hasTarget) return 0;
+    return side === "below" ? y + h + TOOLTIP_GAP : 0;
+  });
+  const paddingBottom = useTransform([sy, sh], (vals) => {
+    const [y] = vals as [number, number];
+    if (!hasTarget) return 0;
+    if (typeof window === "undefined") return 0;
+    return side === "above" ? window.innerHeight - y + TOOLTIP_GAP : 0;
+  });
+
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-0 flex justify-center"
+      style={{
+        alignItems: !hasTarget ? "center" : side === "below" ? "flex-start" : "flex-end",
+        paddingTop: hasTarget && side === "below" ? paddingTop : 16,
+        paddingBottom: hasTarget && side === "above" ? paddingBottom : 16,
+        paddingLeft: 16,
+        paddingRight: 16,
+      }}
+    >
+      {children}
+    </motion.div>
   );
 }
