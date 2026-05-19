@@ -11,8 +11,7 @@ import type { Locale } from "@/lib/i18n";
 export function Header() {
   const { streak } = useWorkout();
   const { open, close } = useModal();
-  const { theme, setTheme, themes, customAccent, setCustomAccent } = useTheme();
-  const { locale, setLocale, locales, t } = useLocale();
+  const { t } = useLocale();
 
   const SECTIONS = [
     { id: "training", label: t("nav.training"), icon: "🏋️" },
@@ -21,19 +20,7 @@ export function Header() {
   ];
 
   const openSettings = () => {
-    open(
-      <SettingsModal
-        theme={theme}
-        themes={themes}
-        setTheme={setTheme}
-        customAccent={customAccent}
-        setCustomAccent={setCustomAccent}
-        locale={locale}
-        locales={locales}
-        setLocale={setLocale}
-        onClose={close}
-      />,
-    );
+    open(<SettingsModal onClose={close} />);
   };
 
   const scrollTo = (id: string) => {
@@ -103,28 +90,10 @@ export function Header() {
   );
 }
 
-function SettingsModal({
-  theme,
-  themes,
-  setTheme,
-  customAccent,
-  setCustomAccent,
-  locale,
-  locales,
-  setLocale,
-  onClose,
-}: {
-  theme: ThemeName;
-  themes: ThemeName[];
-  setTheme: (t: ThemeName) => void;
-  customAccent: string;
-  setCustomAccent: (hex: string) => void;
-  locale: Locale;
-  locales: Locale[];
-  setLocale: (l: Locale) => void;
-  onClose: () => void;
-}) {
+function SettingsModal({ onClose }: { onClose: () => void }) {
   const { t } = useLocale();
+  const { theme, setTheme, themes, customAccent, setCustomAccent } = useTheme();
+  const { locale, setLocale, locales } = useLocale();
   const themeMeta: Record<ThemeName, { label: string; gradient: string }> = {
     midnight: { label: "Midnight", gradient: "linear-gradient(135deg, #6366f1, #a855f7)" },
     dawn: { label: "Dawn", gradient: "linear-gradient(135deg, #ff7a59, #ffb86c)" },
