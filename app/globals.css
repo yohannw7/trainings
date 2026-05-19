@@ -169,8 +169,7 @@ body::after {
   }
   .input {
     @apply w-full rounded-xl border border-border/60 bg-surface/40 px-4 py-2.5 text-sm text-text outline-none transition-all placeholder:text-muted/60 focus:border-accent/60 focus:ring-2 focus:ring-accent/20;
-  }
-  .label {
+  }  .label {
     @apply mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted;
   }
   .heading-display {
@@ -214,4 +213,15 @@ body::after {
 .section-reveal.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* iOS Safari / PWA: prevent auto-zoom when focusing inputs.
+   Anything below 16px triggers the zoom on iOS; force >= 16px on
+   touch devices. */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
