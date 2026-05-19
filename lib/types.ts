@@ -2,6 +2,8 @@ export type Exercise = {
   name: string;
   sets: number;
   target: string;
+  /** Stable identity for drag-and-drop. Auto-assigned on hydrate / add. */
+  _id?: string;
 };
 
 export type Day = {

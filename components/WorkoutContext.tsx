@@ -64,6 +64,32 @@ type Ctx = {
 
 const WorkoutContext = createContext<Ctx | null>(null);
 
+let _idCounter = 0;
+function genId(): string {
+  _idCounter += 1;
+  return `ex_${Date.now().toString(36)}_${_idCounter}`;
+}
+
+/**
+ * Returns a plan where every exercise has a stable `_id`. If all already have one,
+ * the original reference is returned so React effects don't re-run unnecessarily.
+ */
+function ensureExerciseIds(plan: Plan): Plan {
+  let touched = false;
+  const next = plan.map((day) => {
+    let dayTouched = false;
+    const exs = day.exercises.map((ex) => {
+      if (ex._id) return ex;
+      dayTouched = true;
+      return { ...ex, _id: genId() };
+    });
+    if (!dayTouched) return day;
+    touched = true;
+    return { ...day, exercises: exs };
+  });
+  return touched ? next : plan;
+}
+
 export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
   const { t, locale } = useLocale();
@@ -84,8 +110,11 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
 
   // Hydrate state
   useEffect(() => {
-    const p = readJSON<Plan>(STORAGE_KEYS.PLAN, DEFAULT_PLAN);
+    const raw = readJSON<Plan>(STORAGE_KEYS.PLAN, DEFAULT_PLAN);
+    const p = ensureExerciseIds(raw);
     setPlan(p);
+    // Persist back if we just assigned ids
+    if (p !== raw) writeJSON(STORAGE_KEYS.PLAN, p);
 
     const ss: SetStates = {};
     const ws: Weights = {};
@@ -232,14 +261,14 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
       toast(t("training.maxDays"));
       return;
     }
-    const next: Plan = [
+    const next: Plan = ensureExerciseIds([
       ...plan,
       {
         name: name.toUpperCase(),
         short,
         exercises: [{ name: "Новое упражнение", sets: 3, target: "10" }],
       },
-    ];
+    ]);
     setPlan(next);
     persistPlan(next);
     setCurrentDay(next.length - 1);
@@ -257,7 +286,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   }, [plan, persistPlan, currentDay, toast, t]);
 
   const saveDayEdit = useCallback((di: number, day: Plan[number]) => {
-    const next = plan.map((d, i) => (i === di ? day : d));
+    const next = ensureExerciseIds(plan.map((d, i) => (i === di ? day : d)));
     setPlan(next);
     persistPlan(next);
     // Reset set states size if needed
@@ -277,23 +306,26 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   const reorderExercises = useCallback((di: number, exercises: Plan[number]["exercises"]) => {
     const day = plan[di];
     if (!day) return;
-    // Build a map from ex name -> previous index in this day
-    const oldIndexByName: Record<string, number> = {};
-    day.exercises.forEach((ex, idx) => {
-      oldIndexByName[ex.name + "::" + idx] = idx;
-    });
-    // Match new order back to original positions using identity (object reference fallback by name)
+
+    // Match new order back to original positions by stable _id, then by reference, then by name.
     const oldIndices = exercises.map((ex) => {
-      const found = day.exercises.findIndex((o) => o === ex);
-      return found !== -1 ? found : day.exercises.findIndex((o) => o.name === ex.name);
+      if (ex._id) {
+        const byId = day.exercises.findIndex((o) => o._id === ex._id);
+        if (byId !== -1) return byId;
+      }
+      const byRef = day.exercises.findIndex((o) => o === ex);
+      if (byRef !== -1) return byRef;
+      return day.exercises.findIndex((o) => o.name === ex.name);
     });
 
-    // Snapshot previous set states & weights
+    // Snapshot previous set states, weights, and RPE
     const prevStates: Array<boolean[]> = [];
     const prevWeights: Array<string> = [];
+    const prevRpes: Array<Array<number | null>> = [];
     day.exercises.forEach((ex, ei) => {
       prevStates[ei] = setStates[setKey(di, ei)] ?? new Array(ex.sets).fill(false);
       prevWeights[ei] = weights[weightKey(di, ei)] ?? readString(weightKey(di, ei)) ?? "";
+      prevRpes[ei] = rpes[rpeKey(di, ei)] ?? new Array(ex.sets).fill(null);
     });
 
     // Apply reorder
@@ -301,7 +333,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     setPlan(next);
     persistPlan(next);
 
-    // Re-map state & weight keys to new positions
+    // Re-map keys to new positions
     setSetStates((prev) => {
       const updated: SetStates = { ...prev };
       exercises.forEach((_, newIdx) => {
@@ -325,7 +357,18 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
       });
       return updated;
     });
-  }, [plan, persistPlan, setStates, weights]);
+    setRpes((prev) => {
+      const updated: Rpes = { ...prev };
+      exercises.forEach((_, newIdx) => {
+        const oldIdx = oldIndices[newIdx];
+        const k = rpeKey(di, newIdx);
+        const value = oldIdx !== -1 ? prevRpes[oldIdx] ?? [] : [];
+        updated[k] = value;
+        writeJSON(k, value);
+      });
+      return updated;
+    });
+  }, [plan, persistPlan, setStates, weights, rpes]);
 
   const resetDay = useCallback(() => {
     plan[currentDay]?.exercises.forEach((_, ei) => {
@@ -456,7 +499,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   const loadPreset = useCallback((name: string) => {
     const p = presets[name];
     if (!p) return;
-    const cloned: Plan = JSON.parse(JSON.stringify(p));
+    const cloned: Plan = ensureExerciseIds(JSON.parse(JSON.stringify(p)));
     setPlan(cloned);
     persistPlan(cloned);
     setCurrentDay(0);
@@ -482,7 +525,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   }, [presets]);
 
   const loadProgram = useCallback((programPlan: Plan) => {
-    const cloned: Plan = JSON.parse(JSON.stringify(programPlan));
+    const cloned: Plan = ensureExerciseIds(JSON.parse(JSON.stringify(programPlan)));
     setPlan(cloned);
     persistPlan(cloned);
     setCurrentDay(0);

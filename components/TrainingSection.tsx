@@ -226,47 +226,37 @@ export function TrainingSection() {
           </div>
 
           {/* Exercise list */}
-          {(() => {
-            const ids = day.exercises.map((_, i) => `ex-${i}`);
-            return (
-              <Reorder.Group
-                data-tour="exercises"
-                axis="y"
-                values={ids}
-                onReorder={(nextIds) => {
-                  const newOrder = nextIds.map((id) => {
-                    const oldIdx = parseInt(id.replace("ex-", ""), 10);
-                    return day.exercises[oldIdx];
-                  });
-                  // Skip no-op reorders
-                  const same = newOrder.every((ex, i) => ex === day.exercises[i]);
-                  if (!same) reorderExercises(currentDay, newOrder);
-                }}
-                className="flex flex-col gap-3"
-              >
-                {day.exercises.map((ex, ei) => {
-                  const state = setStates[setKey(currentDay, ei)] ?? [];
-                  const weight = weights[weightKey(currentDay, ei)] || "";
-                  return (
-                    <ExerciseCard
-                      key={`ex-${ei}`}
-                      id={`ex-${ei}`}
-                      ex={ex}
-                      ei={ei}
-                      di={currentDay}
-                      state={state}
-                      weight={weight}
-                      isPR={isPR(ex.name, parseFloat(weight))}
-                      lastWeight={getLastWeight(ex.name)}
-                      suggestion={getWeightSuggestion(ex.name)}
-                      onOpen={() => setDrawerEx({ di: currentDay, ei })}
-                      onWeightChange={(v) => setWeight(currentDay, ei, v)}
-                    />
-                  );
-                })}
-              </Reorder.Group>
-            );
-          })()}
+          <Reorder.Group
+            data-tour="exercises"
+            axis="y"
+            values={day.exercises}
+            onReorder={(next) => {
+              // Skip no-op reorders to avoid unnecessary plan rewrites
+              const same = next.every((ex, i) => ex === day.exercises[i]);
+              if (!same) reorderExercises(currentDay, next);
+            }}
+            className="flex flex-col gap-3"
+          >
+            {day.exercises.map((ex, ei) => {
+              const state = setStates[setKey(currentDay, ei)] ?? [];
+              const weight = weights[weightKey(currentDay, ei)] || "";
+              return (
+                <ExerciseCard
+                  key={ex._id ?? `ex-${ei}`}
+                  ex={ex}
+                  ei={ei}
+                  di={currentDay}
+                  state={state}
+                  weight={weight}
+                  isPR={isPR(ex.name, parseFloat(weight))}
+                  lastWeight={getLastWeight(ex.name)}
+                  suggestion={getWeightSuggestion(ex.name)}
+                  onOpen={() => setDrawerEx({ di: currentDay, ei })}
+                  onWeightChange={(v) => setWeight(currentDay, ei, v)}
+                />
+              );
+            })}
+          </Reorder.Group>
 
           {/* Actions */}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
@@ -342,7 +332,6 @@ export function TrainingSection() {
 }
 
 function ExerciseCard({
-  id,
   ex,
   ei,
   di,
@@ -354,7 +343,6 @@ function ExerciseCard({
   onOpen,
   onWeightChange,
 }: {
-  id: string;
   ex: Exercise;
   ei: number;
   di: number;
@@ -375,7 +363,7 @@ function ExerciseCard({
 
   return (
     <Reorder.Item
-      value={id}
+      value={ex}
       dragListener={false}
       dragControls={dragControls}
       layout
