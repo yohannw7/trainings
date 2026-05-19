@@ -1,5 +1,6 @@
 /* ASH Train service worker */
-const VERSION = "v3";
+// Bump VERSION on every meaningful change to force a fresh cache
+const VERSION = "2026-05-19-1";
 const CACHE = `ash-train-${VERSION}`;
 const SCOPE = self.registration ? new URL(self.registration.scope).pathname : "/";
 
@@ -14,9 +15,12 @@ const PRECACHE_URLS = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) =>
-      cache.addAll(PRECACHE_URLS).catch(() => undefined),
-    ).then(() => self.skipWaiting()),
+    (async () => {
+      const cache = await caches.open(CACHE);
+      await cache.addAll(PRECACHE_URLS).catch(() => undefined);
+      // Activate this SW immediately, replacing any waiting one
+      await self.skipWaiting();
+    })(),
   );
 });
 
@@ -30,48 +34,69 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+self.addEventListener("message", (event) => {
+  if (event.data === "SKIP_WAITING") self.skipWaiting();
+});
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
-
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Navigation requests: network first, fallback to cached index
-  if (request.mode === "navigate") {
-    event.respondWith(
-      (async () => {
-        try {
-          const fresh = await fetch(request);
-          const cache = await caches.open(CACHE);
-          cache.put(request, fresh.clone()).catch(() => undefined);
-          return fresh;
-        } catch {
-          const cache = await caches.open(CACHE);
-          const cached = await cache.match(request);
-          if (cached) return cached;
-          const fallback = await cache.match(`${SCOPE}index.html`);
-          return fallback || new Response("Offline", { status: 503 });
-        }
-      })(),
-    );
+  // HTML / navigations: always network first, fall back to cached index when offline
+  if (request.mode === "navigate" || request.destination === "document") {
+    event.respondWith(networkFirst(request));
     return;
   }
 
-  // Static assets: stale-while-revalidate
-  event.respondWith(
-    (async () => {
-      const cache = await caches.open(CACHE);
-      const cached = await cache.match(request);
-      const networkPromise = fetch(request)
-        .then((response) => {
-          if (response && response.status === 200 && response.type === "basic") {
-            cache.put(request, response.clone()).catch(() => undefined);
-          }
-          return response;
-        })
-        .catch(() => undefined);
-      return cached || (await networkPromise) || new Response("", { status: 504 });
-    })(),
-  );
+  // Code & data files (JS / CSS / JSON): network first to always pick up new builds
+  if (
+    request.destination === "script" ||
+    request.destination === "style" ||
+    request.destination === "" ||
+    url.pathname.endsWith(".js") ||
+    url.pathname.endsWith(".css") ||
+    url.pathname.endsWith(".json") ||
+    url.pathname.endsWith(".webmanifest")
+  ) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // Images / fonts / static media: stale-while-revalidate is fine
+  event.respondWith(staleWhileRevalidate(request));
 });
+
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE);
+  try {
+    const fresh = await fetch(request, { cache: "no-store" });
+    if (fresh && fresh.status === 200) {
+      cache.put(request, fresh.clone()).catch(() => undefined);
+    }
+    return fresh;
+  } catch {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    if (request.mode === "navigate") {
+      const fallback = await cache.match(`${SCOPE}index.html`);
+      if (fallback) return fallback;
+    }
+    return new Response("Offline", { status: 503 });
+  }
+}
+
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE);
+  const cached = await cache.match(request);
+  const networkPromise = fetch(request)
+    .then((response) => {
+      if (response && response.status === 200 && response.type === "basic") {
+        cache.put(request, response.clone()).catch(() => undefined);
+      }
+      return response;
+    })
+    .catch(() => undefined);
+  return cached || (await networkPromise) || new Response("", { status: 504 });
+}
