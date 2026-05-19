@@ -60,13 +60,16 @@ export function Onboarding() {
     if (!done) setShow(true);
   }, []);
 
-  // Block page scroll while onboarding is open
+  // Block user-driven scroll while onboarding is open (programmatic Lenis scroll still works)
   useEffect(() => {
     if (!show) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const blockWheel = (e: WheelEvent) => e.preventDefault();
+    const blockTouch = (e: TouchEvent) => e.preventDefault();
+    window.addEventListener("wheel", blockWheel, { passive: false });
+    window.addEventListener("touchmove", blockTouch, { passive: false });
     return () => {
-      document.body.style.overflow = prev;
+      window.removeEventListener("wheel", blockWheel);
+      window.removeEventListener("touchmove", blockTouch);
     };
   }, [show]);
 
@@ -118,7 +121,8 @@ export function Onboarding() {
     [sx, sy, sw, sh],
   );
 
-  // When target changes, scroll smoothly via Lenis (or browser smooth fallback) and measure once it's done
+  // When target changes: immediately position spotlight on current element location,
+  // then keep it pinned while we smooth-scroll into view.
   useEffect(() => {
     if (!show) return;
     const selector = STEPS[step]?.target;
@@ -134,40 +138,55 @@ export function Onboarding() {
       return;
     }
 
+    // Show spotlight immediately at current position
+    measureAndPlace(selector);
+
     const r = el.getBoundingClientRect();
     const viewH = window.innerHeight;
     const tooltipBudget = 260;
     const desiredTop = Math.max(64, (viewH - tooltipBudget - r.height) / 2);
     const delta = r.top - desiredTop;
 
+    if (Math.abs(delta) < 4) return; // already in place
+
     let cancelled = false;
+    let rafId: number | null = null;
+
+    // Track element position during the scroll so spotlight smoothly follows
+    const tick = () => {
+      if (cancelled) return;
+      measureAndPlace(selector);
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+
+    const stopTracking = () => {
+      cancelled = true;
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      // Final precise placement once scroll has settled
+      measureAndPlace(selector);
+    };
 
     const lenis = window.__lenis;
-    if (lenis && Math.abs(delta) > 4) {
+    if (lenis) {
       lenis.scrollTo(window.scrollY + delta, {
         duration: 0.9,
         easing: (x) => 1 - Math.pow(1 - x, 3),
-        onComplete: () => {
-          if (cancelled) return;
-          measureAndPlace(selector);
-        },
+        onComplete: stopTracking,
       });
-    } else if (Math.abs(delta) > 4) {
+    } else {
       window.scrollTo({ top: window.scrollY + delta, behavior: "smooth" });
-      const settle = setTimeout(() => {
-        if (!cancelled) measureAndPlace(selector);
-      }, 600);
+      const settle = setTimeout(stopTracking, 700);
       return () => {
         cancelled = true;
+        if (rafId !== null) cancelAnimationFrame(rafId);
         clearTimeout(settle);
       };
-    } else {
-      // Already in view
-      measureAndPlace(selector);
     }
 
     return () => {
       cancelled = true;
+      if (rafId !== null) cancelAnimationFrame(rafId);
     };
   }, [step, show, measureAndPlace]);
 
