@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale } from "./LocaleProvider";
 
@@ -29,29 +29,26 @@ const STEPS: Step[] = [
 
 const TOOLTIP_GAP = 18;
 const PAD = 10;
-// Spring: enough damping to avoid bounce on big jumps, fast enough to feel snappy
-const SPRING = { type: "spring" as const, damping: 30, stiffness: 220, mass: 0.6 };
+const TOOLTIP_BUDGET = 260;
+const SPRING = { type: "spring" as const, damping: 28, stiffness: 260, mass: 0.7 };
 
 export function Onboarding() {
   const [show, setShow] = useState(false);
   const [step, setStep] = useState(0);
   const [hasTarget, setHasTarget] = useState(false);
   const [tooltipSide, setTooltipSide] = useState<"below" | "above">("below");
-  const [tooltipShift, setTooltipShift] = useState(0); // for arrow alignment when tooltip is clamped
+  const [tooltipShift, setTooltipShift] = useState(0);
   const { t } = useLocale();
   const initialised = useRef(false);
 
-  // Motion values for spotlight rect — these animate smoothly via springs
-  const sx = useSpring(0, SPRING);
-  const sy = useSpring(0, SPRING);
-  const sw = useSpring(0, SPRING);
-  const sh = useSpring(0, SPRING);
-  // Border radius slightly smaller than rectangle's smallest dimension
-  const sr = useTransform([sw, sh], ([w, h]) => Math.min(16, Math.max(8, Math.min(w as number, h as number) / 4)));
-
-  // SVG mask is driven by raw motion values with `useMotionValue` -> we use plain refs through animate
-  // We need a way to render the cutout; easiest is to mirror MV into state at low frequency via a tracker.
-  // Instead, we just use motion's <rect> with motion values directly via framer-motion's motion-svg.
+  // Plain motion values — we drive them manually
+  const sx = useMotionValue(0);
+  const sy = useMotionValue(0);
+  const sw = useMotionValue(0);
+  const sh = useMotionValue(0);
+  const sr = useTransform([sw, sh], ([w, h]) =>
+    Math.min(16, Math.max(8, Math.min(w as number, h as number) / 4)),
+  );
 
   useEffect(() => {
     if (initialised.current) return;
@@ -60,11 +57,16 @@ export function Onboarding() {
     if (!done) setShow(true);
   }, []);
 
-  // Block user-driven scroll while onboarding is open (programmatic Lenis scroll still works)
+  // Block user-driven scroll while onboarding is open
   useEffect(() => {
     if (!show) return;
     const blockWheel = (e: WheelEvent) => e.preventDefault();
-    const blockTouch = (e: TouchEvent) => e.preventDefault();
+    const blockTouch = (e: TouchEvent) => {
+      // Allow touch inside the tooltip
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("[data-onboarding-tooltip]")) return;
+      e.preventDefault();
+    };
     window.addEventListener("wheel", blockWheel, { passive: false });
     window.addEventListener("touchmove", blockTouch, { passive: false });
     return () => {
@@ -73,56 +75,78 @@ export function Onboarding() {
     };
   }, [show]);
 
-  const measureAndPlace = useCallback(
-    (selector?: string) => {
-      if (!selector) {
+  /**
+   * Compute target rect clamped to viewport, picking just the top portion
+   * if the target is taller than tooltip can fit beside it.
+   */
+  const computeRect = useCallback((selector: string) => {
+    const el = document.querySelector(selector);
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    const viewH = window.innerHeight;
+    const viewW = window.innerWidth;
+
+    let top = r.top - PAD;
+    let height = r.height + PAD * 2;
+    const left = Math.max(8, r.left - PAD);
+    const right = Math.min(viewW - 8, r.right + PAD);
+    const width = Math.max(20, right - left);
+
+    // If the target is too tall to leave room for the tooltip, show only the top band
+    const maxH = Math.floor(viewH * 0.55);
+    if (height > maxH) {
+      height = maxH;
+    }
+
+    // Clamp top so spotlight stays in viewport
+    top = Math.max(8, Math.min(viewH - 8 - height, top));
+
+    return { left, top, width, height };
+  }, []);
+
+  /** Sets motion values and tooltip layout. `withSpring` controls instant vs animated. */
+  const placeSpotlight = useCallback(
+    (selector: string, withSpring: boolean) => {
+      const rect = computeRect(selector);
+      if (!rect) {
         setHasTarget(false);
         return;
       }
-      const el = document.querySelector(selector);
-      if (!el) {
-        setHasTarget(false);
-        return;
+      const { left, top, width, height } = rect;
+
+      if (withSpring) {
+        animate(sx, left, SPRING);
+        animate(sy, top, SPRING);
+        animate(sw, width, SPRING);
+        animate(sh, height, SPRING);
+      } else {
+        sx.set(left);
+        sy.set(top);
+        sw.set(width);
+        sh.set(height);
       }
-      const r = el.getBoundingClientRect();
+
       const viewH = window.innerHeight;
       const viewW = window.innerWidth;
+      const spaceBelow = viewH - (top + height);
+      setTooltipSide(spaceBelow >= TOOLTIP_BUDGET ? "below" : "above");
 
-      // Clamp target rect to viewport so spotlight never spills off-screen
-      const top = Math.max(8, r.top - PAD);
-      const left = Math.max(8, r.left - PAD);
-      const right = Math.min(viewW - 8, r.right + PAD);
-      const bottom = Math.min(viewH - 8, r.bottom + PAD);
-      const w = Math.max(20, right - left);
-      const h = Math.max(20, bottom - top);
-
-      sx.set(left);
-      sy.set(top);
-      sw.set(w);
-      sh.set(h);
-      setHasTarget(true);
-
-      // Decide tooltip side
-      const tooltipBudget = 260;
-      const spaceBelow = viewH - (top + h);
-      const side: "below" | "above" =
-        spaceBelow >= tooltipBudget ? "below" : "above";
-      setTooltipSide(side);
-
-      // Tooltip horizontal position (we'll place tooltip via flex, but compute arrow offset)
-      const targetCenterX = left + w / 2;
+      const targetCenterX = left + width / 2;
       const tooltipMaxWidth = Math.min(360, viewW - 32);
       const tooltipHalf = tooltipMaxWidth / 2;
-      const desiredLeft = Math.max(16, Math.min(viewW - 16 - tooltipMaxWidth, targetCenterX - tooltipHalf));
+      const desiredLeft = Math.max(
+        16,
+        Math.min(viewW - 16 - tooltipMaxWidth, targetCenterX - tooltipHalf),
+      );
       const tooltipCenter = desiredLeft + tooltipHalf;
-      // Arrow offset relative to tooltip center
       setTooltipShift(targetCenterX - tooltipCenter);
+
+      setHasTarget(true);
     },
-    [sx, sy, sw, sh],
+    [sx, sy, sw, sh, computeRect],
   );
 
-  // When target changes: immediately position spotlight on current element location,
-  // then keep it pinned while we smooth-scroll into view.
+  // On step change: place spotlight immediately, then optionally smooth-scroll while tracking
   useEffect(() => {
     if (!show) return;
     const selector = STEPS[step]?.target;
@@ -138,24 +162,28 @@ export function Onboarding() {
       return;
     }
 
-    // Show spotlight immediately at current position
-    measureAndPlace(selector);
+    // Stop any in-flight spring on motion values
+    sx.stop();
+    sy.stop();
+    sw.stop();
+    sh.stop();
+
+    // Place spotlight at current location instantly
+    placeSpotlight(selector, false);
 
     const r = el.getBoundingClientRect();
     const viewH = window.innerHeight;
-    const tooltipBudget = 260;
-    const desiredTop = Math.max(64, (viewH - tooltipBudget - r.height) / 2);
+    const desiredTop = Math.max(64, (viewH - TOOLTIP_BUDGET - r.height) / 2);
     const delta = r.top - desiredTop;
 
-    if (Math.abs(delta) < 4) return; // already in place
+    if (Math.abs(delta) < 4) return;
 
     let cancelled = false;
     let rafId: number | null = null;
 
-    // Track element position during the scroll so spotlight smoothly follows
     const tick = () => {
       if (cancelled) return;
-      measureAndPlace(selector);
+      placeSpotlight(selector, false);
       rafId = requestAnimationFrame(tick);
     };
     rafId = requestAnimationFrame(tick);
@@ -163,8 +191,7 @@ export function Onboarding() {
     const stopTracking = () => {
       cancelled = true;
       if (rafId !== null) cancelAnimationFrame(rafId);
-      // Final precise placement once scroll has settled
-      measureAndPlace(selector);
+      placeSpotlight(selector, false);
     };
 
     const lenis = window.__lenis;
@@ -188,15 +215,17 @@ export function Onboarding() {
       cancelled = true;
       if (rafId !== null) cancelAnimationFrame(rafId);
     };
-  }, [step, show, measureAndPlace]);
+  }, [step, show, placeSpotlight, sx, sy, sw, sh]);
 
   // Re-measure on resize / orientation change (debounced)
   useEffect(() => {
     if (!show) return;
     let timer: ReturnType<typeof setTimeout> | null = null;
     const handler = () => {
+      const sel = STEPS[step]?.target;
+      if (!sel) return;
       if (timer) clearTimeout(timer);
-      timer = setTimeout(() => measureAndPlace(STEPS[step]?.target), 120);
+      timer = setTimeout(() => placeSpotlight(sel, true), 120);
     };
     window.addEventListener("resize", handler);
     window.addEventListener("orientationchange", handler);
@@ -205,7 +234,7 @@ export function Onboarding() {
       window.removeEventListener("resize", handler);
       window.removeEventListener("orientationchange", handler);
     };
-  }, [show, step, measureAndPlace]);
+  }, [show, step, placeSpotlight]);
 
   const finish = () => {
     localStorage.setItem(STORAGE_KEY, "1");
@@ -232,9 +261,8 @@ export function Onboarding() {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.25 }}
         className="fixed inset-0 z-[300] overflow-hidden"
-        style={{ touchAction: "none" }}
       >
-        {/* Overlay with smooth animated cutout */}
+        {/* Overlay with cutout */}
         <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
           <defs>
             <mask id="onboarding-mask">
@@ -259,35 +287,23 @@ export function Onboarding() {
         {hasTarget && (
           <motion.div
             className="pointer-events-none absolute rounded-2xl ring-2 ring-accent/80 shadow-glow"
-            style={{
-              top: sy,
-              left: sx,
-              width: sw,
-              height: sh,
-            }}
+            style={{ top: sy, left: sx, width: sw, height: sh }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           />
         )}
 
-        {/* Tooltip */}
-        <TooltipPositioner
-          sy={sy}
-          sh={sh}
-          hasTarget={hasTarget}
-          side={tooltipSide}
-        >
+        <TooltipPositioner sy={sy} sh={sh} hasTarget={hasTarget} side={tooltipSide}>
           <motion.div
+            data-onboarding-tooltip
             data-lenis-prevent
             key={step}
             initial={{ opacity: 0, y: tooltipSide === "below" ? 10 : -10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ type: "spring", damping: 26, stiffness: 320 }}
             className="pointer-events-auto relative w-[min(360px,calc(100vw-32px))] rounded-3xl border border-border/60 bg-bg p-5 shadow-glow"
-            style={{ touchAction: "auto" }}
           >
-            {/* Arrow pointing to target */}
             {hasTarget && (
               <div
                 className="absolute"
@@ -306,7 +322,6 @@ export function Onboarding() {
               </div>
             )}
 
-            {/* Progress dots */}
             <div className="mb-4 flex items-center justify-center gap-1.5">
               {STEPS.map((_, i) => (
                 <div
@@ -359,7 +374,6 @@ export function Onboarding() {
   );
 }
 
-/** Positions the tooltip vertically relative to the (animated) spotlight rect. */
 function TooltipPositioner({
   sy,
   sh,
@@ -367,23 +381,21 @@ function TooltipPositioner({
   side,
   children,
 }: {
-  sy: ReturnType<typeof useSpring>;
-  sh: ReturnType<typeof useSpring>;
+  sy: ReturnType<typeof useMotionValue<number>>;
+  sh: ReturnType<typeof useMotionValue<number>>;
   hasTarget: boolean;
   side: "below" | "above";
   children: React.ReactNode;
 }) {
-  // padding-top / padding-bottom drive the flex alignment; tooltip is centered horizontally by flex
   const paddingTop = useTransform([sy, sh], (vals) => {
     const [y, h] = vals as [number, number];
-    if (!hasTarget) return 0;
-    return side === "below" ? y + h + TOOLTIP_GAP : 0;
+    if (!hasTarget) return 16;
+    return side === "below" ? y + h + TOOLTIP_GAP : 16;
   });
   const paddingBottom = useTransform([sy, sh], (vals) => {
     const [y] = vals as [number, number];
-    if (!hasTarget) return 0;
-    if (typeof window === "undefined") return 0;
-    return side === "above" ? window.innerHeight - y + TOOLTIP_GAP : 0;
+    if (!hasTarget || typeof window === "undefined") return 16;
+    return side === "above" ? window.innerHeight - y + TOOLTIP_GAP : 16;
   });
 
   return (
