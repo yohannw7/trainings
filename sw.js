@@ -1,6 +1,6 @@
 /* ASH Train service worker */
 // Bump VERSION on every meaningful change to force a fresh cache
-const VERSION = "2026-05-19-9";
+const VERSION = "2026-05-19-10";
 const CACHE = `ash-train-${VERSION}`;
 const SCOPE = self.registration ? new URL(self.registration.scope).pathname : "/";
 
