@@ -236,6 +236,7 @@ const dict = {
   "settings.langRu": { ru: "Русский", en: "Russian" },
   "settings.langEn": { ru: "Английский", en: "English" },
   "settings.ok": { ru: "Готово", en: "Done" },
+  "settings.tour": { ru: "Пройти гайд заново", en: "Replay onboarding" },
 
   // Programs
   "programs.title": { ru: "Готовые программы", en: "Built-in programs" },

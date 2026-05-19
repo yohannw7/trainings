@@ -191,6 +191,19 @@ function SettingsModal({
         <InstallButton />
       </div>
 
+      {/* Replay onboarding */}
+      <button
+        onClick={() => {
+          localStorage.removeItem("onboarding_done_v2");
+          onClose();
+          // Small delay so the modal close animation finishes before tour appears
+          setTimeout(() => window.location.reload(), 200);
+        }}
+        className="btn mt-3 w-full justify-center"
+      >
+        🎯 {t("settings.tour")}
+      </button>
+
       <div className="mt-8 flex justify-end">
         <button onClick={onClose} className="btn btn-primary">
           {t("settings.ok")}
