@@ -28,6 +28,7 @@ export type WorkoutHistoryEntry = {
     sets: number;
     done: number;
     weight: string;
+    avgRpe?: number | null;
   }>;
 };
 

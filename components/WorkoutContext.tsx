@@ -59,6 +59,7 @@ type Ctx = {
 
   isPR: (exerciseName: string, weight: number) => boolean;
   getLastWeight: (exerciseName: string) => string | null;
+  getWeightSuggestion: (exerciseName: string) => number | null;
 };
 
 const WorkoutContext = createContext<Ctx | null>(null);
@@ -385,11 +386,20 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     if (!day) return;
     const exercises = day.exercises.map((ex, ei) => {
       const state = setStates[setKey(currentDay, ei)] ?? [];
+      const rpeArr = rpes[rpeKey(currentDay, ei)] ?? [];
+      const rpeNumbers = rpeArr.filter(
+        (v): v is number => typeof v === "number" && !Number.isNaN(v),
+      );
+      const avgRpe =
+        rpeNumbers.length > 0
+          ? Math.round((rpeNumbers.reduce((a, b) => a + b, 0) / rpeNumbers.length) * 10) / 10
+          : null;
       return {
         name: ex.name,
         sets: ex.sets,
         done: state.filter(Boolean).length,
         weight: weights[weightKey(currentDay, ei)] || "",
+        avgRpe,
       };
     });
 
@@ -504,6 +514,40 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     return null;
   }, [history]);
 
+  /**
+   * Suggest a +2.5 kg progression when the last 2 logged sessions of this exercise
+   * were both fully completed at the same weight, with average RPE <= 7 (or no RPE).
+   * Returns the suggested NEXT weight or null.
+   */
+  const getWeightSuggestion = useCallback(
+    (exerciseName: string): number | null => {
+      const recent: typeof history[number]["exercises"][number][] = [];
+      for (const entry of history) {
+        const found = entry.exercises.find((e) => e.name === exerciseName && e.weight);
+        if (found) recent.push(found);
+        if (recent.length >= 2) break;
+      }
+      if (recent.length < 2) return null;
+
+      const w0 = parseFloat(recent[0].weight);
+      const w1 = parseFloat(recent[1].weight);
+      if (!w0 || !w1 || w0 !== w1) return null;
+
+      // Both sessions must be 100% completed
+      const fullyDone = recent.every((e) => e.sets > 0 && e.done >= e.sets);
+      if (!fullyDone) return null;
+
+      // If RPE recorded — must average <= 7
+      const rpeOk = recent.every(
+        (e) => e.avgRpe == null || e.avgRpe <= 7,
+      );
+      if (!rpeOk) return null;
+
+      return Math.round((w0 + 2.5) * 10) / 10;
+    },
+    [history],
+  );
+
   const value = useMemo<Ctx>(() => ({
     hydrated,
     plan,
@@ -538,12 +582,13 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     loadProgram,
     isPR,
     getLastWeight,
+    getWeightSuggestion,
   }), [
     hydrated, plan, currentDay, setStates, weights, streak, workoutSeconds, history,
     presets, restTime, prs, rpes, rpeEnabled, setRestTime, setRpeEnabled, setRpe,
     toggleSet, setSetState, undoLastSet, setWeight, addDay, deleteDay, saveDayEdit,
     reorderExercises, resetDay, completeDay, savePreset, loadPreset, deletePreset,
-    loadProgram, isPR, getLastWeight,
+    loadProgram, isPR, getLastWeight, getWeightSuggestion,
   ]);
 
   return <WorkoutContext.Provider value={value}>{children}</WorkoutContext.Provider>;

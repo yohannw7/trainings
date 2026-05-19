@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Day, Exercise } from "@/lib/types";
 import { useToast } from "./ToastProvider";
 import { useLocale } from "./LocaleProvider";
+import { ExerciseAutocomplete } from "./ExerciseAutocomplete";
 
 type Props = {
   initial: Day;
@@ -67,13 +68,20 @@ export function DayEditorModal({ initial, onSave, onClose }: Props) {
         <span className="label">{t("editor.exercises")}</span>
         <div className="space-y-2">
           {exercises.map((ex, i) => (
-            <div key={i} className="flex flex-wrap items-center gap-2">
-              <input
-                className="input flex-1 min-w-[140px]"
-                placeholder={t("editor.exName")}
-                value={ex.name}
-                onChange={(e) => updateEx(i, { name: e.target.value })}
-              />
+            <div key={i} className="flex flex-wrap items-start gap-2">
+              <div className="min-w-[140px] flex-1">
+                <ExerciseAutocomplete
+                  value={ex.name}
+                  onChange={(v) => updateEx(i, { name: v })}
+                  onPick={(picked) =>
+                    updateEx(i, {
+                      name: picked.name,
+                      sets: picked.sets,
+                      target: picked.target,
+                    })
+                  }
+                />
+              </div>
               <input
                 className="input w-20"
                 type="number"

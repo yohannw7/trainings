@@ -337,6 +337,13 @@ const dict = {
   "toast.duration": { ru: "⏱ {value}", en: "⏱ {value}" },
   "toast.records": { ru: "🏆 {n} рекордов", en: "🏆 {n} PRs" },
   "toast.recordSingle": { ru: "🏆 {n} рекорд", en: "🏆 {n} PR" },
+
+  // Weight suggestion
+  "suggest.tryWeight": { ru: "Попробуй {n} кг", en: "Try {n} kg" },
+  "suggest.tooltip": {
+    ru: "Прошлые две тренировки были лёгкими — пора прибавить",
+    en: "Last two sessions felt easy — time to step up",
+  },
 } as const;
 
 type DictKey = keyof typeof dict;

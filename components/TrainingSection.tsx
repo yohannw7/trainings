@@ -33,6 +33,7 @@ export function TrainingSection() {
     loadProgram,
     isPR,
     getLastWeight,
+    getWeightSuggestion,
   } = useWorkout();
   const { open, close } = useModal();
   const { toast } = useToast();
@@ -244,6 +245,7 @@ export function TrainingSection() {
                   weight={weight}
                   isPR={isPR(ex.name, parseFloat(weight))}
                   lastWeight={getLastWeight(ex.name)}
+                  suggestion={getWeightSuggestion(ex.name)}
                   onOpen={() => setDrawerEx({ di: currentDay, ei })}
                   onWeightChange={(v) => setWeight(currentDay, ei, v)}
                 />
@@ -321,6 +323,7 @@ function ExerciseCard({
   weight,
   isPR,
   lastWeight,
+  suggestion,
   onOpen,
   onWeightChange,
 }: {
@@ -331,6 +334,7 @@ function ExerciseCard({
   weight: string;
   isPR: boolean;
   lastWeight: string | null;
+  suggestion: number | null;
   onOpen: () => void;
   onWeightChange: (v: string) => void;
 }) {
@@ -425,7 +429,19 @@ function ExerciseCard({
               />
               <span className="text-[10px] text-muted">{t("common.kg")}</span>
             </div>
-            {showLastHint && (
+            {!weight && suggestion !== null && !allDone ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onWeightChange(String(suggestion));
+                }}
+                title={t("suggest.tooltip")}
+                className="rounded-full border border-success/40 bg-success/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-success transition-colors hover:bg-success/20"
+              >
+                ↑ {t("suggest.tryWeight", { n: suggestion })}
+              </button>
+            ) : showLastHint ? (
               <button
                 type="button"
                 onClick={(e) => {
@@ -436,7 +452,7 @@ function ExerciseCard({
               >
                 ← {lastWeight} {t("common.kg")}
               </button>
-            )}
+            ) : null}
           </div>
         </div>
 
