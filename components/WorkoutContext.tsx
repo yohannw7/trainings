@@ -191,32 +191,33 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   }, [plan]);
 
   const undoLastSet = useCallback((di: number, ei: number) => {
-    let removedIdx = -1;
     setSetStates((prev) => {
       const k = setKey(di, ei);
       const cur = prev[k] ?? [];
-      const next = [...cur];
-      for (let i = next.length - 1; i >= 0; i--) {
-        if (next[i]) {
-          next[i] = false;
+      // Find last completed set
+      let removedIdx = -1;
+      for (let i = cur.length - 1; i >= 0; i--) {
+        if (cur[i]) {
           removedIdx = i;
           break;
         }
       }
+      if (removedIdx === -1) return prev;
+      const next = [...cur];
+      next[removedIdx] = false;
       writeJSON(k, next);
+      // Clear matching RPE
+      setRpes((prevRpes) => {
+        const rk = rpeKey(di, ei);
+        const curRpes = prevRpes[rk] ?? [];
+        if (curRpes[removedIdx] == null) return prevRpes;
+        const nextRpes = [...curRpes];
+        nextRpes[removedIdx] = null;
+        writeJSON(rk, nextRpes);
+        return { ...prevRpes, [rk]: nextRpes };
+      });
       return { ...prev, [k]: next };
     });
-    // Also clear the RPE for the removed set
-    if (removedIdx !== -1) {
-      setRpes((prev) => {
-        const k = rpeKey(di, ei);
-        const cur = prev[k] ?? [];
-        const next = [...cur];
-        next[removedIdx] = null;
-        writeJSON(k, next);
-        return { ...prev, [k]: next };
-      });
-    }
   }, []);
 
   const setWeight = useCallback((di: number, ei: number, value: string) => {
