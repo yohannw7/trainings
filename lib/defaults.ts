@@ -57,10 +57,12 @@ export const STORAGE_KEYS = {
   HISTORY: "workoutHistory",
   CALC_PROFILE: "calcProfile",
   PRS: "personalRecords_v1",
+  RPE_ENABLED: "rpeEnabled_v1",
 } as const;
 
 export const setKey = (d: number, e: number) => `wt2_d${d}_e${e}`;
 export const weightKey = (d: number, e: number) => `wt2_d${d}_e${e}_w`;
+export const rpeKey = (d: number, e: number) => `wt2_d${d}_e${e}_rpe`;
 
 // ── Built-in programs ──
 export const BUILTIN_PROGRAMS: Record<string, Plan> = {

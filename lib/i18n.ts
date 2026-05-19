@@ -232,6 +232,18 @@ const dict = {
   "settings.title": { ru: "Настройки", en: "Settings" },
   "settings.subtitle": { ru: "ASH Train Tracker v2.0", en: "ASH Train Tracker v2.0" },
   "settings.theme": { ru: "Тема оформления", en: "Theme" },
+  "settings.customAccent": { ru: "Свой цвет акцента", en: "Custom accent" },
+  "settings.rpeLabel": { ru: "Оценка усилия (RPE)", en: "Effort rating (RPE)" },
+  "settings.rpeDesc": {
+    ru: "Спрашивать после каждого подхода, насколько было тяжело (1–10)",
+    en: "Ask how hard each set felt (1–10) after you finish it",
+  },
+  "drawer.rpeQuestion": { ru: "Насколько было тяжело?", en: "How hard was that?" },
+  "drawer.rpeSkip": { ru: "Пропустить", en: "Skip" },
+  "drawer.rpeHint": {
+    ru: "1 — легко, 10 — на отказе",
+    en: "1 — easy, 10 — failure",
+  },
   "settings.language": { ru: "Язык", en: "Language" },
   "settings.langRu": { ru: "Русский", en: "Russian" },
   "settings.langEn": { ru: "Английский", en: "English" },

@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { setKey } from "@/lib/defaults";
+import { rpeKey, setKey } from "@/lib/defaults";
 import { formatTime, playBeep, vibrate } from "@/lib/utils";
 import { useWakeLock } from "@/lib/wakeLock";
 import { useWorkout } from "./WorkoutContext";
@@ -16,7 +16,8 @@ type Props = {
 };
 
 export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
-  const { plan, setStates, restTime, setRestTime, toggleSet, undoLastSet } = useWorkout();
+  const { plan, setStates, restTime, setRestTime, toggleSet, undoLastSet, rpes, rpeEnabled, setRpe } =
+    useWorkout();
   const { t } = useLocale();
   const [approachElapsed, setApproachElapsed] = useState(0);
   const [approachRunning, setApproachRunning] = useState(false);
@@ -24,6 +25,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
   const [restRemaining, setRestRemaining] = useState(0);
   const [resting, setResting] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [pendingRpeIdx, setPendingRpeIdx] = useState<number | null>(null);
   const approachStartRef = useRef<number | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const restRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -45,6 +47,7 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
     setRestRemaining(0);
     setResting(false);
     setCountdown(null);
+    setPendingRpeIdx(null);
     if (tickRef.current) {
       clearInterval(tickRef.current);
       tickRef.current = null;
@@ -124,9 +127,26 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
     setApproachResult(approachElapsed);
     toggleSet(di, ei);
 
-    // Start rest if not done
     const newDone = doneCount + 1;
-    if (ex && newDone < ex.sets) {
+    const justFinishedIdx = newDone - 1;
+    const moreToGo = ex && newDone < ex.sets;
+
+    if (rpeEnabled) {
+      // Ask for RPE first; rest will start once the user answers (or skips)
+      setPendingRpeIdx(justFinishedIdx);
+    } else if (moreToGo) {
+      startRest();
+    }
+  };
+
+  const handleRpe = (value: number | null) => {
+    if (di === null || ei === null || pendingRpeIdx === null) return;
+    setRpe(di, ei, pendingRpeIdx, value);
+    setPendingRpeIdx(null);
+    // Start the rest timer after RPE selection (only if more sets are pending)
+    const updatedState = setStates[setKey(di, ei)] ?? [];
+    const updatedDone = updatedState.filter(Boolean).length;
+    if (ex && updatedDone < ex.sets) {
       startRest();
     }
   };
@@ -215,18 +235,32 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
 
             {/* Set dots */}
             <div className="mt-4 flex flex-wrap gap-2">
-              {Array.from({ length: ex.sets }).map((_, i) => (
-                <div
-                  key={i}
-                  className={`grid h-10 w-10 place-items-center rounded-xl border text-sm font-medium transition-all ${
-                    state[i]
-                      ? "border-accent/40 bg-accent-gradient text-white shadow-glow"
-                      : "border-border/60 bg-surface/40 text-muted"
-                  }`}
-                >
-                  {i + 1}
-                </div>
-              ))}
+              {Array.from({ length: ex.sets }).map((_, i) => {
+                const exRpes = di !== null && ei !== null ? rpes[rpeKey(di, ei)] ?? [] : [];
+                const rpe = exRpes[i];
+                return (
+                  <div key={i} className="flex flex-col items-center gap-0.5">
+                    <div
+                      className={`grid h-10 w-10 place-items-center rounded-xl border text-sm font-medium transition-all ${
+                        state[i]
+                          ? "border-accent/40 bg-accent-gradient text-white shadow-glow"
+                          : "border-border/60 bg-surface/40 text-muted"
+                      }`}
+                    >
+                      {i + 1}
+                    </div>
+                    {rpeEnabled && (
+                      <span
+                        className={`h-3.5 text-[10px] font-mono ${
+                          typeof rpe === "number" ? "text-accent2" : "text-muted/40"
+                        }`}
+                      >
+                        {typeof rpe === "number" ? rpe : "·"}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             {doneCount > 0 && (
@@ -329,8 +363,52 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
               </AnimatePresence>
             </div>
 
+            {/* RPE prompt */}
+            <AnimatePresence>
+              {pendingRpeIdx !== null && (
+                <motion.div
+                  key="rpe"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mt-4 rounded-2xl border border-accent/30 bg-accent/10 p-4"
+                >
+                  <p className="mb-1 text-center text-sm font-medium text-text">
+                    {t("drawer.rpeQuestion")}
+                  </p>
+                  <p className="mb-3 text-center text-[11px] text-muted">{t("drawer.rpeHint")}</p>
+                  <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-10">
+                    {Array.from({ length: 10 }).map((_, i) => {
+                      const value = i + 1;
+                      const tone =
+                        value <= 5
+                          ? "border-success/30 hover:bg-success/15"
+                          : value <= 7
+                            ? "border-accent/30 hover:bg-accent/15"
+                            : "border-danger/30 hover:bg-danger/15";
+                      return (
+                        <button
+                          key={value}
+                          onClick={() => handleRpe(value)}
+                          className={`heading-display rounded-lg border bg-surface/50 py-2 text-base font-bold transition-colors ${tone}`}
+                        >
+                          {value}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    onClick={() => handleRpe(null)}
+                    className="mx-auto mt-2 block text-xs text-muted hover:text-text"
+                  >
+                    {t("drawer.rpeSkip")}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Rest setup */}
-            {!allDone && !resting && (
+            {!allDone && !resting && pendingRpeIdx === null && (
               <div className="mt-4 rounded-2xl border border-border/60 bg-surface/30 p-4">
                 <span className="label">{t("drawer.restSetup")}</span>
                 <input
@@ -346,32 +424,34 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
             )}
 
             {/* Action buttons */}
-            <div className="mt-5">
-              {allDone ? (
-                <div className="rounded-2xl border border-success/30 bg-success/10 px-4 py-4 text-center text-sm font-medium text-success">
-                  {t("drawer.allDone")}
-                </div>
-              ) : (
-                <div className="flex gap-2">
-                  <button
-                    onClick={startApproach}
-                    disabled={approachRunning || resting || countdown !== null}
-                    className="btn btn-primary flex-1"
-                  >
-                    {countdown !== null
-                      ? t("drawer.startCountdown", { n: countdown })
-                      : t("drawer.startApproach")}
-                  </button>
-                  <button
-                    onClick={finishApproach}
-                    disabled={!approachRunning}
-                    className="btn btn-success flex-1"
-                  >
-                    {t("drawer.finish")}
-                  </button>
-                </div>
-              )}
-            </div>
+            {pendingRpeIdx === null && (
+              <div className="mt-5">
+                {allDone ? (
+                  <div className="rounded-2xl border border-success/30 bg-success/10 px-4 py-4 text-center text-sm font-medium text-success">
+                    {t("drawer.allDone")}
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={startApproach}
+                      disabled={approachRunning || resting || countdown !== null}
+                      className="btn btn-primary flex-1"
+                    >
+                      {countdown !== null
+                        ? t("drawer.startCountdown", { n: countdown })
+                        : t("drawer.startApproach")}
+                    </button>
+                    <button
+                      onClick={finishApproach}
+                      disabled={!approachRunning}
+                      className="btn btn-success flex-1"
+                    >
+                      {t("drawer.finish")}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
             </motion.div>
           </motion.div>
         </>

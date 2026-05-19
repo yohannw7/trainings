@@ -8,11 +8,10 @@ import { useLocale } from "./LocaleProvider";
 import { InstallButton } from "./InstallButton";
 import { ThemeName } from "@/lib/types";
 import type { Locale } from "@/lib/i18n";
-
 export function Header() {
   const { streak } = useWorkout();
   const { open, close } = useModal();
-  const { theme, setTheme, themes } = useTheme();
+  const { theme, setTheme, themes, customAccent, setCustomAccent } = useTheme();
   const { locale, setLocale, locales, t } = useLocale();
 
   const SECTIONS = [
@@ -27,6 +26,8 @@ export function Header() {
         theme={theme}
         themes={themes}
         setTheme={setTheme}
+        customAccent={customAccent}
+        setCustomAccent={setCustomAccent}
         locale={locale}
         locales={locales}
         setLocale={setLocale}
@@ -106,6 +107,8 @@ function SettingsModal({
   theme,
   themes,
   setTheme,
+  customAccent,
+  setCustomAccent,
   locale,
   locales,
   setLocale,
@@ -114,6 +117,8 @@ function SettingsModal({
   theme: ThemeName;
   themes: ThemeName[];
   setTheme: (t: ThemeName) => void;
+  customAccent: string;
+  setCustomAccent: (hex: string) => void;
   locale: Locale;
   locales: Locale[];
   setLocale: (l: Locale) => void;
@@ -126,6 +131,7 @@ function SettingsModal({
     ocean: { label: "Ocean", gradient: "linear-gradient(135deg, #38bdf8, #10b981)" },
     forest: { label: "Forest", gradient: "linear-gradient(135deg, #4ade80, #facc15)" },
     violet: { label: "Violet", gradient: "linear-gradient(135deg, #a855f7, #ec4899)" },
+    custom: { label: "Custom", gradient: "" }, // will be set inline below
   };
 
   const langMeta: Record<Locale, { label: string; flag: string }> = {
@@ -162,30 +168,92 @@ function SettingsModal({
       {/* Theme */}
       <div className="mb-5">
         <span className="label">{t("settings.theme")}</span>
-        <div className="grid grid-cols-3 gap-x-3 gap-y-4 sm:grid-cols-5">
-          {themes.map((th) => (
-            <div key={th} className="flex flex-col items-center gap-1.5">
-              <button
-                onClick={() => setTheme(th)}
-                className={`group relative aspect-square w-full rounded-2xl border-2 transition-all ${
-                  th === theme ? "border-accent shadow-glow" : "border-border/40 hover:border-accent/50"
-                }`}
-                style={{ background: themeMeta[th].gradient }}
-                aria-label={themeMeta[th].label}
-              >
-                {th === theme && (
-                  <span className="absolute inset-0 grid place-items-center text-xl text-white drop-shadow">
-                    ✓
-                  </span>
-                )}
-              </button>
-              <span className="whitespace-nowrap text-[10px] uppercase tracking-wider text-muted">
-                {themeMeta[th].label}
-              </span>
-            </div>
-          ))}
+        <div className="grid grid-cols-3 gap-x-3 gap-y-4 sm:grid-cols-6">
+          {themes.map((th) => {
+            const isCustom = th === "custom";
+            const gradient = isCustom
+              ? `linear-gradient(135deg, ${customAccent}, ${customAccent}cc)`
+              : themeMeta[th].gradient;
+            return (
+              <div key={th} className="flex flex-col items-center gap-1.5">
+                <button
+                  onClick={() => setTheme(th)}
+                  className={`group relative aspect-square w-full overflow-hidden rounded-2xl border-2 transition-all ${
+                    th === theme ? "border-accent shadow-glow" : "border-border/40 hover:border-accent/50"
+                  }`}
+                  style={{ background: gradient }}
+                  aria-label={themeMeta[th].label}
+                >
+                  {isCustom && (
+                    <span className="pointer-events-none absolute inset-0 grid place-items-center text-xl text-white drop-shadow">
+                      🎨
+                    </span>
+                  )}
+                  {th === theme && !isCustom && (
+                    <span className="absolute inset-0 grid place-items-center text-xl text-white drop-shadow">
+                      ✓
+                    </span>
+                  )}
+                </button>
+                <span className="whitespace-nowrap text-[10px] uppercase tracking-wider text-muted">
+                  {themeMeta[th].label}
+                </span>
+              </div>
+            );
+          })}
         </div>
+
+        {/* Custom accent color picker */}
+        {theme === "custom" && (
+          <div className="mt-4 rounded-2xl border border-border/60 bg-surface/30 p-4">
+            <span className="label">{t("settings.customAccent")}</span>
+            <div className="mt-2 flex items-center gap-3">
+              <label className="relative h-12 w-12 shrink-0 cursor-pointer overflow-hidden rounded-xl border-2 border-border/60">
+                <input
+                  type="color"
+                  value={customAccent}
+                  onChange={(e) => setCustomAccent(e.target.value)}
+                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                />
+                <span
+                  className="block h-full w-full"
+                  style={{ background: customAccent }}
+                />
+              </label>
+              <input
+                type="text"
+                value={customAccent}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (/^#?[0-9a-fA-F]{0,6}$/.test(v)) {
+                    const hex = v.startsWith("#") ? v : `#${v}`;
+                    if (hex.length === 7) setCustomAccent(hex);
+                  }
+                }}
+                className="input flex-1 font-mono uppercase"
+                placeholder="#6366f1"
+                maxLength={7}
+              />
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {["#6366f1", "#ec4899", "#f43f5e", "#f97316", "#facc15", "#22c55e", "#06b6d4", "#0ea5e9"].map(
+                (preset) => (
+                  <button
+                    key={preset}
+                    onClick={() => setCustomAccent(preset)}
+                    className="h-7 w-7 rounded-full border-2 border-border/40 transition-transform hover:scale-110"
+                    style={{ background: preset }}
+                    aria-label={preset}
+                  />
+                ),
+              )}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* RPE switch */}
+      <RpeToggle />
 
       {/* Install (PWA) */}
       <div className="mb-1 mt-6">
@@ -210,6 +278,34 @@ function SettingsModal({
           {t("settings.ok")}
         </button>
       </div>
+    </div>
+  );
+}
+
+function RpeToggle() {
+  const { rpeEnabled, setRpeEnabled } = useWorkout();
+  const { t } = useLocale();
+  return (
+    <div className="mt-6 flex items-center gap-3 rounded-2xl border border-border/60 bg-surface/30 p-4">
+      <div className="flex-1">
+        <p className="text-sm font-medium text-text">{t("settings.rpeLabel")}</p>
+        <p className="mt-0.5 text-xs text-muted">{t("settings.rpeDesc")}</p>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={rpeEnabled}
+        onClick={() => setRpeEnabled(!rpeEnabled)}
+        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+          rpeEnabled ? "bg-accent-gradient" : "bg-border"
+        }`}
+      >
+        <span
+          className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-all ${
+            rpeEnabled ? "left-6" : "left-1"
+          }`}
+        />
+      </button>
     </div>
   );
 }

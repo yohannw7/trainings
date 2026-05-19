@@ -40,7 +40,7 @@ export type CalcProfile = {
   goal: "cut" | "maintain" | "bulk";
 };
 
-export type ThemeName = "midnight" | "dawn" | "ocean" | "forest" | "violet";
+export type ThemeName = "midnight" | "dawn" | "ocean" | "forest" | "violet" | "custom";
 
 export type PersonalRecord = {
   weight: number;

@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { DEFAULT_PLAN, STORAGE_KEYS, setKey, weightKey } from "@/lib/defaults";
+import { DEFAULT_PLAN, STORAGE_KEYS, rpeKey, setKey, weightKey } from "@/lib/defaults";
 import { readJSON, readString, removeKey, writeJSON, writeString } from "@/lib/storage";
 import type { Plan, PersonalRecords, StreakData, WorkoutHistoryEntry } from "@/lib/types";
 import { getWeekId, playBeep, vibrate } from "@/lib/utils";
@@ -19,6 +19,7 @@ import { useLocale } from "./LocaleProvider";
 
 type SetStates = Record<string, boolean[]>;
 type Weights = Record<string, string>;
+type Rpes = Record<string, Array<number | null>>;
 
 type Ctx = {
   hydrated: boolean;
@@ -33,8 +34,12 @@ type Ctx = {
   presets: Record<string, Plan>;
   restTime: number;
   prs: PersonalRecords;
+  rpes: Rpes;
+  rpeEnabled: boolean;
 
   setRestTime: (n: number) => void;
+  setRpeEnabled: (enabled: boolean) => void;
+  setRpe: (di: number, ei: number, idx: number, value: number | null) => void;
   toggleSet: (di: number, ei: number) => void;
   setSetState: (di: number, ei: number, idx: number, value: boolean) => void;
   undoLastSet: (di: number, ei: number) => void;
@@ -72,6 +77,8 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   const [restTime, setRestTimeState] = useState(90);
   const [workoutSeconds, setWorkoutSeconds] = useState(0);
   const [prs, setPrs] = useState<PersonalRecords>({});
+  const [rpes, setRpes] = useState<Rpes>({});
+  const [rpeEnabled, setRpeEnabledState] = useState(false);
   const startRef = useRef<number | null>(null);
 
   // Hydrate state
@@ -81,20 +88,28 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
 
     const ss: SetStates = {};
     const ws: Weights = {};
+    const rp: Rpes = {};
     p.forEach((day, di) => {
       day.exercises.forEach((ex, ei) => {
         ss[setKey(di, ei)] = readJSON<boolean[]>(setKey(di, ei), new Array(ex.sets).fill(false));
         const w = readString(weightKey(di, ei));
         if (w) ws[weightKey(di, ei)] = w;
+        rp[rpeKey(di, ei)] = readJSON<Array<number | null>>(
+          rpeKey(di, ei),
+          new Array(ex.sets).fill(null),
+        );
       });
     });
     setSetStates(ss);
     setWeights(ws);
+    setRpes(rp);
 
     setStreak(readJSON<StreakData>(STORAGE_KEYS.STREAK, { streak: 0, lastWeek: null, total: 0 }));
     setHistory(readJSON<WorkoutHistoryEntry[]>(STORAGE_KEYS.HISTORY, []));
     setPresets(readJSON<Record<string, Plan>>(STORAGE_KEYS.PRESETS, {}));
     setPrs(readJSON<PersonalRecords>(STORAGE_KEYS.PRS, {}));
+    setRpeEnabledState(readJSON<boolean>(STORAGE_KEYS.RPE_ENABLED, false));
+
     const rt = parseInt(readString(STORAGE_KEYS.REST_TIME) || "90", 10);
     if (!Number.isNaN(rt)) setRestTimeState(rt);
 
@@ -129,6 +144,26 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     writeString(STORAGE_KEYS.REST_TIME, String(n));
   }, []);
 
+  const setRpeEnabled = useCallback((enabled: boolean) => {
+    setRpeEnabledState(enabled);
+    writeJSON(STORAGE_KEYS.RPE_ENABLED, enabled);
+  }, []);
+
+  const setRpe = useCallback(
+    (di: number, ei: number, idx: number, value: number | null) => {
+      setRpes((prev) => {
+        const k = rpeKey(di, ei);
+        const ex = plan[di]?.exercises[ei];
+        const cur = prev[k] ?? new Array(ex?.sets ?? 0).fill(null);
+        const next = [...cur];
+        next[idx] = value;
+        writeJSON(k, next);
+        return { ...prev, [k]: next };
+      });
+    },
+    [plan],
+  );
+
   const setSetState = useCallback((di: number, ei: number, idx: number, value: boolean) => {
     setSetStates((prev) => {
       const k = setKey(di, ei);
@@ -156,6 +191,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   }, [plan]);
 
   const undoLastSet = useCallback((di: number, ei: number) => {
+    let removedIdx = -1;
     setSetStates((prev) => {
       const k = setKey(di, ei);
       const cur = prev[k] ?? [];
@@ -163,12 +199,24 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
       for (let i = next.length - 1; i >= 0; i--) {
         if (next[i]) {
           next[i] = false;
+          removedIdx = i;
           break;
         }
       }
       writeJSON(k, next);
       return { ...prev, [k]: next };
     });
+    // Also clear the RPE for the removed set
+    if (removedIdx !== -1) {
+      setRpes((prev) => {
+        const k = rpeKey(di, ei);
+        const cur = prev[k] ?? [];
+        const next = [...cur];
+        next[removedIdx] = null;
+        writeJSON(k, next);
+        return { ...prev, [k]: next };
+      });
+    }
   }, []);
 
   const setWeight = useCallback((di: number, ei: number, value: string) => {
@@ -279,13 +327,20 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
 
   const resetDay = useCallback(() => {
     plan[currentDay]?.exercises.forEach((_, ei) => {
-      const k = setKey(currentDay, ei);
-      removeKey(k);
+      removeKey(setKey(currentDay, ei));
+      removeKey(rpeKey(currentDay, ei));
     });
     setSetStates((prev) => {
       const next = { ...prev };
       plan[currentDay]?.exercises.forEach((ex, ei) => {
         next[setKey(currentDay, ei)] = new Array(ex.sets).fill(false);
+      });
+      return next;
+    });
+    setRpes((prev) => {
+      const next = { ...prev };
+      plan[currentDay]?.exercises.forEach((ex, ei) => {
+        next[rpeKey(currentDay, ei)] = new Array(ex.sets).fill(null);
       });
       return next;
     });
@@ -461,7 +516,11 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     presets,
     restTime,
     prs,
+    rpes,
+    rpeEnabled,
     setRestTime,
+    setRpeEnabled,
+    setRpe,
     toggleSet,
     setSetState,
     undoLastSet,
@@ -480,9 +539,10 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     getLastWeight,
   }), [
     hydrated, plan, currentDay, setStates, weights, streak, workoutSeconds, history,
-    presets, restTime, prs, setRestTime, toggleSet, setSetState, undoLastSet, setWeight,
-    addDay, deleteDay, saveDayEdit, reorderExercises, resetDay, completeDay,
-    savePreset, loadPreset, deletePreset, loadProgram, isPR, getLastWeight,
+    presets, restTime, prs, rpes, rpeEnabled, setRestTime, setRpeEnabled, setRpe,
+    toggleSet, setSetState, undoLastSet, setWeight, addDay, deleteDay, saveDayEdit,
+    reorderExercises, resetDay, completeDay, savePreset, loadPreset, deletePreset,
+    loadProgram, isPR, getLastWeight,
   ]);
 
   return <WorkoutContext.Provider value={value}>{children}</WorkoutContext.Provider>;
