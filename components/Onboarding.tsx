@@ -38,6 +38,7 @@ export function Onboarding() {
   const [hasTarget, setHasTarget] = useState(false);
   const [tooltipSide, setTooltipSide] = useState<"below" | "above">("below");
   const [tooltipShift, setTooltipShift] = useState(0);
+  const [tooltipTop, setTooltipTop] = useState<number | null>(null);
   const { t } = useLocale();
   const initialised = useRef(false);
 
@@ -129,7 +130,18 @@ export function Onboarding() {
       const viewH = window.innerHeight;
       const viewW = window.innerWidth;
       const spaceBelow = viewH - (top + height);
-      setTooltipSide(spaceBelow >= TOOLTIP_BUDGET ? "below" : "above");
+      const side: "below" | "above" = spaceBelow >= TOOLTIP_BUDGET ? "below" : "above";
+      setTooltipSide(side);
+
+      // Compute tooltip top position, clamped to viewport
+      if (side === "below") {
+        const desired = top + height + TOOLTIP_GAP;
+        setTooltipTop(Math.max(16, Math.min(desired, viewH - TOOLTIP_BUDGET)));
+      } else {
+        // Place tooltip above the spotlight, but don't go above 16px
+        const desired = top - TOOLTIP_GAP - TOOLTIP_BUDGET;
+        setTooltipTop(Math.max(16, desired));
+      }
 
       const targetCenterX = left + width / 2;
       const tooltipMaxWidth = Math.min(360, viewW - 32);
@@ -294,7 +306,14 @@ export function Onboarding() {
           />
         )}
 
-        <TooltipPositioner sy={sy} sh={sh} hasTarget={hasTarget} side={tooltipSide}>
+        {/* Tooltip */}
+        <div
+          className="pointer-events-none fixed inset-x-0 z-10 flex justify-center px-4"
+          style={{
+            top: hasTarget && tooltipTop !== null ? tooltipTop : "50%",
+            transform: !hasTarget || tooltipTop === null ? "translateY(-50%)" : undefined,
+          }}
+        >
           <motion.div
             data-onboarding-tooltip
             data-lenis-prevent
@@ -368,63 +387,8 @@ export function Onboarding() {
               {step + 1} / {STEPS.length}
             </div>
           </motion.div>
-        </TooltipPositioner>
+        </div>
       </motion.div>
     </AnimatePresence>
-  );
-}
-
-function TooltipPositioner({
-  sy,
-  sh,
-  hasTarget,
-  side,
-  children,
-}: {
-  sy: ReturnType<typeof useMotionValue<number>>;
-  sh: ReturnType<typeof useMotionValue<number>>;
-  hasTarget: boolean;
-  side: "below" | "above";
-  children: React.ReactNode;
-}) {
-  const TOOLTIP_MIN_H = 200; // approximate minimum tooltip height
-
-  const paddingTop = useTransform([sy, sh], (vals) => {
-    const [y, h] = vals as [number, number];
-    if (!hasTarget) return 16;
-    if (side === "below") {
-      const desired = y + h + TOOLTIP_GAP;
-      const viewH = typeof window !== "undefined" ? window.innerHeight : 800;
-      // Clamp so tooltip has at least TOOLTIP_MIN_H space below
-      return Math.min(desired, viewH - TOOLTIP_MIN_H - 16);
-    }
-    return 16;
-  });
-
-  const paddingBottom = useTransform([sy, sh], (vals) => {
-    const [y] = vals as [number, number];
-    if (!hasTarget || typeof window === "undefined") return 16;
-    if (side === "above") {
-      const viewH = window.innerHeight;
-      const desired = viewH - y + TOOLTIP_GAP;
-      // Clamp so tooltip has at least TOOLTIP_MIN_H space above
-      return Math.min(desired, viewH - TOOLTIP_MIN_H - 16);
-    }
-    return 16;
-  });
-
-  return (
-    <motion.div
-      className="pointer-events-none absolute inset-0 flex justify-center"
-      style={{
-        alignItems: !hasTarget ? "center" : side === "below" ? "flex-start" : "flex-end",
-        paddingTop: hasTarget && side === "below" ? paddingTop : 16,
-        paddingBottom: hasTarget && side === "above" ? paddingBottom : 16,
-        paddingLeft: 16,
-        paddingRight: 16,
-      }}
-    >
-      {children}
-    </motion.div>
   );
 }
