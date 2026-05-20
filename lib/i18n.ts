@@ -53,6 +53,8 @@ const dict = {
   "hero.stat.progress": { ru: "Прогресс", en: "Progress" },
   "hero.stat.time": { ru: "Время", en: "Time" },
   "hero.stat.time.hint": { ru: "в сессии", en: "in session" },
+  "hero.stat.sets": { ru: "Подходы", en: "Sets" },
+  "hero.stat.sets.hint": { ru: "сегодня / всего", en: "today / total" },
 
   // Training
   "training.eyebrow": { ru: "01 — Тренировка", en: "01 — Training" },
@@ -251,6 +253,30 @@ const dict = {
   "settings.langEn": { ru: "Английский", en: "English" },
   "settings.ok": { ru: "Готово", en: "Done" },
   "settings.tour": { ru: "Пройти гайд заново", en: "Replay onboarding" },
+  "settings.bears": { ru: "Медведи на фоне", en: "Background bears" },
+  "settings.bearsDesc": {
+    ru: "Декоративные плавающие медведи на фоне страницы",
+    en: "Floating decorative bears in the background",
+  },
+  "settings.voice": { ru: "Голосовое управление", en: "Voice control" },
+  "settings.voiceDesc": {
+    ru: "Скажи «Готово!» или «Done!», чтобы завершить подход. Слушает только когда открыто упражнение.",
+    en: "Say \"Done!\" to finish a set. Only listens while a set is in progress.",
+  },
+  "settings.notifications": { ru: "Уведомления", en: "Notifications" },
+  "settings.notificationsDesc": {
+    ru: "Алерт когда таймер отдыха закончился. Работает даже если приложение свёрнуто.",
+    en: "Alert when rest timer ends. Works even when the app is in background.",
+  },
+  "settings.notificationsBlocked": {
+    ru: "Браузер запретил уведомления — открой настройки сайта",
+    en: "Browser blocked notifications — open site permissions",
+  },
+  "notify.restDone.title": { ru: "Отдых закончился", en: "Rest is over" },
+  "notify.restDone.body": {
+    ru: "Пора начинать следующий подход — {name}",
+    en: "Time for the next set — {name}",
+  },
 
   // Programs
   "programs.title": { ru: "Готовые программы", en: "Built-in programs" },

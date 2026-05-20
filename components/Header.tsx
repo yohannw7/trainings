@@ -5,6 +5,8 @@ import { useWorkout } from "./WorkoutContext";
 import { useTheme } from "./ThemeProvider";
 import { useModal } from "./ModalProvider";
 import { useLocale } from "./LocaleProvider";
+import { useUISettings } from "./UISettingsProvider";
+import { useToast } from "./ToastProvider";
 import { InstallButton } from "./InstallButton";
 import { ThemeName } from "@/lib/types";
 import type { Locale } from "@/lib/i18n";
@@ -221,8 +223,8 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
         )}
       </div>
 
-      {/* RPE switch */}
-      <RpeToggle />
+      {/* Preference toggles */}
+      <PreferenceToggles />
 
       {/* Install (PWA) */}
       <div className="mb-1 mt-6">
@@ -251,30 +253,101 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function RpeToggle() {
-  const { rpeEnabled, setRpeEnabled } = useWorkout();
-  const { t } = useLocale();
+function SettingsToggle({
+  label,
+  description,
+  checked,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  description?: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+}) {
   return (
-    <div className="mt-6 flex items-center gap-3 rounded-2xl border border-border/60 bg-surface/30 p-4">
+    <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-surface/30 p-4">
       <div className="flex-1">
-        <p className="text-sm font-medium text-text">{t("settings.rpeLabel")}</p>
-        <p className="mt-0.5 text-xs text-muted">{t("settings.rpeDesc")}</p>
+        <p className="text-sm font-medium text-text">{label}</p>
+        {description && <p className="mt-0.5 text-xs text-muted">{description}</p>}
       </div>
       <button
         type="button"
         role="switch"
-        aria-checked={rpeEnabled}
-        onClick={() => setRpeEnabled(!rpeEnabled)}
-        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-          rpeEnabled ? "bg-accent-gradient" : "bg-border"
+        aria-checked={checked}
+        disabled={disabled}
+        onClick={() => onChange(!checked)}
+        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
+          checked ? "bg-accent-gradient" : "bg-border"
         }`}
       >
         <span
           className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-all ${
-            rpeEnabled ? "left-6" : "left-1"
+            checked ? "left-6" : "left-1"
           }`}
         />
       </button>
+    </div>
+  );
+}
+
+function PreferenceToggles() {
+  const { rpeEnabled, setRpeEnabled } = useWorkout();
+  const { bearsHidden, setBearsHidden, voiceEnabled, setVoiceEnabled, notificationsEnabled, setNotificationsEnabled } =
+    useUISettings();
+  const { t } = useLocale();
+  const { toast } = useToast();
+
+  const handleNotifications = async (v: boolean) => {
+    if (!v) {
+      setNotificationsEnabled(false);
+      return;
+    }
+    if (typeof Notification === "undefined") {
+      toast(t("settings.notificationsBlocked"));
+      return;
+    }
+    if (Notification.permission === "denied") {
+      toast(t("settings.notificationsBlocked"));
+      return;
+    }
+    if (Notification.permission !== "granted") {
+      const result = await Notification.requestPermission();
+      if (result !== "granted") {
+        toast(t("settings.notificationsBlocked"));
+        return;
+      }
+    }
+    setNotificationsEnabled(true);
+  };
+
+  return (
+    <div className="mt-6 flex flex-col gap-3">
+      <SettingsToggle
+        label={t("settings.rpeLabel")}
+        description={t("settings.rpeDesc")}
+        checked={rpeEnabled}
+        onChange={setRpeEnabled}
+      />
+      <SettingsToggle
+        label={t("settings.voice")}
+        description={t("settings.voiceDesc")}
+        checked={voiceEnabled}
+        onChange={setVoiceEnabled}
+      />
+      <SettingsToggle
+        label={t("settings.notifications")}
+        description={t("settings.notificationsDesc")}
+        checked={notificationsEnabled}
+        onChange={handleNotifications}
+      />
+      <SettingsToggle
+        label={t("settings.bears")}
+        description={t("settings.bearsDesc")}
+        checked={!bearsHidden}
+        onChange={(v) => setBearsHidden(!v)}
+      />
     </div>
   );
 }

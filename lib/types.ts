@@ -18,6 +18,8 @@ export type StreakData = {
   streak: number;
   lastWeek: string | null;
   total: number;
+  /** Total number of finished sets across all workouts ever */
+  lifetimeSets?: number;
 };
 
 export type WorkoutHistoryEntry = {

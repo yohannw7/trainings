@@ -216,6 +216,12 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
       const next = [...cur];
       next[nextIdx] = true;
       writeJSON(k, next);
+      // Increment lifetime sets counter
+      setStreak((s) => {
+        const updated = { ...s, lifetimeSets: (s.lifetimeSets ?? 0) + 1 };
+        writeJSON(STORAGE_KEYS.STREAK, updated);
+        return updated;
+      });
       return { ...prev, [k]: next };
     });
   }, [plan]);
@@ -236,6 +242,12 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
       const next = [...cur];
       next[removedIdx] = false;
       writeJSON(k, next);
+      // Decrement lifetime counter (clamp to 0)
+      setStreak((s) => {
+        const updated = { ...s, lifetimeSets: Math.max(0, (s.lifetimeSets ?? 0) - 1) };
+        writeJSON(STORAGE_KEYS.STREAK, updated);
+        return updated;
+      });
       // Clear matching RPE
       setRpes((prevRpes) => {
         const rk = rpeKey(di, ei);

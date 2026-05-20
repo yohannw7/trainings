@@ -8,6 +8,7 @@ import { useToast } from "./ToastProvider";
 import { formatDurationLocalized } from "@/lib/i18n";
 import { formatHistoryEntry, shareOrCopy } from "@/lib/share";
 import { Heatmap } from "./Heatmap";
+import { ProgressChart } from "./ProgressChart";
 
 export function ProgressSection() {
   const { history, prs } = useWorkout();
@@ -36,6 +37,11 @@ export function ProgressSection() {
       {/* Heatmap */}
       <div className="mb-4">
         <Heatmap history={history} />
+      </div>
+
+      {/* Weight progress chart */}
+      <div className="mb-4">
+        <ProgressChart />
       </div>
 
       {/* Personal records */}

@@ -58,6 +58,9 @@ export const STORAGE_KEYS = {
   CALC_PROFILE: "calcProfile",
   PRS: "personalRecords_v1",
   RPE_ENABLED: "rpeEnabled_v1",
+  BEARS_HIDDEN: "bearsHidden_v1",
+  VOICE_ENABLED: "voiceEnabled_v1",
+  NOTIFICATIONS_ENABLED: "notificationsEnabled_v1",
 } as const;
 
 export const setKey = (d: number, e: number) => `wt2_d${d}_e${e}`;

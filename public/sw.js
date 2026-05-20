@@ -1,6 +1,6 @@
 /* ASH Train service worker */
 // Bump VERSION on every meaningful change to force a fresh cache
-const VERSION = "2026-05-19-13";
+const VERSION = "2026-05-20-1";
 const CACHE = `ash-train-${VERSION}`;
 const SCOPE = self.registration ? new URL(self.registration.scope).pathname : "/";
 
@@ -36,6 +36,27 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("message", (event) => {
   if (event.data === "SKIP_WAITING") self.skipWaiting();
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(
+    (async () => {
+      const allClients = await self.clients.matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      });
+      for (const client of allClients) {
+        if ("focus" in client) {
+          await client.focus();
+          return;
+        }
+      }
+      if (self.clients.openWindow) {
+        await self.clients.openWindow(SCOPE);
+      }
+    })(),
+  );
 });
 
 self.addEventListener("fetch", (event) => {

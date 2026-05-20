@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { STORAGE_KEYS } from "@/lib/defaults";
 
 type Bear = {
   src: string;
@@ -19,8 +20,26 @@ const BEAR_IMAGES = ["/bear.png", "/bear2.png", "/bear3.png"].map((p) => `${BASE
 
 export function BackgroundDecor() {
   const [bears, setBears] = useState<Bear[]>([]);
+  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
+    const update = () => {
+      try {
+        setHidden(JSON.parse(localStorage.getItem(STORAGE_KEYS.BEARS_HIDDEN) || "false"));
+      } catch {
+        setHidden(false);
+      }
+    };
+    update();
+    window.addEventListener("ash-bears-toggle", update);
+    return () => window.removeEventListener("ash-bears-toggle", update);
+  }, []);
+
+  useEffect(() => {
+    if (hidden) {
+      setBears([]);
+      return;
+    }
     const isMobile = window.innerWidth < 640;
     if (isMobile) return;
 
@@ -40,7 +59,7 @@ export function BackgroundDecor() {
       });
     }
     setBears(items);
-  }, []);
+  }, [hidden]);
 
   return (
     <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">

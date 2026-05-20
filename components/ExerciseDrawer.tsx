@@ -5,7 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { rpeKey, setKey } from "@/lib/defaults";
 import { formatTime, playBeep, vibrate } from "@/lib/utils";
 import { useWakeLock } from "@/lib/wakeLock";
+import { useVoiceControl } from "@/lib/voiceControl";
+import { showRestDoneNotification } from "@/lib/notify";
 import { useWorkout } from "./WorkoutContext";
+import { useUISettings } from "./UISettingsProvider";
 import { useLocale } from "./LocaleProvider";
 
 type Props = {
@@ -18,6 +21,7 @@ type Props = {
 export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
   const { plan, setStates, restTime, setRestTime, toggleSet, undoLastSet, rpes, rpeEnabled, setRpe } =
     useWorkout();
+  const { voiceEnabled, notificationsEnabled } = useUISettings();
   const { t } = useLocale();
   const [approachElapsed, setApproachElapsed] = useState(0);
   const [approachRunning, setApproachRunning] = useState(false);
@@ -39,6 +43,11 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
 
   // Keep screen awake while drawer is open and there's any active timer/countdown
   useWakeLock(open && (approachRunning || resting || countdown !== null));
+
+  // Voice control: if enabled, listen for "done" while a set is in progress
+  useVoiceControl(open && voiceEnabled && approachRunning, () => {
+    if (approachRunning) finishApproach();
+  });
 
   useEffect(() => {
     // Reset transient state when changing exercise or closing
@@ -178,6 +187,12 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
           setRestAdjust(0);
           playBeep();
           vibrate([200, 100, 200]);
+          if (notificationsEnabled) {
+            showRestDoneNotification(
+              t("notify.restDone.title"),
+              t("notify.restDone.body", { name: ex?.name ?? "" }),
+            );
+          }
           return 0;
         }
         return prev - 1;

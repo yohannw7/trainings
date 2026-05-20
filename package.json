@@ -16,7 +16,9 @@
     "lenis": "1.1.6",
     "next": "14.2.5",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "recharts": "^3.8.1",
+    "shaders": "^2.5.124"
   },
   "devDependencies": {
     "@types/node": "20.14.10",

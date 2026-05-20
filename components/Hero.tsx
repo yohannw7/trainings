@@ -20,6 +20,17 @@ export function Hero() {
   });
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
+  // Sets done across all days today (since the workout timer started)
+  let todaySets = 0;
+  plan.forEach((d, di) => {
+    d.exercises.forEach((_, ei) => {
+      const key = `wt2_d${di}_e${ei}`;
+      const state = setStates[key] ?? [];
+      todaySets += state.filter(Boolean).length;
+    });
+  });
+  const lifetimeSets = streak.lifetimeSets ?? 0;
+
   return (
     <section id="hero" className="relative mx-auto w-full max-w-6xl px-4 pt-10 sm:px-6 sm:pt-16">
       <motion.div
@@ -70,11 +81,11 @@ export function Hero() {
           hint={day ? day.short : "—"}
           emoji="📊"
         />
-        <StatCard
-          label={t("hero.stat.time")}
-          value={formatTime(workoutSeconds)}
-          hint={t("hero.stat.time.hint")}
-          emoji="⏱"
+        <SetCounterCard
+          label={t("hero.stat.sets")}
+          today={todaySets}
+          lifetime={lifetimeSets}
+          hint={t("hero.stat.sets.hint")}
         />
       </motion.div>
     </section>
@@ -200,6 +211,83 @@ function StatCard({
         </span>
       </div>
       <div className="heading-display relative mt-2 text-3xl font-bold sm:text-4xl">{value}</div>
+      <div className="relative mt-1 text-xs text-muted">{hint}</div>
+    </motion.div>
+  );
+}
+
+function SetCounterCard({
+  label,
+  today,
+  lifetime,
+  hint,
+}: {
+  label: string;
+  today: number;
+  lifetime: number;
+  hint: string;
+}) {
+  const glint = useAnimationControls();
+
+  const playGlint = () => {
+    glint.set({ x: "-140%" });
+    glint.start({
+      x: "140%",
+      transition: { duration: 1.4, ease: [0.25, 0.46, 0.45, 0.94] },
+    });
+  };
+
+  return (
+    <motion.div
+      whileHover={{
+        rotate: -2.5,
+        y: -6,
+        scale: 1.03,
+        transition: { type: "spring", damping: 14, stiffness: 280 },
+      }}
+      whileTap={{ scale: 0.98, rotate: -1 }}
+      onHoverStart={playGlint}
+      onTapStart={playGlint}
+      className="group card relative cursor-default overflow-hidden p-4 transition-shadow duration-300 hover:shadow-glow sm:p-5"
+    >
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-px opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent)",
+        }}
+      />
+      <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
+        <motion.div
+          aria-hidden
+          initial={{ x: "-140%" }}
+          animate={glint}
+          className="absolute -top-1/2 left-0 h-[200%] w-[55%]"
+          style={{ transform: "skewX(28deg)", filter: "blur(8px)" }}
+        >
+          <span
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 30%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.04) 70%, transparent 100%)",
+              mixBlendMode: "screen",
+            }}
+          />
+        </motion.div>
+      </div>
+
+      <div className="relative flex items-start justify-between">
+        <span className="text-xs uppercase tracking-wider text-muted">{label}</span>
+        <span className="text-lg opacity-70 transition-transform duration-300 group-hover:scale-110">
+          ⚡
+        </span>
+      </div>
+      <div className="heading-display relative mt-2 flex items-baseline gap-1.5 text-3xl font-bold sm:text-4xl">
+        <span className="bg-accent-gradient bg-clip-text text-transparent">{today}</span>
+        <span className="text-xl text-muted/60 sm:text-2xl">/</span>
+        <span className="text-muted/80">{lifetime.toLocaleString()}</span>
+      </div>
       <div className="relative mt-1 text-xs text-muted">{hint}</div>
     </motion.div>
   );
