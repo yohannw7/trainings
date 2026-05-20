@@ -1,6 +1,6 @@
 /* ASH Train service worker */
 // Bump VERSION on every meaningful change to force a fresh cache
-const VERSION = "2026-05-20-1";
+const VERSION = "2026-05-20-2";
 const CACHE = `ash-train-${VERSION}`;
 const SCOPE = self.registration ? new URL(self.registration.scope).pathname : "/";
 
@@ -34,8 +34,37 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+let scheduledTimer = null;
+
 self.addEventListener("message", (event) => {
-  if (event.data === "SKIP_WAITING") self.skipWaiting();
+  if (event.data === "SKIP_WAITING") {
+    self.skipWaiting();
+    return;
+  }
+  if (event.data && event.data.type === "SCHEDULE_NOTIFICATION") {
+    // Cancel any previous scheduled notification
+    if (scheduledTimer) clearTimeout(scheduledTimer);
+    const { delay, title, body, icon } = event.data;
+    scheduledTimer = setTimeout(() => {
+      scheduledTimer = null;
+      self.registration.showNotification(title, {
+        body,
+        icon,
+        badge: icon,
+        tag: "ash-rest",
+        renotify: true,
+        vibrate: [200, 100, 200],
+      });
+    }, delay);
+    return;
+  }
+  if (event.data && event.data.type === "CANCEL_NOTIFICATION") {
+    if (scheduledTimer) {
+      clearTimeout(scheduledTimer);
+      scheduledTimer = null;
+    }
+    return;
+  }
 });
 
 self.addEventListener("notificationclick", (event) => {

@@ -6,7 +6,7 @@ import { rpeKey, setKey } from "@/lib/defaults";
 import { formatTime, playBeep, vibrate } from "@/lib/utils";
 import { useWakeLock } from "@/lib/wakeLock";
 import { useVoiceControl } from "@/lib/voiceControl";
-import { showRestDoneNotification } from "@/lib/notify";
+import { showRestDoneNotification, scheduleRestNotification, cancelScheduledNotification } from "@/lib/notify";
 import { useWorkout } from "./WorkoutContext";
 import { useUISettings } from "./UISettingsProvider";
 import { useLocale } from "./LocaleProvider";
@@ -171,34 +171,62 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
     }
   };
 
+  const restEndRef = useRef<number>(0);
+
   const startRest = (override?: number) => {
     const duration = override ?? restTime;
+    const endTime = Date.now() + duration * 1000;
+    restEndRef.current = endTime;
     setResting(true);
     setRestRemaining(duration);
+
+    // Schedule notification via SW (works even when app is backgrounded)
+    if (notificationsEnabled) {
+      scheduleRestNotification(duration, t("notify.restDone.title"), t("notify.restDone.body", { name: ex?.name ?? "" }));
+    }
+
     if (restRef.current) clearInterval(restRef.current);
     restRef.current = setInterval(() => {
-      setRestRemaining((prev) => {
-        if (prev <= 1) {
-          if (restRef.current) {
-            clearInterval(restRef.current);
-            restRef.current = null;
-          }
-          setResting(false);
-          setRestAdjust(0);
-          playBeep();
-          vibrate([200, 100, 200]);
-          if (notificationsEnabled) {
-            showRestDoneNotification(
-              t("notify.restDone.title"),
-              t("notify.restDone.body", { name: ex?.name ?? "" }),
-            );
-          }
-          return 0;
+      const remaining = Math.ceil((restEndRef.current - Date.now()) / 1000);
+      if (remaining <= 0) {
+        if (restRef.current) {
+          clearInterval(restRef.current);
+          restRef.current = null;
         }
-        return prev - 1;
-      });
-    }, 1000);
+        setResting(false);
+        setRestAdjust(0);
+        setRestRemaining(0);
+        playBeep();
+        vibrate([200, 100, 200]);
+        return;
+      }
+      setRestRemaining(remaining);
+    }, 250); // tick faster to catch up after background throttle
   };
+
+  // When app comes back to foreground, recalculate rest remaining
+  useEffect(() => {
+    if (!resting) return;
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      const remaining = Math.ceil((restEndRef.current - Date.now()) / 1000);
+      if (remaining <= 0) {
+        if (restRef.current) {
+          clearInterval(restRef.current);
+          restRef.current = null;
+        }
+        setResting(false);
+        setRestAdjust(0);
+        setRestRemaining(0);
+        playBeep();
+        vibrate([200, 100, 200]);
+      } else {
+        setRestRemaining(remaining);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [resting]);
 
   const cancelRest = () => {
     if (restRef.current) {
@@ -208,6 +236,8 @@ export function ExerciseDrawer({ open, di, ei, onClose }: Props) {
     setResting(false);
     setRestRemaining(0);
     setRestAdjust(0);
+    restEndRef.current = 0;
+    cancelScheduledNotification();
   };
 
   const handleUndo = () => {

@@ -6,11 +6,8 @@ export function showRestDoneNotification(title: string, body: string) {
   if (typeof window === "undefined") return;
   if (typeof Notification === "undefined") return;
   if (Notification.permission !== "granted") return;
-  // If document is visible, the in-app beep + vibrate is enough
-  if (document.visibilityState === "visible") return;
 
   try {
-    // Prefer SW notifications when available — they show on locked screen / background tabs
     if (navigator.serviceWorker?.controller) {
       navigator.serviceWorker.ready
         .then((reg) => {
@@ -30,5 +27,34 @@ export function showRestDoneNotification(title: string, body: string) {
     new Notification(title, { body, icon: `${BASE_PATH}/icons/icon-192.png`, tag: "ash-rest" });
   } catch {
     /* noop */
+  }
+}
+
+/**
+ * Schedules a notification to fire after `delaySec` seconds via the Service Worker.
+ * This works even when the page is backgrounded because the SW stays alive briefly
+ * after receiving a message.
+ */
+export function scheduleRestNotification(delaySec: number, title: string, body: string) {
+  if (typeof window === "undefined") return;
+  if (typeof Notification === "undefined") return;
+  if (Notification.permission !== "granted") return;
+
+  if (navigator.serviceWorker?.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: "SCHEDULE_NOTIFICATION",
+      delay: delaySec * 1000,
+      title,
+      body,
+      icon: `${BASE_PATH}/icons/icon-192.png`,
+    });
+  }
+}
+
+/** Cancel a previously scheduled notification */
+export function cancelScheduledNotification() {
+  if (typeof window === "undefined") return;
+  if (navigator.serviceWorker?.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: "CANCEL_NOTIFICATION" });
   }
 }
